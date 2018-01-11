@@ -1,0 +1,172 @@
+/****************************************************************************
+	[Project] FlexSEA: Flexible & Scalable Electronics Architecture
+	[Sub-project] 'flexsea-user' System commands & functions specific to
+	user projects
+	Copyright (C) 2016 Dephy, Inc. <http://dephy.com/>
+
+	This program is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
+
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+
+	You should have received a copy of the GNU General Public License
+	along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*****************************************************************************
+	[Lead developper] Jean-Francois (JF) Duval, jfduval at dephy dot com.
+	[Origin] Based on Jean-Francois Duval's work at the MIT Media Lab
+	Biomechatronics research group <http://biomech.media.mit.edu/>
+	[Contributors]
+*****************************************************************************
+	[This file] flexsea_cmd_user: Interface to the user functions
+*****************************************************************************
+	[Change log] (Convention: YYYY-MM-DD | author | comment)
+	* 2016-10-27 | jfduval | Initial release
+	*
+****************************************************************************/
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+//****************************************************************************
+// Include(s)
+//****************************************************************************
+
+#include <flexsea.h>
+#include <flexsea_cmd_user.h>
+#include <dynamic_user_structs.h>
+
+#ifdef BOARD_TYPE_FLEXSEA_EXECUTE
+	#ifndef BOARD_SUBTYPE_RIGID
+		#include "../inc/user-ex.h"
+	#else
+		#include "user-ex-rigid.h"
+	#endif
+#endif
+
+#ifdef BOARD_TYPE_FLEXSEA_PLAN
+#include "user-plan.h"
+#endif
+
+#ifdef BOARD_TYPE_FLEXSEA_MANAGE
+#include "user-mn.h"
+#endif
+
+#ifdef TEST_PC
+#include "user-testPC.h"
+#include "../Rigid/inc/cmd-Rigid.h"
+#else
+	#include "../MIT_2DoF_Ankle_v1/inc/cmd-MIT_2DoF_Ankle_v1.h"
+	#include "../RICNU_Knee_v1/inc/cmd-RICNU_Knee_v1.h"
+	#include "../MotorTestBench/inc/cmd-MotorTestBench.h"
+	#ifdef INCLUDE_UPROJ_DPEB21
+	#include "../DpEb21/inc/cmd-DpEb21.h"
+	#endif
+	#ifdef INCLUDE_UPROJ_DPEB31
+	#include "../DpEb31/inc/cmd-DpEb31.h"
+	#include "../DpEb31/inc/cmd-UTT.h"
+	#endif
+#endif	//TEST_PC
+
+#ifndef TEST_PC
+#include "flexsea_cmd_angle_torque_profile.h"
+#include "../Rigid/inc/cmd-Rigid.h"
+#include "../CycleTester/inc/cmd-CycleTester.h"
+#ifdef INCLUDE_UPROJ_DPEB31
+#include "../DpEb31/inc/cmd-DpEb31.h"
+#endif
+#endif	//TEST_PC
+
+#ifdef INCLUDE_UPROJ_ACTPACK
+#include "cmd-ActPack.h"
+#endif //INCLUDE_UPROJ_ACTPACK
+
+#ifdef BILATERAL
+#include "cmd-Bilateral.h"
+#endif //BILATERAL
+
+//****************************************************************************
+// Variable(s)
+//****************************************************************************
+
+
+//****************************************************************************
+// Function(s)
+//****************************************************************************
+
+//This gets called by flexsea_system's init_flexsea_payload_ptr(). Map all
+//functions from this file to the array here. Failure to do so will send all
+//commands to flexsea_payload_catchall().
+void init_flexsea_payload_ptr_user(void)
+{
+	#if((ACTIVE_PROJECT == PROJECT_ANKLE_2DOF) && defined INCLUDE_UPROJ_MIT_A2DOF)
+	//MIT 2-dof Ankle:
+	flexsea_payload_ptr[CMD_A2DOF][RX_PTYPE_READ] = &rx_cmd_ankle2dof_rw;
+	flexsea_payload_ptr[CMD_A2DOF][RX_PTYPE_REPLY] = &rx_cmd_ankle2dof_rr;
+	#endif	//(ACTIVE_PROJECT == PROJECT_ANKLE2DOF)
+
+	#if((ACTIVE_PROJECT == PROJECT_RICNU_KNEE) && defined INCLUDE_UPROJ_RICNU_KNEE_V1)
+	//RIC/NU Knee:
+	flexsea_payload_ptr[CMD_RICNU][RX_PTYPE_READ] = &rx_cmd_ricnu_rw;
+	flexsea_payload_ptr[CMD_RICNU][RX_PTYPE_WRITE] = &rx_cmd_ricnu_w;
+	flexsea_payload_ptr[CMD_RICNU][RX_PTYPE_REPLY] = &rx_cmd_ricnu_rr;
+	#endif //(ACTIVE_SUBPROJECT == PROJECT_RICNU_KNEE)
+
+	#if((ACTIVE_PROJECT == PROJECT_MOTORTB) && defined INCLUDE_UPROJ_MOTORTB)
+	//Motor Test Bench:
+	flexsea_payload_ptr[CMD_MOTORTB][RX_PTYPE_READ] = &rx_cmd_motortb_rw;
+	flexsea_payload_ptr[CMD_MOTORTB][RX_PTYPE_REPLY] = &rx_cmd_motortb_rr;
+	#endif //(ACTIVE_PROJECT == PROJECT_MOTORTB)
+
+	#if((ACTIVE_PROJECT == PROJECT_CYCLE_TESTER) && defined INCLUDE_UPROJ_CYCLE_TESTER)
+	//Automatic Cycle Tester:
+	flexsea_payload_ptr[CMD_CYCLE_TESTER][RX_PTYPE_READ] = &rx_cmd_cycle_tester_rw;
+	flexsea_payload_ptr[CMD_CYCLE_TESTER][RX_PTYPE_WRITE] = &rx_cmd_cycle_tester_w;
+	flexsea_payload_ptr[CMD_CYCLE_TESTER][RX_PTYPE_REPLY] = &rx_cmd_cycle_tester_rr;
+	#endif //(ACTIVE_SUBPROJECT == PROJECT_CYCLE_TESTER)
+
+	#if((ACTIVE_PROJECT == PROJECT_DPEB31) && defined INCLUDE_UPROJ_DPEB31)
+	//Dephy DpEb 3.1
+	flexsea_payload_ptr[CMD_DPEB31][RX_PTYPE_READ] = &rx_cmd_dpeb31_rw;
+	//flexsea_payload_ptr[CMD_DPEB31][RX_PTYPE_WRITE] = &rx_cmd_dpeb31_w;
+	flexsea_payload_ptr[CMD_DPEB31][RX_PTYPE_REPLY] = &rx_cmd_dpeb31_rr;
+	//User Testing Tweaks
+	flexsea_payload_ptr[CMD_UTT][RX_PTYPE_READ] = &rx_cmd_utt_rw;
+	flexsea_payload_ptr[CMD_UTT][RX_PTYPE_WRITE] = &rx_cmd_utt_w;
+	flexsea_payload_ptr[CMD_UTT][RX_PTYPE_REPLY] = &rx_cmd_utt_rr;
+	#endif
+
+	#if((ACTIVE_PROJECT == PROJECT_ACTPACK) && defined INCLUDE_UPROJ_ACTPACK)
+	//Dephy's Actuator Package
+	flexsea_payload_ptr[CMD_ACTPACK][RX_PTYPE_READ] = &rx_cmd_actpack_rw;
+	//flexsea_payload_ptr[CMD_ACTPACK][RX_PTYPE_WRITE] = &rx_cmd_actpack_w;
+	flexsea_payload_ptr[CMD_ACTPACK][RX_PTYPE_REPLY] = &rx_cmd_actpack_rr;
+	#endif
+
+	//Rigid:
+	flexsea_payload_ptr[CMD_READ_ALL_RIGID][RX_PTYPE_READ] = &rx_cmd_rigid_rw;
+	flexsea_payload_ptr[CMD_READ_ALL_RIGID][RX_PTYPE_REPLY] = &rx_cmd_rigid_rr;
+
+	//Bilateral:
+	#ifdef BILATERAL
+	flexsea_payload_ptr[CMD_BILATERAL][RX_PTYPE_READ] = &rx_cmd_bilateral_rw;
+	flexsea_payload_ptr[CMD_BILATERAL][RX_PTYPE_REPLY] = &rx_cmd_bilateral_rr;
+	#endif //BILATERAL
+
+	#ifndef TEST_PC
+
+	//Dynamic & Gait:
+	init_flexsea_payload_ptr_dynamic();
+	init_flexsea_payload_ptr_ankleTorqueProfile();
+
+	#endif //TEST_PC
+}
+
+#ifdef __cplusplus
+}
+#endif

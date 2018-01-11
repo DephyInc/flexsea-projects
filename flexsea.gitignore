@@ -1,0 +1,23 @@
+#FlexSEA - Git Ignore List
+#==========================
+
+#General:
+
+*~
+*.bak
+*.o
+*.a
+
+#PSoC:
+
+*.cycdx
+*.cyfit
+*.rpt
+*.svd
+*.lst
+
+#User specific:
+
+*.user
+*.JF
+
