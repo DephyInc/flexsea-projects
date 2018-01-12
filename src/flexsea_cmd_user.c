@@ -63,23 +63,11 @@ extern "C" {
 #else
 	#include "../MIT_2DoF_Ankle_v1/inc/cmd-MIT_2DoF_Ankle_v1.h"
 	#include "../RICNU_Knee_v1/inc/cmd-RICNU_Knee_v1.h"
-	#include "../MotorTestBench/inc/cmd-MotorTestBench.h"
-	#ifdef INCLUDE_UPROJ_DPEB21
-	#include "../DpEb21/inc/cmd-DpEb21.h"
-	#endif
-	#ifdef INCLUDE_UPROJ_DPEB31
-	#include "../DpEb31/inc/cmd-DpEb31.h"
-	#include "../DpEb31/inc/cmd-UTT.h"
-	#endif
 #endif	//TEST_PC
 
 #ifndef TEST_PC
 #include "flexsea_cmd_angle_torque_profile.h"
 #include "../Rigid/inc/cmd-Rigid.h"
-#include "../CycleTester/inc/cmd-CycleTester.h"
-#ifdef INCLUDE_UPROJ_DPEB31
-#include "../DpEb31/inc/cmd-DpEb31.h"
-#endif
 #endif	//TEST_PC
 
 #ifdef INCLUDE_UPROJ_ACTPACK
@@ -116,30 +104,6 @@ void init_flexsea_payload_ptr_user(void)
 	flexsea_payload_ptr[CMD_RICNU][RX_PTYPE_WRITE] = &rx_cmd_ricnu_w;
 	flexsea_payload_ptr[CMD_RICNU][RX_PTYPE_REPLY] = &rx_cmd_ricnu_rr;
 	#endif //(ACTIVE_SUBPROJECT == PROJECT_RICNU_KNEE)
-
-	#if((ACTIVE_PROJECT == PROJECT_MOTORTB) && defined INCLUDE_UPROJ_MOTORTB)
-	//Motor Test Bench:
-	flexsea_payload_ptr[CMD_MOTORTB][RX_PTYPE_READ] = &rx_cmd_motortb_rw;
-	flexsea_payload_ptr[CMD_MOTORTB][RX_PTYPE_REPLY] = &rx_cmd_motortb_rr;
-	#endif //(ACTIVE_PROJECT == PROJECT_MOTORTB)
-
-	#if((ACTIVE_PROJECT == PROJECT_CYCLE_TESTER) && defined INCLUDE_UPROJ_CYCLE_TESTER)
-	//Automatic Cycle Tester:
-	flexsea_payload_ptr[CMD_CYCLE_TESTER][RX_PTYPE_READ] = &rx_cmd_cycle_tester_rw;
-	flexsea_payload_ptr[CMD_CYCLE_TESTER][RX_PTYPE_WRITE] = &rx_cmd_cycle_tester_w;
-	flexsea_payload_ptr[CMD_CYCLE_TESTER][RX_PTYPE_REPLY] = &rx_cmd_cycle_tester_rr;
-	#endif //(ACTIVE_SUBPROJECT == PROJECT_CYCLE_TESTER)
-
-	#if((ACTIVE_PROJECT == PROJECT_DPEB31) && defined INCLUDE_UPROJ_DPEB31)
-	//Dephy DpEb 3.1
-	flexsea_payload_ptr[CMD_DPEB31][RX_PTYPE_READ] = &rx_cmd_dpeb31_rw;
-	//flexsea_payload_ptr[CMD_DPEB31][RX_PTYPE_WRITE] = &rx_cmd_dpeb31_w;
-	flexsea_payload_ptr[CMD_DPEB31][RX_PTYPE_REPLY] = &rx_cmd_dpeb31_rr;
-	//User Testing Tweaks
-	flexsea_payload_ptr[CMD_UTT][RX_PTYPE_READ] = &rx_cmd_utt_rw;
-	flexsea_payload_ptr[CMD_UTT][RX_PTYPE_WRITE] = &rx_cmd_utt_w;
-	flexsea_payload_ptr[CMD_UTT][RX_PTYPE_REPLY] = &rx_cmd_utt_rr;
-	#endif
 
 	#if((ACTIVE_PROJECT == PROJECT_ACTPACK) && defined INCLUDE_UPROJ_ACTPACK)
 	//Dephy's Actuator Package
