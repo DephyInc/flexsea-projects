@@ -54,6 +54,7 @@ extern "C" {
 //****************************************************************************
 
 uint8_t newActPackRRpacketAvailableFlag = 0;
+uint8_t ActPackSys = 0;
 
 //****************************************************************************
 // DLL Function(s)
@@ -77,7 +78,7 @@ uint8_t newActPackRRpacketAvailable(void)
 #if (defined BOARD_TYPE_FLEXSEA_EXECUTE || defined BOARD_TYPE_FLEXSEA_MANAGE)
 static void rx_cmd_actpack_Action1(uint8_t controller, int32_t setpoint, \
 									uint8_t setGains, int16_t g0, int16_t g1, \
-									int16_t g2, int16_t g3);
+									int16_t g2, int16_t g3, uint8_t system);
 #endif //BOARD_TYPE_FLEXSEA_EXECUTE
 
 //****************************************************************************
@@ -259,11 +260,11 @@ void rx_cmd_actpack_rw(uint8_t *buf, uint8_t *info)
 	
 	//Temporary variables
 	uint8_t offset = 0;
-	uint8_t tmpController = 0, tmpSetGains = 0;
+	uint8_t tmpController = 0, tmpSetGains = 0, tmpSystem = 0;
 	int32_t tmpSetpoint = 0;
 	int16_t tmpGain[4] = {0,0,0,0};
 	
-		//Decode data received:
+	//Decode data received:
 	index = P_DATA1;
 	offset = buf[index++];
 	tmpController = buf[index++];
@@ -273,6 +274,7 @@ void rx_cmd_actpack_rw(uint8_t *buf, uint8_t *info)
 	tmpGain[1] = (int16_t)REBUILD_UINT16(buf, &index);
 	tmpGain[2] = (int16_t)REBUILD_UINT16(buf, &index);
 	tmpGain[3] = (int16_t)REBUILD_UINT16(buf, &index);
+	tmpSystem = buf[index++];
 
 	//An offset >= 100 means a pure Read, with no writing (not a RW)
 	if(offset < 100)
@@ -281,7 +283,7 @@ void rx_cmd_actpack_rw(uint8_t *buf, uint8_t *info)
 
 			//Act on the decoded data:
 			rx_cmd_actpack_Action1(tmpController, tmpSetpoint, tmpSetGains, tmpGain[0],
-									tmpGain[1], tmpGain[2], tmpGain[3]);
+									tmpGain[1], tmpGain[2], tmpGain[3], tmpSystem);
 
 		#else
 
@@ -289,6 +291,7 @@ void rx_cmd_actpack_rw(uint8_t *buf, uint8_t *info)
 			(void)tmpSetGains;
 			(void)tmpSetpoint;
 			(void)tmpGain;
+			(void)tmpSystem;
 
 		#endif //(defined BOARD_TYPE_FLEXSEA_EXECUTE || defined BOARD_TYPE_FLEXSEA_MANAGE)
 	}
@@ -426,8 +429,10 @@ void rx_cmd_actpack_rr(uint8_t *buf, uint8_t *info)
 #ifdef BOARD_TYPE_FLEXSEA_EXECUTE
 //Command = rx_cmd_actpack, section = READ
 void rx_cmd_actpack_Action1(uint8_t controller, int32_t setpoint, uint8_t setGains,
-						int16_t g0,	int16_t g1,	int16_t g2, int16_t g3)
+						int16_t g0,	int16_t g1,	int16_t g2, int16_t g3, uint8_t system)
 {
+	(void) system;
+
 	//Update controller (if needed):
 	control_strategy(controller);
 
@@ -472,10 +477,9 @@ void rx_cmd_actpack_Action1(uint8_t controller, int32_t setpoint, uint8_t setGai
 #ifdef BOARD_TYPE_FLEXSEA_MANAGE
 //Command = rx_cmd_actpack, section = READ
 void rx_cmd_actpack_Action1(uint8_t controller, int32_t setpoint, uint8_t setGains,
-						int16_t g0,	int16_t g1,	int16_t g2, int16_t g3)
+						int16_t g0,	int16_t g1,	int16_t g2, int16_t g3, uint8_t system)
 {
 	//Update controller (if needed):
-	//control_strategy(controller);
 	setControlMode(controller);
 
 	//Only change the setpoint if we are in current control mode:
@@ -526,6 +530,8 @@ void rx_cmd_actpack_Action1(uint8_t controller, int32_t setpoint, uint8_t setGai
 		//Copy to writeEx:
 		setMotorPosition(setpoint);
 	}
+
+	ActPackSys = system;
 }
 #endif	//BOARD_TYPE_FLEXSEA_MANAGE
 

@@ -67,13 +67,31 @@ uint8_t newActPackRRpacketAvailable(void);
 #define NULL   ((void *) 0)
 #endif
 
+//System variable states:
+#define SYS_NORMAL			0
+#define SYS_DISABLE_FSM2	1
+
 //****************************************************************************
 // Structure(s):
 //****************************************************************************
 
+struct ActPack_s
+{
+	uint8_t controller;
+	int32_t setpoint;
+	uint8_t setGains;
+	int16_t g0;
+	int16_t g1;
+	int16_t g2;
+	int16_t g3;
+	uint8_t system;
+};
+
 //****************************************************************************
 // Shared variable(s)
 //****************************************************************************
+
+extern uint8_t ActPackSys;
 
 #ifdef __cplusplus
 }
