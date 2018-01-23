@@ -74,11 +74,6 @@ void init_user(void)
 	init_ricnu_knee();
 	#endif	//PROJECT_RICNU_KNEE
 
-	//Motor Test Bench:
-	#if(ACTIVE_PROJECT == PROJECT_MOTORTB)
-	initMotorTestBench();
-	#endif	//PROJECT_MOTORTB
-	
 	//DpEb21
 	#if(ACTIVE_PROJECT == PROJECT_DPEB21)
 	initDpEb21();
@@ -95,14 +90,6 @@ void user_fsm(void)
 			DpEb21_fsm();
 		#endif
 	#endif	//PROJECT_DPEB21
-	
-	//Motor Test Bench:
-	#if(ACTIVE_PROJECT == PROJECT_MOTORTB)
-		MotorTestBench_refresh_values();
-		#if(RUNTIME_FSM == ENABLED)
-			MotorTestBench_fsm();
-		#endif
-	#endif	//PROJECT_MOTORTB
 }
 
 //****************************************************************************

@@ -100,11 +100,6 @@ void init_user(void)
 	init_ankle_2dof();
 	#endif	//PROJECT_ANKLE_2DOF
 
-	//Motor Test Bench:
-	#if(ACTIVE_PROJECT == PROJECT_MOTORTB)
-	init_MotorTestBench();
-	#endif	//PROJECT_MOTORTB
-
 	//Rigid:
 	#if(ACTIVE_PROJECT == PROJECT_RIGID)
 	init_rigid();
@@ -151,11 +146,6 @@ void user_fsm_1(void)
 		#if(ACTIVE_PROJECT == PROJECT_RICNU_KNEE)
 		ricnu_knee_fsm_1();
 		#endif	//PROJECT_RICNU_KNEE
-
-		//Motor Test Bench
-		#if(ACTIVE_PROJECT == PROJECT_MOTORTB)
-		MotorTestBench_fsm_1();
-		#endif	//PROJECT_MOTORTB
 
 		//Dev
 		#if(ACTIVE_PROJECT == PROJECT_DEV)
@@ -206,16 +196,6 @@ void user_fsm_2(void)
 		#if(ACTIVE_PROJECT == PROJECT_RICNU_KNEE)
 		ricnu_knee_fsm_2();
 		#endif	//PROJECT_RICNU_KNEE
-
-		//Motor Test Bench
-		#if(ACTIVE_PROJECT == PROJECT_MOTORTB)
-		MotorTestBench_fsm_2();
-		#endif	//PROJECT_MOTORTB
-
-		//Dev
-		#if(ACTIVE_PROJECT == PROJECT_DEV)
-		dev_fsm_2();
-		#endif	//PROJECT_DEV
 
 		//Automatic Cycle Tester:
 		#if(ACTIVE_PROJECT == PROJECT_CYCLE_TESTER)
