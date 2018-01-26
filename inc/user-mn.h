@@ -81,7 +81,7 @@ void user_fsm_2(void);
 //Step 1) Select active project (from list):
 //==========================================
 
-#define ACTIVE_PROJECT			PROJECT_RICNU_KNEE
+#define ACTIVE_PROJECT			PROJECT_ACTPACK
 #define ACTIVE_SUBPROJECT		RIGHT
 
 //Step 2) Customize the enabled/disabled sub-modules:
