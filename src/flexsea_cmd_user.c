@@ -66,7 +66,7 @@ extern "C" {
 #endif	//TEST_PC
 
 #ifndef TEST_PC
-#include "flexsea_cmd_angle_torque_profile.h"
+//#include "flexsea_cmd_angle_torque_profile.h"
 #include "../Rigid/inc/cmd-Rigid.h"
 #endif	//TEST_PC
 
@@ -133,7 +133,7 @@ void init_flexsea_payload_ptr_user(void)
 
 	//Dynamic & Gait:
 	init_flexsea_payload_ptr_dynamic();
-	init_flexsea_payload_ptr_ankleTorqueProfile();
+	//init_flexsea_payload_ptr_ankleTorqueProfile();
 
 	#endif //TEST_PC
 }
