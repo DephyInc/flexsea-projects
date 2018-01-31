@@ -145,16 +145,6 @@ void user_fsm_1(void)
 		dev_fsm_1();
 		#endif	//PROJECT_DEV
 
-		//Automatic Cycle Tester:
-		#if(ACTIVE_PROJECT == PROJECT_CYCLE_TESTER)
-		cycle_tester_fsm_1();
-		#endif	//PROJECT_CYCLE_TESTER
-
-		//DpEb3.1 Exo:
-		#if(ACTIVE_PROJECT == PROJECT_DPEB31)
-		DpEb31_fsm_1();
-		#endif	//PROJECT_DPEB31
-
 		//Barebone Rigid:
 		#if(ACTIVE_PROJECT == PROJECT_BB_RIGID)
 		rigid_fsm_1();
@@ -170,6 +160,10 @@ void user_fsm_1(void)
 		#if(ACTIVE_PROJECT == PROJECT_ACTPACK)
 		ActPack_fsm_1();
 		#endif	//PROJECT_ACTPACK
+
+		#ifdef DEPHY
+		dephy_fsm_1();
+		#endif
 
 	#endif	//(RUNTIME_FSM1 == ENABLED)
 }
@@ -190,16 +184,6 @@ void user_fsm_2(void)
 		ricnu_knee_fsm_2();
 		#endif	//PROJECT_RICNU_KNEE
 
-		//Automatic Cycle Tester:
-		#if(ACTIVE_PROJECT == PROJECT_CYCLE_TESTER)
-		cycle_tester_fsm_2();
-		#endif	//PROJECT_CYCLE_TESTER
-
-		//DpEb3.1 Exo:
-		#if(ACTIVE_PROJECT == PROJECT_DPEB31)
-		DpEb31_fsm_2();
-		#endif	//PROJECT_DPEB31
-
 		//Barebone Rigid:
 		#if(ACTIVE_PROJECT == PROJECT_BB_RIGID)
 		rigid_fsm_2();
@@ -215,6 +199,10 @@ void user_fsm_2(void)
 		#if(ACTIVE_PROJECT == PROJECT_ACTPACK)
 		ActPack_fsm_2();
 		#endif	//PROJECT_ACTPACK
+
+		#ifdef DEPHY
+		dephy_fsm_2();
+		#endif
 
 	#endif	//(RUNTIME_FSM2 == ENABLED)
 }
