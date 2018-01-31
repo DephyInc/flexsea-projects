@@ -57,6 +57,8 @@ extern "C" {
 
 #ifdef BOARD_TYPE_FLEXSEA_MANAGE
 #include "user-mn.h"
+#include "flexsea_global_structs.h"
+#include "flexsea_user_structs.h"
 #endif	//BOARD_TYPE_FLEXSEA_MANAGE
 
 //****************************************************************************
@@ -207,18 +209,31 @@ void tx_cmd_ricnu_w(uint8_t *shBuf, uint8_t *cmd, uint8_t *cmdType, \
 
 	#ifdef BOARD_TYPE_FLEXSEA_MANAGE
 
+
 		//struct execute_s *ex = &exec1;
 		struct ricnu_s *rn = &ricnu_1;
 
 		//Arguments:
 		if(offset == 0)
 		{
-			SPLIT_16((uint16_t)rn->ex->gyro.x, shBuf, &index);
-			SPLIT_16((uint16_t)rn->ex->gyro.y, shBuf, &index);
-			SPLIT_16((uint16_t)rn->ex->gyro.z, shBuf, &index);
-			SPLIT_16((uint16_t)rn->ex->accel.x, shBuf, &index);
-			SPLIT_16((uint16_t)rn->ex->accel.y, shBuf, &index);
-			SPLIT_16((uint16_t)rn->ex->accel.z, shBuf, &index);
+			#ifndef BOARD_SUBTYPE_RIGID
+				SPLIT_16((uint16_t)rn->ex->gyro.x, shBuf, &index);
+				SPLIT_16((uint16_t)rn->ex->gyro.y, shBuf, &index);
+				SPLIT_16((uint16_t)rn->ex->gyro.z, shBuf, &index);
+				SPLIT_16((uint16_t)rn->ex->accel.x, shBuf, &index);
+				SPLIT_16((uint16_t)rn->ex->accel.y, shBuf, &index);
+				SPLIT_16((uint16_t)rn->ex->accel.z, shBuf, &index);
+			#else
+				//When using Rigid we use Mn's IMU:
+				struct rigid_s *ri = &rigid1;
+				SPLIT_16((uint16_t)ri->mn.gyro.x, shBuf, &index);
+				SPLIT_16((uint16_t)ri->mn.gyro.y, shBuf, &index);
+				SPLIT_16((uint16_t)ri->mn.gyro.z, shBuf, &index);
+				SPLIT_16((uint16_t)ri->mn.accel.x, shBuf, &index);
+				SPLIT_16((uint16_t)ri->mn.accel.y, shBuf, &index);
+				SPLIT_16((uint16_t)ri->mn.accel.z, shBuf, &index);
+			#endif
+
 			SPLIT_32((uint32_t)rn->enc_motor, shBuf, &index);
 			SPLIT_32((uint32_t)rn->enc_joint, shBuf, &index);
 			SPLIT_16((uint16_t)rn->ex->current, shBuf, &index);

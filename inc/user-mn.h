@@ -117,6 +117,10 @@ void user_fsm_2(void);
 //RIC/NU Knee
 #if(ACTIVE_PROJECT == PROJECT_RICNU_KNEE)
 
+	#ifndef BOARD_SUBTYPE_RIGID
+
+	//Setup when using FlexSEA-Manage:
+
 	//Enable/Disable sub-modules:
 	#define USE_RS485
 	#define USE_USB
@@ -135,6 +139,30 @@ void user_fsm_2(void);
 
 	//Project specific definitions:
 	//...
+
+	#else
+
+	//Setup when using Rigid-Mn (Actuator Package):
+
+	//Enable/Disable sub-modules:
+	#define USE_USB
+	#define USE_COMM			//Requires USE_RS485 and/or USE_USB
+	#define USE_I2C_1			//3V3, IMU & Digital pot
+	//#define USE_I2C_2			//3V3, Expansion
+	#define USE_I2C_3			//Onboard, Regulate & Execute
+	#define USE_IMU				//Requires USE_I2C_1
+	#define USE_UART3			//Bluetooth
+	#define USE_SPI_PLAN		//Expansion/Plan
+	#define USE_EEPROM			//Emulated EEPROM, onboard FLASH
+
+	//Runtime finite state machine (FSM):
+	//Disable both FSM to use manage as a passthru
+	#define RUNTIME_FSM1		DISABLED 	//Control
+	#define RUNTIME_FSM2		ENABLED 	//Comm w/ Execute 1
+	//FSM2: Communication, we enabled this state machine to send data
+	//back to the GUI.  Manage will now control execute, rather than the GUI.
+
+	#endif
 
 #endif	//PROJECT_RICNU_KNEE
 

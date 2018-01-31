@@ -130,8 +130,12 @@ void ActPack_fsm_2(void)
 
 	apFSM2ready = 1;
 
+	//External controller can fully disable the comm:
+	if(ActPackSys == SYS_NORMAL){enableAPfsm2 = 1;}
+	else {enableAPfsm2 = 0;}
+
 	//FSM1 can disable this one:
-	if(!enableAPfsm2)
+	if(enableAPfsm2)
 	{
 		#ifndef MANUAL_GUI_CONTROL
 
@@ -145,7 +149,7 @@ void ActPack_fsm_2(void)
 
 			tx_cmd_actpack_rw(TX_N_DEFAULT, writeEx.offset, writeEx.ctrl, writeEx.setpoint, \
 											writeEx.setGains, writeEx.g[0], writeEx.g[1], \
-											writeEx.g[2], writeEx.g[3], 0);	//ToDo: system = 0? What is it?
+											writeEx.g[2], writeEx.g[3], 0);
 			packAndSend(P_AND_S_DEFAULT, FLEXSEA_EXECUTE_1, apInfo, SEND_TO_SLAVE);
 
 			//Reset KEEP/CHANGE once set:
