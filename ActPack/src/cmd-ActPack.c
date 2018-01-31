@@ -313,6 +313,7 @@ void rx_cmd_actpack_rr(uint8_t *buf, uint8_t *info)
 
 	#ifdef BOARD_TYPE_FLEXSEA_EXECUTE
 
+		struct rigid_s *ri = &rigid1;
 		(void)index;
 		(void)buf;
 		(void)offset;
