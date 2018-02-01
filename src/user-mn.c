@@ -36,11 +36,6 @@
 
 #include "user-mn.h"
 
-//Automatic Cycle Tester:
-#if(ACTIVE_PROJECT == PROJECT_CYCLE_TESTER)
-#include "user-mn-CycleTester.h"
-#endif	//PROJECT_CYCLE_TESTER
-
 //Barebone Rigid:
 #if(ACTIVE_PROJECT == PROJECT_BB_RIGID)
 #include "cmd-Rigid.h"

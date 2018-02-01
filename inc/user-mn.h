@@ -55,17 +55,14 @@ void user_fsm_2(void);
 //****************************************************************************
 
 //List of projects:
+#define PROJECT_DEPHY			-1
 #define PROJECT_BAREBONE		0	//Barebone Manage, default option.
-#define PROJECT_ANKLE_2DOF		1	//Biomechatronics 2-DOF Ankle
-#define PROJECT_RICNU_KNEE		3	//RIC/NU Knee
-#define PROJECT_MOTORTB			4
-#define PROJECT_DEV				5	//Experimental code - use with care
-#define PROJECT_CYCLE_TESTER	6	//Automatic Cycle Tester
-#define PROJECT_DPEB			7	//DpEb2.1 and below
-#define PROJECT_DPEB31			8	//DpEb3.1 Exo
-#define PROJECT_BB_RIGID		9	//Barebone Rigid
-#define PROJECT_UMICH_KNEE		10	//University of Michigan's Knee
-#define PROJECT_ACTPACK			11	//Dephy's Actuator Package (ActPack)
+#define PROJECT_BB_RIGID		1	//Barebone Rigid
+#define PROJECT_ACTPACK			2	//Dephy's Actuator Package (ActPack)
+#define PROJECT_DEV				3	//Experimental code - use with care
+#define PROJECT_ANKLE_2DOF		4	//Biomechatronics 2-DOF Ankle
+#define PROJECT_RICNU_KNEE		5	//RIC/NU Knee
+#define PROJECT_UMICH_KNEE		6	//University of Michigan's Knee
 
 //List of sub-projects:
 #define SUBPROJECT_NONE			0
@@ -74,14 +71,14 @@ void user_fsm_2(void);
 //(ex.: the 2-DoF ankle has 2 Execute. They both use PROJECT_2DOF_ANKLE, and each
 // 		of them has a sub-project for specific configs)
 
-//Exo sign:
+//Leg sign:
 #define RIGHT					1
 #define LEFT					2
 
 //Step 1) Select active project (from list):
 //==========================================
 
-#define ACTIVE_PROJECT			PROJECT_ACTPACK
+#define ACTIVE_PROJECT			PROJECT_DEPHY
 #define ACTIVE_SUBPROJECT		RIGHT
 
 //Step 2) Customize the enabled/disabled sub-modules:
@@ -188,27 +185,6 @@ void user_fsm_2(void);
 
 #endif	//PROJECT_ANKLE_2DOF
 
-//Dephy's Motor Test Bench
-#if(ACTIVE_PROJECT == PROJECT_MOTORTB)
-
-	//Enable/Disable sub-modules:
-	#define USE_RS485
-	#define USE_USB
-	#define USE_COMM			//Requires USE_RS485 and/or USE_USB
-	#define USE_I2C_1			//3V3, IMU & Digital pot
-	#define USE_I2C_2			//3V3, Expansion
-	#define USE_IMU				//Requires USE_I2C_1
-	#define USE_BATTBOARD		//Battery Board, requires USE_I2C_1
-
-	//Runtime finite state machine (FSM):
-	#define RUNTIME_FSM1		ENABLED
-	#define RUNTIME_FSM2		ENABLED
-
-	//Project specific definitions:
-	//...
-
-#endif	//PROJECT_MOTORTB
-
 //Experimental/Dev/Use only if you know what you are doing
 #if(ACTIVE_PROJECT == PROJECT_DEV)
 
@@ -230,87 +206,6 @@ void user_fsm_2(void);
 	//...
 
 #endif	//PROJECT_DEV
-
-//Automatic Cycle Tester
-#if(ACTIVE_PROJECT == PROJECT_CYCLE_TESTER)
-
-	//Enable/Disable sub-modules:
-	#define USE_USB
-	#define USE_COMM			//Requires USE_RS485 and/or USE_USB
-	#define USE_I2C_1			//3V3, IMU & Digital pot
-	//#define USE_I2C_2			//3V3, Expansion
-	#define USE_I2C_3			//Onboard, Regulate & Execute
-	#define USE_IMU				//Requires USE_I2C_1
-	#define USE_UART3			//Bluetooth
-	#define USE_EEPROM			//Emulated EEPROM, onboard FLASH
-	#define USE_WATCHDOG		//Independent watchdog (IWDG)
-
-	//Runtime finite state machine (FSM):
-	#define RUNTIME_FSM1		ENABLED
-	#define RUNTIME_FSM2		ENABLED
-
-#endif	//PROJECT_CYCLE_TESTER
-
-//DpEb3.1 Exo
-#if(ACTIVE_PROJECT == PROJECT_DPEB31)
-
-	#if (HW_VER < 10)
-
-		//Enable/Disable sub-modules:
-		#define USE_USB
-		#define USE_COMM			//Requires USE_RS485 and/or USE_USB
-		#define USE_I2C_1			//3V3, IMU & Digital pot
-		//#define USE_I2C_2			//3V3, Expansion
-		#define USE_I2C_3			//Onboard, Regulate & Execute
-		#define USE_IMU				//Requires USE_I2C_1
-		#define USE_UART3			//Bluetooth
-		#define USE_EEPROM			//Emulated EEPROM, onboard FLASH
-		#define USE_WATCHDOG		//Independent watchdog (IWDG)
-		//#define USE_SVM			//Support vector machine
-
-		//Runtime finite state machine (FSM):
-		#define RUNTIME_FSM1		ENABLED
-		#define RUNTIME_FSM2		ENABLED
-
-	#else
-
-		//Enable/Disable sub-modules:
-		#define USE_USB
-		#define USE_COMM			//Requires USE_RS485 and/or USE_USB
-		#define USE_I2C_1			//3V3, IMU & Digital pot
-		//#define USE_I2C_2			//3V3, Expansion
-		#define USE_I2C_3			//Onboard, Regulate & Execute
-		#define USE_IMU				//Requires USE_I2C_1
-		#define USE_UART3			//Bluetooth
-		#define USE_EEPROM			//Emulated EEPROM, onboard FLASH
-		//#define USE_WATCHDOG		//Independent watchdog (IWDG)
-		//#define USE_SVM			//Support vector machine
-
-		//Runtime finite state machine (FSM):
-		#define RUNTIME_FSM1		ENABLED
-		#define RUNTIME_FSM2		ENABLED
-
-	#endif
-
-	#define BILATERAL
-
-	#if(ACTIVE_SUBPROJECT == RIGHT)
-
-		#define EXO_SIDE	RIGHT
-		#define BILATERAL_MASTER
-
-	#elif(ACTIVE_SUBPROJECT == LEFT)
-
-		#define EXO_SIDE	LEFT
-		#define BILATERAL_SLAVE
-
-	#else
-
-		#error "PROJECT_DPEB31 requires a subproject"
-
-	#endif
-
-#endif	//PROJECT_DPEB31
 
 //BareBone Rigid
 #if(ACTIVE_PROJECT == PROJECT_BB_RIGID)
@@ -418,6 +313,12 @@ void user_fsm_2(void);
 	#define RUNTIME_FSM2		ENABLED
 
 #endif	//PROJECT_BB_RIGID
+
+#if(ACTIVE_PROJECT == PROJECT_DEPHY)
+
+	#include "dephy-mn.h"
+
+#endif	//PROJECT_DEPHY
 
 //****************************************************************************
 // Structure(s)
