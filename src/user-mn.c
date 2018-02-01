@@ -41,11 +41,6 @@
 #include "user-mn-CycleTester.h"
 #endif	//PROJECT_CYCLE_TESTER
 
-//DpEb3.1 Exo:
-#if(ACTIVE_PROJECT == PROJECT_DPEB31)
-#include "user-mn-DpEb31.h"
-#endif	//PROJECT_DPEB31
-
 //Barebone Rigid:
 #if(ACTIVE_PROJECT == PROJECT_BB_RIGID)
 #include "cmd-Rigid.h"
@@ -62,6 +57,10 @@
 #if(ACTIVE_PROJECT == PROJECT_ACTPACK)
 #include "user-mn-ActPack.h"
 #endif	//PROJECT_ACTPACK
+
+#ifdef DEPHY
+#include "dephy-mn.h"
+#endif
 
 //****************************************************************************
 // Variable(s)
@@ -105,16 +104,6 @@ void init_user(void)
 	init_rigid();
 	#endif	//PROJECT_RIGID
 
-	//Automatic Cycle Tester:
-	#if(ACTIVE_PROJECT == PROJECT_CYCLE_TESTER)
-	init_cycle_tester();
-	#endif	//PROJECT_CYCLE_TESTER
-
-	//DpEb3.1 Exo:
-	#if(ACTIVE_PROJECT == PROJECT_DPEB31)
-	init_DpEb31();
-	#endif	//PROJECT_DPEB31
-
 	//Barebone Rigid:
 	#if(ACTIVE_PROJECT == PROJECT_BB_RIGID)
 	init_rigid();
@@ -130,6 +119,10 @@ void init_user(void)
 	#if(ACTIVE_PROJECT == PROJECT_ACTPACK)
 	init_ActPack();
 	#endif	//PROJECT_ACTPACK
+
+	#ifdef DEPHY
+	init_dephy();
+	#endif
 }
 
 //Call this function in one of the main while time slots.
@@ -152,16 +145,6 @@ void user_fsm_1(void)
 		dev_fsm_1();
 		#endif	//PROJECT_DEV
 
-		//Automatic Cycle Tester:
-		#if(ACTIVE_PROJECT == PROJECT_CYCLE_TESTER)
-		cycle_tester_fsm_1();
-		#endif	//PROJECT_CYCLE_TESTER
-
-		//DpEb3.1 Exo:
-		#if(ACTIVE_PROJECT == PROJECT_DPEB31)
-		DpEb31_fsm_1();
-		#endif	//PROJECT_DPEB31
-
 		//Barebone Rigid:
 		#if(ACTIVE_PROJECT == PROJECT_BB_RIGID)
 		rigid_fsm_1();
@@ -177,6 +160,10 @@ void user_fsm_1(void)
 		#if(ACTIVE_PROJECT == PROJECT_ACTPACK)
 		ActPack_fsm_1();
 		#endif	//PROJECT_ACTPACK
+
+		#ifdef DEPHY
+		dephy_fsm_1();
+		#endif
 
 	#endif	//(RUNTIME_FSM1 == ENABLED)
 }
@@ -197,16 +184,6 @@ void user_fsm_2(void)
 		ricnu_knee_fsm_2();
 		#endif	//PROJECT_RICNU_KNEE
 
-		//Automatic Cycle Tester:
-		#if(ACTIVE_PROJECT == PROJECT_CYCLE_TESTER)
-		cycle_tester_fsm_2();
-		#endif	//PROJECT_CYCLE_TESTER
-
-		//DpEb3.1 Exo:
-		#if(ACTIVE_PROJECT == PROJECT_DPEB31)
-		DpEb31_fsm_2();
-		#endif	//PROJECT_DPEB31
-
 		//Barebone Rigid:
 		#if(ACTIVE_PROJECT == PROJECT_BB_RIGID)
 		rigid_fsm_2();
@@ -222,6 +199,10 @@ void user_fsm_2(void)
 		#if(ACTIVE_PROJECT == PROJECT_ACTPACK)
 		ActPack_fsm_2();
 		#endif	//PROJECT_ACTPACK
+
+		#ifdef DEPHY
+		dephy_fsm_2();
+		#endif
 
 	#endif	//(RUNTIME_FSM2 == ENABLED)
 }

@@ -209,7 +209,6 @@ void tx_cmd_ricnu_w(uint8_t *shBuf, uint8_t *cmd, uint8_t *cmdType, \
 
 	#ifdef BOARD_TYPE_FLEXSEA_MANAGE
 
-
 		//struct execute_s *ex = &exec1;
 		struct ricnu_s *rn = &ricnu_1;
 

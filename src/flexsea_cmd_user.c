@@ -66,7 +66,6 @@ extern "C" {
 #endif	//TEST_PC
 
 #ifndef TEST_PC
-#include "flexsea_cmd_angle_torque_profile.h"
 #include "../Rigid/inc/cmd-Rigid.h"
 #endif	//TEST_PC
 
@@ -74,9 +73,9 @@ extern "C" {
 #include "cmd-ActPack.h"
 #endif //INCLUDE_UPROJ_ACTPACK
 
-#ifdef BILATERAL
-#include "cmd-Bilateral.h"
-#endif //BILATERAL
+#ifdef DEPHY
+#include "flexsea_cmd_dephy.h"
+#endif
 
 //****************************************************************************
 // Variable(s)
@@ -111,24 +110,28 @@ void init_flexsea_payload_ptr_user(void)
 	//flexsea_payload_ptr[CMD_ACTPACK][RX_PTYPE_WRITE] = &rx_cmd_actpack_w;
 	flexsea_payload_ptr[CMD_ACTPACK][RX_PTYPE_REPLY] = &rx_cmd_actpack_rr;
 	#endif
+	//(or)
+	#if((ACTIVE_PROJECT == PROJECT_BIO_RIGID) && defined INCLUDE_UPROJ_ACTPACK)
+	//Dephy's Actuator Package
+	flexsea_payload_ptr[CMD_ACTPACK][RX_PTYPE_READ] = &rx_cmd_actpack_rw;
+	//flexsea_payload_ptr[CMD_ACTPACK][RX_PTYPE_WRITE] = &rx_cmd_actpack_w;
+	flexsea_payload_ptr[CMD_ACTPACK][RX_PTYPE_REPLY] = &rx_cmd_actpack_rr;
+	#endif
 
 	//Rigid:
 	flexsea_payload_ptr[CMD_READ_ALL_RIGID][RX_PTYPE_READ] = &rx_cmd_rigid_rw;
 	flexsea_payload_ptr[CMD_READ_ALL_RIGID][RX_PTYPE_REPLY] = &rx_cmd_rigid_rr;
 
-	//Bilateral:
-	#ifdef BILATERAL
-	flexsea_payload_ptr[CMD_BILATERAL][RX_PTYPE_READ] = &rx_cmd_bilateral_rw;
-	flexsea_payload_ptr[CMD_BILATERAL][RX_PTYPE_REPLY] = &rx_cmd_bilateral_rr;
-	#endif //BILATERAL
-
 	#ifndef TEST_PC
 
 	//Dynamic & Gait:
 	init_flexsea_payload_ptr_dynamic();
-	init_flexsea_payload_ptr_ankleTorqueProfile();
 
 	#endif //TEST_PC
+
+	#ifdef DEPHY
+	init_flexsea_payload_ptr_dephy();
+	#endif
 }
 
 #ifdef __cplusplus

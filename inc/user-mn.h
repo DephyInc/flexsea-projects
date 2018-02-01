@@ -254,21 +254,43 @@ void user_fsm_2(void);
 //DpEb3.1 Exo
 #if(ACTIVE_PROJECT == PROJECT_DPEB31)
 
-	//Enable/Disable sub-modules:
-	#define USE_USB
-	#define USE_COMM			//Requires USE_RS485 and/or USE_USB
-	#define USE_I2C_1			//3V3, IMU & Digital pot
-	//#define USE_I2C_2			//3V3, Expansion
-	#define USE_I2C_3			//Onboard, Regulate & Execute
-	#define USE_IMU				//Requires USE_I2C_1
-	#define USE_UART3			//Bluetooth
-	#define USE_EEPROM			//Emulated EEPROM, onboard FLASH
-	#define USE_WATCHDOG		//Independent watchdog (IWDG)
-	//#define USE_SVM			//Support vector machine
+	#if (HW_VER < 10)
 
-	//Runtime finite state machine (FSM):
-	#define RUNTIME_FSM1		ENABLED
-	#define RUNTIME_FSM2		ENABLED
+		//Enable/Disable sub-modules:
+		#define USE_USB
+		#define USE_COMM			//Requires USE_RS485 and/or USE_USB
+		#define USE_I2C_1			//3V3, IMU & Digital pot
+		//#define USE_I2C_2			//3V3, Expansion
+		#define USE_I2C_3			//Onboard, Regulate & Execute
+		#define USE_IMU				//Requires USE_I2C_1
+		#define USE_UART3			//Bluetooth
+		#define USE_EEPROM			//Emulated EEPROM, onboard FLASH
+		#define USE_WATCHDOG		//Independent watchdog (IWDG)
+		//#define USE_SVM			//Support vector machine
+
+		//Runtime finite state machine (FSM):
+		#define RUNTIME_FSM1		ENABLED
+		#define RUNTIME_FSM2		ENABLED
+
+	#else
+
+		//Enable/Disable sub-modules:
+		#define USE_USB
+		#define USE_COMM			//Requires USE_RS485 and/or USE_USB
+		#define USE_I2C_1			//3V3, IMU & Digital pot
+		//#define USE_I2C_2			//3V3, Expansion
+		#define USE_I2C_3			//Onboard, Regulate & Execute
+		#define USE_IMU				//Requires USE_I2C_1
+		#define USE_UART3			//Bluetooth
+		#define USE_EEPROM			//Emulated EEPROM, onboard FLASH
+		//#define USE_WATCHDOG		//Independent watchdog (IWDG)
+		//#define USE_SVM			//Support vector machine
+
+		//Runtime finite state machine (FSM):
+		#define RUNTIME_FSM1		ENABLED
+		#define RUNTIME_FSM2		ENABLED
+
+	#endif
 
 	#define BILATERAL
 
@@ -293,42 +315,86 @@ void user_fsm_2(void);
 //BareBone Rigid
 #if(ACTIVE_PROJECT == PROJECT_BB_RIGID)
 
-	//Enable/Disable sub-modules:
-	#define USE_USB
-	#define USE_COMM			//Requires USE_RS485 and/or USE_USB
-	#define USE_I2C_1			//3V3, IMU & Digital pot
-	//#define USE_I2C_2			//3V3, Expansion
-	#define USE_I2C_3			//Onboard, Regulate & Execute
-	#define USE_IMU				//Requires USE_I2C_1
-	#define USE_UART3			//Bluetooth
-	#define USE_SPI_PLAN		//Expansion/Plan
-	#define USE_EEPROM			//Emulated EEPROM, onboard FLASH
+	#if (HW_VER < 10)
 
-	//Runtime finite state machine (FSM):
-	#define RUNTIME_FSM1		ENABLED
-	#define RUNTIME_FSM2		ENABLED
+		//Enable/Disable sub-modules:
+		#define USE_USB
+		#define USE_COMM			//Requires USE_RS485 and/or USE_USB
+		#define USE_I2C_1			//3V3, IMU & Digital pot
+		//#define USE_I2C_2			//3V3, Expansion
+		#define USE_I2C_3			//Onboard, Regulate & Execute
+		#define USE_IMU				//Requires USE_I2C_1
+		#define USE_UART3			//Bluetooth
+		#define USE_SPI_PLAN		//Expansion/Plan
+		#define USE_EEPROM			//Emulated EEPROM, onboard FLASH
+
+		//Runtime finite state machine (FSM):
+		#define RUNTIME_FSM1		ENABLED
+		#define RUNTIME_FSM2		ENABLED
+
+	#else
+
+		//Enable/Disable sub-modules:
+		#define USE_USB
+		#define USE_COMM			//Requires USE_RS485 and/or USE_USB
+		#define USE_I2C_1			//3V3, IMU & Digital pot
+		//#define USE_I2C_2			//3V3, Expansion
+		#define USE_I2C_3			//Onboard, Regulate & Execute
+		#define USE_IMU				//Requires USE_I2C_1
+		//#define USE_UART3			//Bluetooth
+		//#define USE_SPI_PLAN		//Expansion/Plan
+		//#define USE_EEPROM			//Emulated EEPROM, onboard FLASH
+
+		//Runtime finite state machine (FSM):
+		#define RUNTIME_FSM1		ENABLED
+		#define RUNTIME_FSM2		ENABLED
+
+	#endif
 
 #endif	//PROJECT_BB_RIGID
 
 //Dephy's Actuator Package (ActPack)
 #if(ACTIVE_PROJECT == PROJECT_ACTPACK)
 
-	//Enable/Disable sub-modules:
-	#define USE_USB
-	#define USE_COMM			//Requires USE_RS485 and/or USE_USB
-	#define USE_I2C_1			//3V3, IMU & Digital pot
-	#define USE_I2C_2			//3V3, Expansion
-	#define USE_I2C_3			//Onboard, Regulate & Execute
-	#define USE_IMU				//Requires USE_I2C_1
-	#define USE_UART3			//Bluetooth
-	#define USE_EEPROM			//Emulated EEPROM, onboard FLASH
-	#define USE_WATCHDOG		//Independent watchdog (IWDG)
-	#define USE_6CH_AMP			//Requires USE_I2C_2. 6-ch Strain Amp.
-	#define USE_SPI_PLAN		//Enables the external SPI port
+	#if (HW_VER < 10)
 
-	//Runtime finite state machine (FSM):
-	//#define RUNTIME_FSM1		ENABLED	//Enable only if you DO NOT use Plan
-	#define RUNTIME_FSM2		ENABLED	//Enable at all time, Mn <> Ex comm.
+		//Enable/Disable sub-modules:
+		#define USE_USB
+		#define USE_COMM			//Requires USE_RS485 and/or USE_USB
+		#define USE_I2C_1			//3V3, IMU & Digital pot
+		#define USE_I2C_2			//3V3, Expansion
+		#define USE_I2C_3			//Onboard, Regulate & Execute
+		#define USE_IMU				//Requires USE_I2C_1
+		#define USE_UART3			//Bluetooth
+		#define USE_EEPROM			//Emulated EEPROM, onboard FLASH
+		#define USE_WATCHDOG		//Independent watchdog (IWDG)
+		#define USE_6CH_AMP			//Requires USE_I2C_2. 6-ch Strain Amp.
+		#define USE_SPI_PLAN		//Enables the external SPI port
+
+		//Runtime finite state machine (FSM):
+		//#define RUNTIME_FSM1		ENABLED	//Enable only if you DO NOT use Plan
+		#define RUNTIME_FSM2		ENABLED	//Enable at all time, Mn <> Ex comm.
+
+	#else
+
+		//Enable/Disable sub-modules:
+		#define USE_USB
+		#define USE_COMM			//Requires USE_RS485 and/or USE_USB
+		#define USE_I2C_1			//3V3, IMU & Digital pot
+		//#define USE_I2C_2			//3V3, Expansion
+		#define USE_I2C_3			//Onboard, Regulate & Execute
+		#define USE_IMU				//Requires USE_I2C_1
+		#define USE_UART3			//Bluetooth #1
+		#define USE_EEPROM			//Emulated EEPROM, onboard FLASH
+		//#define USE_WATCHDOG		//Independent watchdog (IWDG)
+		//#define USE_6CH_AMP		//Requires USE_I2C_2. 6-ch Strain Amp.
+		//#define USE_SPI_PLAN		//Enables the external SPI port
+
+		//Runtime finite state machine (FSM):
+		//#define RUNTIME_FSM1		ENABLED	//Enable only if you DO NOT use Plan
+		#define RUNTIME_FSM2		ENABLED	//Enable at all time, Mn <> Ex comm.
+
+	#endif
 
 #endif	//PROJECT_ACTPACK
 

@@ -80,7 +80,8 @@ void user_fsm(void)
 	#endif	//PROJECT_DPEB31
 	
 	//ActPack:
-	#if(ACTIVE_PROJECT == PROJECT_ACTPACK)
+	//(Note: Biomech's project uses ActPack)
+	#if((ACTIVE_PROJECT == PROJECT_ACTPACK) || (ACTIVE_PROJECT == PROJECT_BIO_RIGID))
 
 		#if(RUNTIME_FSM == ENABLED)
 			ActPack_fsm();
