@@ -71,13 +71,13 @@ void user_fsm(void);
 #define COUNTER_CLOCKWISE_ORIENTATION 	-1
 
 //List of projects:
+#define PROJECT_DEPHY			-1
 #define PROJECT_BAREBONE		0	//Barebone Execute, nothing connected*
 #define PROJECT_SIMPLE_MOTOR	1	//Barebone + BLDC Motor (sine commut.)
-#define PROJECT_DPEB31			2
-#define PROJECT_ACTPACK			3	//Dephy's Actuator Package
-#define PROJECT_POCKET_BLDC     4   //FlexSEA-Pocket v0.1, 1x BLDC
-#define PROJECT_POCKET_2XDC     5   //FlexSEA-Pocket v0.1, 2x DC
-#define PROJECT_BIO_RIGID		6	//Biomech's version of Rigid (BLDC w/ QEI)
+#define PROJECT_ACTPACK			2	//Dephy's Actuator Package
+#define PROJECT_POCKET_BLDC     3   //FlexSEA-Pocket v0.1, 1x BLDC
+#define PROJECT_POCKET_2XDC     4   //FlexSEA-Pocket v0.1, 2x DC
+#define PROJECT_BIO_RIGID		5	//Biomech's version of Rigid (BLDC w/ QEI)
 //*No external sensor, no sinusoidal commutation
 
 //List of sub-projects:
@@ -245,46 +245,6 @@ void user_fsm(void);
 
 #endif  //PROJECT_SIMPLE_MOTOR
 
-//Similar to Simple Motor, but specialized for DpEb 3.1
-#if(ACTIVE_PROJECT == PROJECT_DPEB31)
-
-	//Enable/Disable sub-modules:
-	#define USE_RS485
-	#define USE_USB
-	#define USE_COMM			//Requires USE_RS485 and/or USE_USB
-	//#define USE_QEI
-	//#define USE_TRAPEZ
-	#define USE_I2C_0			//3V3, Onboard (Manage)
-	#define USE_I2C_1			//5V, External (Angle sensor)
-	//#define USE_STRAIN			//Requires USE_I2C_1
-	#define USE_AS5047			//16-bit Position Sensor, SPI
-	#define USE_AS5048B			//Joint angle sensor (I2C)
-	#define USE_EEPROM			//
-	#define USE_I2T_LIMIT		//I2t current limit
-
-	//Motor type and commutation:
-	#define MOTOR_COMMUT		COMMUT_SINE
-	#define MOTOR_TYPE			MOTOR_BRUSHLESS
-	#define MOTOR_ORIENTATION 	CLOCKWISE_ORIENTATION
-
-	//Runtime finite state machine (FSM):
-	#define RUNTIME_FSM			ENABLED
-
-	//Encoders:
-	#define ENC_CONTROL			ENC_AS5047
-	#define ENC_COMMUT			ENC_AS5047
-	#define ENC_DISPLAY			ENC_CONTROL
-    
-    #define CURRENT_ZERO		((int32)2048)
-
-	//Slave ID:
-	#define SLAVE_ID			FLEXSEA_EXECUTE_1
-
-	//Project specific definitions:
-	//...
-
-#endif  //PROJECT_SIMPLE_MOTOR
-
 //Similar to Simple Motor, but specialized for ActPack
 #if(ACTIVE_PROJECT == PROJECT_ACTPACK)
 
@@ -323,7 +283,7 @@ void user_fsm(void);
 	//Project specific definitions:
 	//...
 
-#endif  //PROJECT_SIMPLE_MOTOR
+#endif  //PROJECT_ACTPACK
 
 //Biomech's version of Rigid (BLDC w/ QEI)
 #if(ACTIVE_PROJECT == PROJECT_BIO_RIGID)

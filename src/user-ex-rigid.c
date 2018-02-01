@@ -22,14 +22,14 @@
 //****************************************************************************
 
 #include "../inc/user-ex-rigid.h"
-	
-#if(ACTIVE_PROJECT == PROJECT_DPEB31)
-#include "../DpEb31/inc/user-ex-DpEb31.h"
-#endif	//PROJECT_DPEB31
 
 #if(ACTIVE_PROJECT == PROJECT_ACTPACK)
 #include "user-ex-ActPack.h"
 #endif	//PROJECT_ACTPACK
+
+#ifdef DEPHY
+#include "dephy-ex.h"
+#endif
 
 //****************************************************************************
 // Variable(s)
@@ -57,28 +57,15 @@ void init_user(void)
 	#if(ACTIVE_PROJECT == PROJECT_ACTPACK)
 	initActPack();
 	#endif	//PROJECT_ACTPACK
+	
+	#ifdef DEPHY
+	init_dephy();
+	#endif
 }
 
 //Call this function in one of the main while time slots.
 void user_fsm(void)
 {
-	//DpEb2.1:
-	#if(ACTIVE_PROJECT == PROJECT_DPEB21)
-		DpEb21_refresh_values();
-		#if(RUNTIME_FSM == ENABLED)
-			DpEb21_fsm();
-		#endif
-	#endif	//PROJECT_DPEB21
-	
-	//DpEb3.1:
-	#if(ACTIVE_PROJECT == PROJECT_DPEB31)
-
-		#if(RUNTIME_FSM == ENABLED)
-			DpEb31_fsm();
-		#endif
-
-	#endif	//PROJECT_DPEB31
-	
 	//ActPack:
 	//(Note: Biomech's project uses ActPack)
 	#if((ACTIVE_PROJECT == PROJECT_ACTPACK) || (ACTIVE_PROJECT == PROJECT_BIO_RIGID))
@@ -88,14 +75,10 @@ void user_fsm(void)
 		#endif
 
 	#endif	//PROJECT_ACTPACK
-	
-	//Motor Test Bench:
-	#if(ACTIVE_PROJECT == PROJECT_MOTORTB)
-		MotorTestBench_refresh_values();
-		#if(RUNTIME_FSM == ENABLED)
-			MotorTestBench_fsm();
-		#endif
-	#endif	//PROJECT_MOTORTB
+
+	#ifdef DEPHY
+	dephy_fsm();
+	#endif
 }
 
 //****************************************************************************
