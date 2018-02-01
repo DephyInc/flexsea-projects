@@ -146,6 +146,12 @@ void ricnu_knee_fsm_2(void)
 {
 	#if(ACTIVE_PROJECT == PROJECT_RICNU_KNEE)
 
+	#ifdef BOARD_SUBTYPE_RIGID
+
+	//ActPack_fsm_2();	//WiP, use at your own risk
+
+	#else
+
 	static uint8_t ex_refresh_fsm_state = 0;
 	static uint32_t timer = 0;
 	uint8_t info[2] = {PORT_RS485_1, PORT_RS485_1};
@@ -202,6 +208,8 @@ void ricnu_knee_fsm_2(void)
 
 			break;
 	}
+
+	#endif
 
 	#endif	//ACTIVE_PROJECT == PROJECT_RICNU_KNEE
 }

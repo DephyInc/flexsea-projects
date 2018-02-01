@@ -233,12 +233,6 @@ void tx_cmd_ricnu_w(uint8_t *shBuf, uint8_t *cmd, uint8_t *cmdType, \
 				SPLIT_16((uint16_t)ri->mn.accel.y, shBuf, &index);
 				SPLIT_16((uint16_t)ri->mn.accel.z, shBuf, &index);
 			#endif
-
-			SPLIT_32((uint32_t)rn->enc_motor, shBuf, &index);
-			SPLIT_32((uint32_t)rn->enc_joint, shBuf, &index);
-			SPLIT_16((uint16_t)rn->ex->current, shBuf, &index);
-			SPLIT_16((uint16_t)rn->ex->sine_commut_pwm, shBuf, &index);
-			//(24 bytes)
 		}
 		else if(offset == 1)
 		{

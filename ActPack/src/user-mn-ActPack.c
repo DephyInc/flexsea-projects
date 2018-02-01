@@ -20,7 +20,7 @@
 
 #include "user-mn.h"
 
-#if(ACTIVE_PROJECT == PROJECT_ACTPACK)
+#if (ACTIVE_PROJECT == PROJECT_ACTPACK) || defined (ACTPACK_CO_ENABLED)
 
 //Un-comment the next line to enable manual control from the GUI:
 //#define MANUAL_GUI_CONTROL

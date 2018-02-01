@@ -81,7 +81,7 @@ void user_fsm_2(void);
 //Step 1) Select active project (from list):
 //==========================================
 
-#define ACTIVE_PROJECT			PROJECT_RICNU_KNEE
+#define ACTIVE_PROJECT			PROJECT_ACTPACK
 #define ACTIVE_SUBPROJECT		RIGHT
 
 //Step 2) Customize the enabled/disabled sub-modules:
@@ -161,6 +161,8 @@ void user_fsm_2(void);
 	#define RUNTIME_FSM2		ENABLED 	//Comm w/ Execute 1
 	//FSM2: Communication, we enabled this state machine to send data
 	//back to the GUI.  Manage will now control execute, rather than the GUI.
+
+	//#define ACTPACK_CO_ENABLED	(WiP, use at your own risk)
 
 	#endif
 
