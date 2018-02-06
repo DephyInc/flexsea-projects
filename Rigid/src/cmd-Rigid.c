@@ -32,9 +32,19 @@ extern "C" {
 #include "flexsea_user_structs.h"
 #include "user-mn.h"
 
+#ifdef DEPHY
+#include "dephy-mn.h"
+#endif
+
 #if(ACTIVE_PROJECT == PROJECT_DPEB31)
 #ifdef BOARD_TYPE_FLEXSEA_MANAGE
 #include "user-mn-DpEb31.h"
+#endif
+#endif
+
+#if((ACTIVE_PROJECT == PROJECT_DEPHY) && (ACTIVE_DEPHY_PROJECT == PRJ_DEPHY_DPEB42))
+#ifdef BOARD_TYPE_FLEXSEA_MANAGE
+#include "user-mn-DpEb42.h"
 #endif
 #endif
 
@@ -161,7 +171,7 @@ void tx_cmd_rigid_w(uint8_t *shBuf, uint8_t *cmd, uint8_t *cmdType, \
 		int16_t *encoderVel = ri->ex.joint_ang_vel;
 
 		//For Rigid we use a different structure with correct signs, and different encoders:
-		#if(ACTIVE_PROJECT == PROJECT_DPEB31)
+		#if((ACTIVE_PROJECT == PROJECT_DPEB31) || ((ACTIVE_PROJECT == PROJECT_DEPHY) && (ACTIVE_DEPHY_PROJECT == PRJ_DEPHY_DPEB42)))
 		ri = &dpRigid;
 		encoder = ri->ctrl.ank_ang_deg;
 		encoderVel = ri->ctrl.ank_vel;
