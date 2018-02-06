@@ -56,6 +56,7 @@ void init_flexsea_payload_ptr_user(void);
 #define CMD_ANGLE_TORQUE_PROFILE	104
 #define CMD_CYCLE_TESTER			105
 #define CMD_DPEB31					106
+#define CMD_DPEB42					CMD_DPEB31
 #define CMD_UTT						107
 
 #define CMD_READ_ALL_RIGID			120
