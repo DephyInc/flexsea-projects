@@ -180,6 +180,7 @@ void tx_cmd_rigid_w(uint8_t *shBuf, uint8_t *cmd, uint8_t *cmdType, \
 		//Arguments:
 		if(offset == 0)
 		{
+			/*
 			SPLIT_32(ri->ctrl.timestamp, shBuf, &index);
 			SPLIT_16((uint16_t)ri->mn.gyro.x, shBuf, &index);
 			SPLIT_16((uint16_t)ri->mn.gyro.y, shBuf, &index);
@@ -193,6 +194,19 @@ void tx_cmd_rigid_w(uint8_t *shBuf, uint8_t *cmd, uint8_t *cmdType, \
 			SPLIT_16((uint16_t)ri->ex.strain, shBuf, &index);
 			SPLIT_16((uint16_t)(ri->ex.ctrl.current.setpoint_val >> 3), shBuf, &index);
 			//(28 bytes)
+			 */
+			SPLIT_32(ri->ctrl.timestamp, shBuf, &index);
+			SPLIT_16((uint16_t)(ri->mn.genVar[10]), shBuf, &index);
+			SPLIT_16((uint16_t)(ri->mn.genVar[11]), shBuf, &index);
+			SPLIT_16((uint16_t)ri->mn.gyro.z, shBuf, &index);
+			SPLIT_16((uint16_t)(ri->mn.genVar[12]), shBuf, &index);
+			SPLIT_16((uint16_t)(ri->mn.genVar[13]), shBuf, &index);
+			SPLIT_16((uint16_t)(ri->mn.genVar[14]), shBuf, &index);
+			SPLIT_16((uint16_t)(ri->mn.genVar[15]), shBuf, &index);
+			SPLIT_16((uint16_t)(ri->mn.genVar[16]), shBuf, &index);
+			SPLIT_16((uint16_t)*(ri->ctrl.ank_ang_from_mot), shBuf, &index);
+			SPLIT_16((uint16_t)(ri->mn.genVar[17]), shBuf, &index);
+			SPLIT_16((uint16_t)(ri->mn.genVar[18]), shBuf, &index);
 		}
 		else if(offset == 1)
 		{
