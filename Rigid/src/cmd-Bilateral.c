@@ -18,10 +18,10 @@
 extern "C" {
 #endif
 
-/*Notes: BILATERAL is a variant of Rigid used to communicate between two Exos. 
+/*Notes: BILATERAL is a variant of Rigid used to communicate between two Exos.
  In the future it might get merged with Rigid, DpEb, or ActPack... but for
  now it's simpler and faster to create a new command.
- 
+
  When we write, we always use rigid1. When we receive, we always use rigid2.*/
 
 //****************************************************************************
@@ -102,7 +102,7 @@ void tx_cmd_bilateral_rw(uint8_t *shBuf, uint8_t *cmd, uint8_t *cmdType, \
 		SPLIT_16((uint16_t)ri->ctrl.contra_hs, shBuf, &index);
 		//(x bytes)
 	}
-		
+
 	//Payload length:
 	(*len) = index;
 }
@@ -173,9 +173,9 @@ void rx_cmd_bilateral_rw(uint8_t *buf, uint8_t *info)
 	//Decode data received:
 	index = P_DATA1;
 	offset = buf[index++];
-	
+
 	#ifdef BOARD_TYPE_FLEXSEA_MANAGE
-	
+
 		//Defaults:
 		struct rigid_s *ri = &rigid2;
 		int16_t *encoder = ri->ex.joint_ang;
@@ -212,7 +212,7 @@ void rx_cmd_bilateral_rw(uint8_t *buf, uint8_t *info)
 
 			//(x bytes)
 		}
-	
+
 	#endif //BOARD_TYPE_FLEXSEA_MANAGE
 
 	//Reply:
@@ -229,7 +229,7 @@ void rx_cmd_bilateral_rr(uint8_t *buf, uint8_t *info)
 
 
 	#ifdef BOARD_TYPE_FLEXSEA_MANAGE
-	
+
 		//Defaults:
 		struct rigid_s *ri = &rigid2;
 		int16_t *encoder = ri->ex.joint_ang;
@@ -265,7 +265,7 @@ void rx_cmd_bilateral_rr(uint8_t *buf, uint8_t *info)
 			ri->ctrl.contra_hs = (int16_t) REBUILD_UINT16(buf, &index);
 			//(x bytes)
 		}
-	
+
 		ri->lastOffsetDecoded = offset;
 
 	#else
