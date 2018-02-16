@@ -79,7 +79,7 @@ void user_fsm_2(void);
 //==========================================
 
 #define ACTIVE_PROJECT			PROJECT_ACTPACK
-#define ACTIVE_SUBPROJECT		RIGHT
+#define ACTIVE_SUBPROJECT		SUBPROJECT_A
 
 //Step 2) Customize the enabled/disabled sub-modules:
 //===================================================
@@ -106,6 +106,8 @@ void user_fsm_2(void);
 	#define RUNTIME_FSM1		DISABLED
 	#define RUNTIME_FSM2		DISABLED
 
+	#define MULTI_DOF_N 		0
+
 	//Project specific definitions:
 	//...
 
@@ -126,6 +128,8 @@ void user_fsm_2(void);
 	#define USE_I2C_2			//3V3, Expansion
 	#define USE_IMU				//Requires USE_I2C_1
 	#define USE_BATTBOARD		//Battery Board, requires USE_I2C_2
+
+	#define MULTI_DOF_N 		0
 
 	//Runtime finite state machine (FSM):
 	//Disable both FSM to use manage as a passthru
@@ -152,6 +156,8 @@ void user_fsm_2(void);
 	#define USE_SPI_PLAN		//Expansion/Plan
 	#define USE_EEPROM			//Emulated EEPROM, onboard FLASH
 
+	#define MULTI_DOF_N 		0
+
 	//Runtime finite state machine (FSM):
 	//Disable both FSM to use manage as a passthru
 	#define RUNTIME_FSM1		DISABLED 	//Control
@@ -176,6 +182,8 @@ void user_fsm_2(void);
 	//#define USE_I2C_2			//3V3, Expansion
 	#define USE_IMU				//Requires USE_I2C_1
 
+	#define MULTI_DOF_N 		0
+
 	//Runtime finite state machine (FSM):
 	#define RUNTIME_FSM1		ENABLED
 	#define RUNTIME_FSM2		ENABLED
@@ -197,6 +205,8 @@ void user_fsm_2(void);
 	#define USE_IMU				//Requires USE_I2C_1
 	//#define USE_BATTBOARD		//Battery Board, requires USE_I2C_1
 	//#define USE_FLASH_MEM		//FLASH memory
+
+	#define MULTI_DOF_N 		0
 
 	//Runtime finite state machine (FSM):
 	#define RUNTIME_FSM1		ENABLED
@@ -246,6 +256,8 @@ void user_fsm_2(void);
 
 	#endif
 
+	#define MULTI_DOF_N 			0
+
 #endif	//PROJECT_BB_RIGID
 
 //Dephy's Actuator Package (ActPack)
@@ -270,6 +282,18 @@ void user_fsm_2(void);
 		//#define RUNTIME_FSM1		ENABLED	//Enable only if you DO NOT use Plan
 		#define RUNTIME_FSM2		ENABLED	//Enable at all time, Mn <> Ex comm.
 
+		#if(ACTIVE_SUBPROJECT == SUBPROJECT_A)
+
+		#define MULTI_DOF_N			0
+
+		#endif
+
+		#if(ACTIVE_SUBPROJECT == SUBPROJECT_B)
+
+		#define MULTI_DOF_N			1
+
+		#endif
+
 	#else
 
 		//Enable/Disable sub-modules:
@@ -289,6 +313,8 @@ void user_fsm_2(void);
 		//#define RUNTIME_FSM1		ENABLED	//Enable only if you DO NOT use Plan
 		#define RUNTIME_FSM2		ENABLED	//Enable at all time, Mn <> Ex comm.
 
+		#define MULTI_DOF_N 		0
+
 	#endif
 
 #endif	//PROJECT_ACTPACK
@@ -307,6 +333,8 @@ void user_fsm_2(void);
 	//#define USE_SPI_PLAN		//Expansion/Plan
 	#define USE_EEPROM			//Emulated EEPROM, onboard FLASH
 	#define USE_6CH_AMP			//Requires USE_I2C_2. 6-ch Strain Amp.
+
+	#define MULTI_DOF_N 		0
 
 	//Runtime finite state machine (FSM):
 	#define RUNTIME_FSM1		ENABLED
