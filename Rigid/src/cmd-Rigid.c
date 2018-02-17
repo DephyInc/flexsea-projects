@@ -171,7 +171,7 @@ void tx_cmd_rigid_w(uint8_t *shBuf, uint8_t *cmd, uint8_t *cmdType, \
 		int16_t *encoderVel = ri->ex.joint_ang_vel;
 
 		//For Rigid we use a different structure with correct signs, and different encoders:
-		#if((ACTIVE_PROJECT == PROJECT_DPEB31) || ((ACTIVE_PROJECT == PROJECT_DEPHY) && (ACTIVE_DEPHY_PROJECT == PRJ_DEPHY_DPEB42)))
+		#if((ACTIVE_PROJECT == PROJECT_DPEB31) || ((ACTIVE_PROJECT == PROJECT_DEPHY) && (ACTIVE_DEPHY_PROJECT == PRJ_DEPHY_DPEB42)) && RUNTIME_FSM1 == ENABLED)
 		ri = &dpRigid;
 		encoder = ri->ctrl.ank_ang_deg;
 		encoderVel = ri->ctrl.ank_vel;
