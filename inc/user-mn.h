@@ -78,8 +78,8 @@ void user_fsm_2(void);
 //Step 1) Select active project (from list):
 //==========================================
 
-#define ACTIVE_PROJECT			PROJECT_DEPHY
-#define ACTIVE_SUBPROJECT		SUBPROJECT_A
+#define ACTIVE_PROJECT			PROJECT_ACTPACK
+#define ACTIVE_SUBPROJECT		SUBPROJECT_B
 
 //Step 2) Customize the enabled/disabled sub-modules:
 //===================================================
