@@ -97,7 +97,7 @@ struct fx_rigid_mn_s
 	uint16_t analog[4];
 	uint16_t status;
 
-	int16_t genVar[10];
+	int16_t genVar[20];
 
 	//Decoded:
 	struct decoded_fx_rigid_mn_s decoded;
@@ -158,6 +158,7 @@ struct dual_utt_s
 {
 	uint8_t target;
 	struct utt_s leg[2];
+	int16_t val[2][10];
 };
 
 //****************************************************************************
