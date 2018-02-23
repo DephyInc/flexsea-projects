@@ -166,7 +166,7 @@ void user_fsm_2(void);
 	//FSM2: Communication, we enabled this state machine to send data
 	//back to the GUI.  Manage will now control execute, rather than the GUI.
 
-	//#define ACTPACK_CO_ENABLED	(WiP, use at your own risk)
+	//#define CO_ENABLE_ACTPACK
 
 	#endif
 
@@ -341,11 +341,10 @@ void user_fsm_2(void);
 	#define RUNTIME_FSM1		ENABLED
 	#define RUNTIME_FSM2		ENABLED
 
-#endif	//PROJECT_BB_RIGID
+#endif	//PROJECT_UMICH_KNEE
 
 //FlexSEA-Pocket
 #if(ACTIVE_PROJECT == PROJECT_POCKET_2XDC)
-
 
 	//Enable/Disable sub-modules:
 	#define USE_USB
@@ -363,9 +362,11 @@ void user_fsm_2(void);
 	//#define RUNTIME_FSM1		ENABLED	//Enable only if you DO NOT use Plan
 	#define RUNTIME_FSM2		ENABLED	//Enable at all time, Mn <> Ex comm.
 
+	#define CO_ENABLE_ACTPACK	//Enables the ActPack state machine(s)
+
 	#define MULTI_DOF_N			0
 
-#endif	//PROJECT_ACTPACK
+#endif	//PROJECT_POCKET_2XDC
 
 #if(ACTIVE_PROJECT == PROJECT_DEPHY)
 
