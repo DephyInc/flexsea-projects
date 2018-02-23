@@ -42,7 +42,7 @@ extern "C" {
 #include <dynamic_user_structs.h>
 
 #ifdef BOARD_TYPE_FLEXSEA_EXECUTE
-	#ifndef BOARD_SUBTYPE_RIGID
+	#if(!defined BOARD_SUBTYPE_RIGID && !defined BOARD_SUBTYPE_POCKET)
 		#include "../inc/user-ex.h"
 	#else
 		#include "user-ex-rigid.h"

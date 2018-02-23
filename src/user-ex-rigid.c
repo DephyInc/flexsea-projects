@@ -23,7 +23,7 @@
 
 #include "../inc/user-ex-rigid.h"
 
-#if(ACTIVE_PROJECT == PROJECT_ACTPACK)
+#if((ACTIVE_PROJECT == PROJECT_ACTPACK) || defined CO_ENABLE_ACTPACK)
 #include "user-ex-ActPack.h"
 #endif	//PROJECT_ACTPACK
 
@@ -67,8 +67,8 @@ void init_user(void)
 void user_fsm(void)
 {
 	//ActPack:
-	//(Note: Biomech's project uses ActPack)
-	#if((ACTIVE_PROJECT == PROJECT_ACTPACK) || (ACTIVE_PROJECT == PROJECT_BIO_RIGID))
+	//(Note: Biomech's projects use ActPack)
+	#if((ACTIVE_PROJECT == PROJECT_ACTPACK) || defined CO_ENABLE_ACTPACK)
 
 		#if(RUNTIME_FSM == ENABLED)
 			ActPack_fsm();
