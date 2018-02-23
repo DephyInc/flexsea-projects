@@ -104,14 +104,7 @@ void init_flexsea_payload_ptr_user(void)
 	flexsea_payload_ptr[CMD_RICNU][RX_PTYPE_REPLY] = &rx_cmd_ricnu_rr;
 	#endif //(ACTIVE_SUBPROJECT == PROJECT_RICNU_KNEE)
 
-	#if((ACTIVE_PROJECT == PROJECT_ACTPACK) && defined INCLUDE_UPROJ_ACTPACK)
-	//Dephy's Actuator Package
-	flexsea_payload_ptr[CMD_ACTPACK][RX_PTYPE_READ] = &rx_cmd_actpack_rw;
-	//flexsea_payload_ptr[CMD_ACTPACK][RX_PTYPE_WRITE] = &rx_cmd_actpack_w;
-	flexsea_payload_ptr[CMD_ACTPACK][RX_PTYPE_REPLY] = &rx_cmd_actpack_rr;
-	#endif
-	//(or)
-	#if((ACTIVE_PROJECT == PROJECT_BIO_RIGID) && defined INCLUDE_UPROJ_ACTPACK)
+	#if(defined INCLUDE_UPROJ_ACTPACK)
 	//Dephy's Actuator Package
 	flexsea_payload_ptr[CMD_ACTPACK][RX_PTYPE_READ] = &rx_cmd_actpack_rw;
 	//flexsea_payload_ptr[CMD_ACTPACK][RX_PTYPE_WRITE] = &rx_cmd_actpack_w;
