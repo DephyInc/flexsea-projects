@@ -49,7 +49,7 @@
 #endif	//PROJECT_UMICH_KNEE
 
 //Dephy's Actuator Package (ActPack)
-#if(ACTIVE_PROJECT == PROJECT_ACTPACK)
+#if((ACTIVE_PROJECT == PROJECT_ACTPACK) || defined CO_ENABLE_ACTPACK)
 #include "user-mn-ActPack.h"
 #endif	//PROJECT_ACTPACK
 
@@ -111,7 +111,7 @@ void init_user(void)
 	#endif	//PROJECT_UMICH_KNEE
 
 	//Dephy's Actuator Package (ActPack)
-	#if(ACTIVE_PROJECT == PROJECT_ACTPACK)
+	#if((ACTIVE_PROJECT == PROJECT_ACTPACK) || defined CO_ENABLE_ACTPACK)
 	init_ActPack();
 	#endif	//PROJECT_ACTPACK
 
@@ -152,7 +152,7 @@ void user_fsm_1(void)
 		#endif	//PROJECT_UMICH_KNEE
 
 		//Dephy's Actuator Package (ActPack)
-		#if(ACTIVE_PROJECT == PROJECT_ACTPACK)
+		#if((ACTIVE_PROJECT == PROJECT_ACTPACK) || defined CO_ENABLE_ACTPACK)
 		ActPack_fsm_1();
 		#endif	//PROJECT_ACTPACK
 
@@ -191,7 +191,7 @@ void user_fsm_2(void)
 		#endif	//PROJECT_UMICH_KNEE
 
 		//Dephy's Actuator Package (ActPack)
-		#if(ACTIVE_PROJECT == PROJECT_ACTPACK)
+		#if((ACTIVE_PROJECT == PROJECT_ACTPACK) || defined CO_ENABLE_ACTPACK)
 		ActPack_fsm_2();
 		#endif	//PROJECT_ACTPACK
 
