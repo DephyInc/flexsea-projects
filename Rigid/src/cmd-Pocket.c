@@ -144,6 +144,9 @@ void tx_cmd_pocket_w(uint8_t *shBuf, uint8_t *cmd, uint8_t *cmdType, \
 
 		//Defaults:
 		struct pocket_s *ri = &pocket1;
+		//Copy from rigid where needed:
+		pocket1.mn = rigid1.mn;
+		pocket1.re = rigid1.re;
 
 		//Arguments:
 		if(offset == 0)
@@ -175,8 +178,8 @@ void tx_cmd_pocket_w(uint8_t *shBuf, uint8_t *cmd, uint8_t *cmdType, \
 			SPLIT_32((uint32_t)ri->ex[0].mot_acc, shBuf, &index);
 			SPLIT_16((uint16_t)(ri->ex[0].mot_current >> 3), shBuf, &index);
 			SPLIT_16((uint16_t)(ri->ex[0].mot_volt >> 3), shBuf, &index);
-			SPLIT_16((uint16_t)(ri->ex[0].joint_ang, shBuf, &index);
-			SPLIT_16((uint16_t)(ri->ex[0].joint_ang_vel, shBuf, &index);
+			SPLIT_16((uint16_t)*(ri->ex[0].joint_ang), shBuf, &index);
+			SPLIT_16((uint16_t)*(ri->ex[0].joint_ang_vel), shBuf, &index);
 			SPLIT_16((uint16_t)ri->ex[0].strain, shBuf, &index);
 
 			//(26 bytes)
@@ -189,8 +192,8 @@ void tx_cmd_pocket_w(uint8_t *shBuf, uint8_t *cmd, uint8_t *cmdType, \
 			SPLIT_32((uint32_t)ri->ex[1].mot_acc, shBuf, &index);
 			SPLIT_16((uint16_t)(ri->ex[1].mot_current >> 3), shBuf, &index);
 			SPLIT_16((uint16_t)(ri->ex[1].mot_volt >> 3), shBuf, &index);
-			SPLIT_16((uint16_t)(ri->ex[1].joint_ang, shBuf, &index);
-			SPLIT_16((uint16_t)(ri->ex[1].joint_ang_vel, shBuf, &index);
+			SPLIT_16((uint16_t)*(ri->ex[1].joint_ang), shBuf, &index);
+			SPLIT_16((uint16_t)*(ri->ex[1].joint_ang_vel), shBuf, &index);
 			SPLIT_16((uint16_t)ri->ex[1].strain, shBuf, &index);
 
 			//(26 bytes)
