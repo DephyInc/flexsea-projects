@@ -143,6 +143,7 @@ void ActPack_fsm_1(void)
 void ActPack_fsm_2(void)
 {
 	static uint32_t timer = 0;
+	static uint8_t dualOffs = 0;
 
 	//Wait X seconds before communicating
 	if(timer < AP_FSM2_POWER_ON_DELAY)
@@ -163,8 +164,6 @@ void ActPack_fsm_2(void)
 	{
 		#ifndef MANUAL_GUI_CONTROL
 
-			//Normal mode - we use the dpeb31 command:
-
 			//Special Data Collection mode, cancels any setpoint and controller:
 			#ifdef DATA_COLLECT_NO_MOTOR
 				writeEx.ctrl = CTRL_NONE;
@@ -176,7 +175,8 @@ void ActPack_fsm_2(void)
 											writeEx[0].setGains, writeEx[0].g[0], writeEx[0].g[1], \
 											writeEx[0].g[2], writeEx[0].g[3], 0);
 			#else
-			tx_cmd_pocket_rw(TX_N_DEFAULT, writeEx[0].offset, writeEx[0].ctrl, writeEx[0].setpoint, \
+			dualOffs ^= 1;	//Toggle between the two channels
+			tx_cmd_pocket_rw(TX_N_DEFAULT, dualOffs, writeEx[0].ctrl, writeEx[0].setpoint, \
 														writeEx[0].setGains, writeEx[0].g[0], writeEx[0].g[1], \
 														writeEx[0].g[2], writeEx[0].g[3], writeEx[1].ctrl, \
 														writeEx[1].setpoint, writeEx[1].setGains, writeEx[1].g[0], \
