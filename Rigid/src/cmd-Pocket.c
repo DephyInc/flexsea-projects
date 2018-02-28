@@ -368,14 +368,14 @@ void rx_cmd_pocket_rr(uint8_t *buf, uint8_t *info)
 		else if(offset == 2)
 		{
 			ri->ctrl.timestamp = REBUILD_UINT32(buf, &index);
-			*(ri->ex[0].enc_ang) = (int32_t) REBUILD_UINT32(buf, &index);
-			*(ri->ex[0].enc_ang_vel) = (int32_t) REBUILD_UINT32(buf, &index);
-			ri->ex[0].mot_acc = (int32_t) REBUILD_UINT32(buf, &index);
-			ri->ex[0].mot_current = (int32_t)(((int16_t)REBUILD_UINT16(buf, &index)) << 3);
-			ri->ex[0].mot_volt = (int32_t)(((int16_t)REBUILD_UINT16(buf, &index)) << 3);
-			*(ri->ex[0].joint_ang) = (int16_t) REBUILD_UINT16(buf, &index);
-			*(ri->ex[0].joint_ang_vel) = (int16_t) REBUILD_UINT16(buf, &index);
-			ri->ex[0].strain = REBUILD_UINT16(buf, &index);
+			*(ri->ex[1].enc_ang) = (int32_t) REBUILD_UINT32(buf, &index);
+			*(ri->ex[1].enc_ang_vel) = (int32_t) REBUILD_UINT32(buf, &index);
+			ri->ex[1].mot_acc = (int32_t) REBUILD_UINT32(buf, &index);
+			ri->ex[1].mot_current = (int32_t)(((int16_t)REBUILD_UINT16(buf, &index)) << 3);
+			ri->ex[1].mot_volt = (int32_t)(((int16_t)REBUILD_UINT16(buf, &index)) << 3);
+			*(ri->ex[1].joint_ang) = (int16_t) REBUILD_UINT16(buf, &index);
+			*(ri->ex[1].joint_ang_vel) = (int16_t) REBUILD_UINT16(buf, &index);
+			ri->ex[1].strain = REBUILD_UINT16(buf, &index);
 		}
 		else if(offset == 3)
 		{
