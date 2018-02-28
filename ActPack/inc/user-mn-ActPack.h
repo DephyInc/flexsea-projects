@@ -59,7 +59,7 @@ void disableActPackFSM2(void);
 #define CTRL_I_KI					1
 #define CTRL_P_KP					200
 
-#define APC_FSM2_DISABLED			1
+#define APC_FSM2_DISABLED			0
 #define APC_FSM2_ENABLED			1
 
 //****************************************************************************
