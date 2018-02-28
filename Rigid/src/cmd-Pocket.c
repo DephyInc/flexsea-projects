@@ -98,6 +98,63 @@ void tx_cmd_pocket_r(uint8_t *shBuf, uint8_t *cmd, uint8_t *cmdType, \
 	//Data:
 	shBuf[index++] = offset;
 
+	shBuf[index++] = 0;
+	SPLIT_32(0, shBuf, &index);
+	shBuf[index++] = 0;
+	SPLIT_16(0, shBuf, &index);
+	SPLIT_16(0, shBuf, &index);
+	SPLIT_16(0, shBuf, &index);
+	SPLIT_16(0, shBuf, &index);
+
+	shBuf[index++] = 0;
+	SPLIT_32(0, shBuf, &index);
+	shBuf[index++] = 0;
+	SPLIT_16(0, shBuf, &index);
+	SPLIT_16(0, shBuf, &index);
+	SPLIT_16(0, shBuf, &index);
+	SPLIT_16(0, shBuf, &index);
+
+	shBuf[index++] = 0;
+
+	//Payload length:
+	(*len) = index;
+}
+
+//Command: CMD_POCKET. Type: R/W.
+//setGains: KEEP/CHANGE
+void tx_cmd_pocket_rw(uint8_t *shBuf, uint8_t *cmd, uint8_t *cmdType, \
+						uint16_t *len, uint8_t offset, uint8_t controller, \
+						int32_t setpoint, uint8_t setGains, int16_t g0, int16_t g1,\
+						int16_t g2, int16_t g3, uint8_t controllerB, \
+						int32_t setpointB, uint8_t setGainsB, int16_t g0B, int16_t g1B,\
+						int16_t g2B, int16_t g3B, uint8_t system)
+{
+	//Variable(s) & command:
+	uint16_t index = 0;
+	(*cmd) = CMD_READ_ALL_POCKET;
+	(*cmdType) = CMD_READ;
+
+	//Data:
+	shBuf[index++] = offset;
+
+	shBuf[index++] = controller;
+	SPLIT_32(setpoint, shBuf, &index);
+	shBuf[index++] = setGains;
+	SPLIT_16(g0, shBuf, &index);
+	SPLIT_16(g1, shBuf, &index);
+	SPLIT_16(g2, shBuf, &index);
+	SPLIT_16(g3, shBuf, &index);
+
+	shBuf[index++] = controllerB;
+	SPLIT_32(setpointB, shBuf, &index);
+	shBuf[index++] = setGainsB;
+	SPLIT_16(g0B, shBuf, &index);
+	SPLIT_16(g1B, shBuf, &index);
+	SPLIT_16(g2B, shBuf, &index);
+	SPLIT_16(g3B, shBuf, &index);
+
+	shBuf[index++] = system;
+
 	//Payload length:
 	(*len) = index;
 }
