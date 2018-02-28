@@ -60,6 +60,7 @@ void init_flexsea_payload_ptr_user(void);
 #define CMD_UTT						107
 #define CMD_GAITSTATS				108
 
+#define CMD_READ_ALL_POCKET			119
 #define CMD_READ_ALL_RIGID			120
 #define CMD_ACTPACK					121
 #define CMD_BILATERAL				125
