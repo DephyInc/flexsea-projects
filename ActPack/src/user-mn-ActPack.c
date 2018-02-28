@@ -20,7 +20,7 @@
 
 #include "user-mn.h"
 
-#if (ACTIVE_PROJECT == PROJECT_ACTPACK) || defined (ACTPACK_CO_ENABLED)
+#if (ACTIVE_PROJECT == PROJECT_ACTPACK) || defined (CO_ENABLE_ACTPACK)
 
 //Un-comment the next line to enable manual control from the GUI:
 //#define MANUAL_GUI_CONTROL
@@ -47,6 +47,7 @@
 //Comm & FSM2:
 uint8_t apInfo[2] = {PORT_RS485_2, PORT_RS485_2};
 uint8_t enableAPfsm2 = 0, apFSM2ready = 0, apCalibrated = 0;
+uint8_t ActPackCoFSM = APC_FSM2_ENABLED;
 int32_t apSetpoint = 0;
 uint32_t apTimer1 = 0;
 uint8_t apCalibFlag = 0;
@@ -77,6 +78,11 @@ void ActPack_fsm_1(void)
 {
 	static uint32_t timer = 0, deltaT = 0;
 	static uint8_t fsm1State = 0;
+
+	#ifdef CO_ENABLE_ACTPACK
+		//In co-enabled scenarios we use the active project's FSM, not this one.
+		return;	//Exiting here
+	#endif
 
 	//Wait X seconds before communicating
 	if(timer < 2500)
@@ -131,7 +137,7 @@ void ActPack_fsm_2(void)
 	apFSM2ready = 1;
 
 	//External controller can fully disable the comm:
-	if(ActPackSys == SYS_NORMAL){enableAPfsm2 = 1;}
+	if(ActPackSys == SYS_NORMAL && ActPackCoFSM == APC_FSM2_ENABLED){enableAPfsm2 = 1;}
 	else {enableAPfsm2 = 0;}
 
 	//FSM1 can disable this one:
@@ -231,6 +237,9 @@ void setControlGains(int16_t g0, int16_t g1, int16_t g2, int16_t g3)
 	writeEx.g[3] = g3;
 	writeEx.setGains = CHANGE;
 }
+
+void enableActPackFSM2(void){ActPackCoFSM = APC_FSM2_ENABLED;}
+void disableActPackFSM2(void){ActPackCoFSM = APC_FSM2_DISABLED;}
 
 //****************************************************************************
 // Private Function(s)
