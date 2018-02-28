@@ -1,92 +1,76 @@
 /****************************************************************************
 	[Project] FlexSEA: Flexible & Scalable Electronics Architecture
-	[Sub-project] 'user/ActPack' Dephy's Actuator Package (ActPack)
-	Copyright (C) 2017 Dephy, Inc. <http://dephy.com/>
+	[Sub-project] flexsea-projects' User projects
+	Copyright (C) 2018 Dephy, Inc. <http://dephy.com/>
 *****************************************************************************
-	[Lead developper] Jean-Francois Duval, jfduval at dephy dot com.
+	[Lead developer] Jean-Francois (JF) Duval, jfduval at dephy dot com.
 	[Origin] Based on Jean-Francois Duval's work at the MIT Media Lab
 	Biomechatronics research group <http://biomech.media.mit.edu/>
 	[Contributors]
 *****************************************************************************
-	[This file] user-mn-ActPack: User code running on Mn
-****************************************************************************
+	[This file] cmd-Pocket: Pocket Commands
+*****************************************************************************
 	[Change log] (Convention: YYYY-MM-DD | author | comment)
-	* 2017-09-27 | jfduval | Initial release
-	*
+	* 2018-02-28 | jfduval | New code
 ****************************************************************************/
 
-#ifdef INCLUDE_UPROJ_ACTPACK
-#ifdef BOARD_TYPE_FLEXSEA_MANAGE
+#ifndef INC_FLEXSEA_CMD_POCKET_H
+#define INC_FLEXSEA_CMD_POCKET_H
 
-#ifndef INC_ACTPACK_MN_H
-#define INC_ACTPACK_MN_H
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 //****************************************************************************
 // Include(s)
 //****************************************************************************
 
-#include "main.h"
+#include <stdint.h>
+#include "flexsea_user_structs.h"
 
 //****************************************************************************
-// Public Function Prototype(s):
+// RX/TX Prototype(s):
 //****************************************************************************
 
-void init_ActPack(void);
-void ActPack_fsm_1(void);
-void ActPack_fsm_2(void);
-void init_current_controller(void);
+void rx_cmd_pocket_rw(uint8_t *buf, uint8_t *info);
+void rx_cmd_pocket_rr(uint8_t *buf, uint8_t *info);
 
-void setMotorVoltage(int32_t v);
-void setMotorCurrent(int32_t i);
-void setControlMode(uint8_t m);
-void setControlGains(int16_t g0, int16_t g1, int16_t g2, int16_t g3);
-void setMotorPosition(int32_t i);
-
-void enableActPackFSM2(void);
-void disableActPackFSM2(void);
+void tx_cmd_pocket_r(uint8_t *shBuf, uint8_t *cmd, uint8_t *cmdType, \
+					uint16_t *len, uint8_t offset);
+void tx_cmd_pocket_w(uint8_t *shBuf, uint8_t *cmd, uint8_t *cmdType, \
+					uint16_t *len, uint8_t offset);
+void tx_cmd_pocket_rw(uint8_t *shBuf, uint8_t *cmd, uint8_t *cmdType, \
+						uint16_t *len, uint8_t offset, uint8_t controller, \
+						int32_t setpoint, uint8_t setGains, int16_t g0, int16_t g1,\
+						int16_t g2, int16_t g3, uint8_t controllerB, \
+						int32_t setpointB, uint8_t setGainsB, int16_t g0B, int16_t g1B,\
+						int16_t g2B, int16_t g3B, uint8_t system);
 
 //****************************************************************************
-// Accessor(s)
+// Prototype(s) - simplified functions (DLL):
 //****************************************************************************
 
+void ptx_cmd_pocket_r(uint8_t slaveId, uint16_t *numb, uint8_t *commStr, \
+							uint8_t offset);
+
+uint8_t newPocketRRpacketAvailable(void);
+void getLastPocketData(struct pocket_s *r);
+void init_pocket(void);
 
 //****************************************************************************
 // Definition(s):
 //****************************************************************************
 
-#define AP_FSM2_POWER_ON_DELAY		1000
-#define CTRL_I_KP					100
-#define CTRL_I_KI					1
-#define CTRL_P_KP					200
-
-#define APC_FSM2_DISABLED			0
-#define APC_FSM2_ENABLED			1
-
 //****************************************************************************
-// Structure(s)
+// Structure(s):
 //****************************************************************************
-
-typedef struct {
-	uint8_t ctrl;
-	int32_t setpoint;
-	uint8_t setGains;
-	uint8_t offset;
-	int16_t g[4];
-} writeEx_s;
 
 //****************************************************************************
 // Shared variable(s)
 //****************************************************************************
 
-extern struct ctrl_s ctrl[2];
-extern struct rigid_s dpRigid;
-extern int32_t dp_ank_ang_zero;
-extern int32_t dp_mot_ang_zero;
-extern int32_t mot_ang_offset;
-extern int32_t ank_ang_offset;
-extern writeEx_s writeEx[2];
+#ifdef __cplusplus
+}
+#endif
 
-#endif	//INC_ACTPACK_MN_H
-
-#endif //BOARD_TYPE_FLEXSEA_EXECUTE
-#endif //INCLUDE_UPROJ_ACTPACK
+#endif	//INC_FLEXSEA_CMD_POCKET_H

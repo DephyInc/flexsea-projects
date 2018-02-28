@@ -128,6 +128,7 @@ void MIT_DLeg_fsm_1(void)
 			//Pick one of those demos:
 			//openSpeedFSM();
 			twoPositionFSM();
+			//If nothing is enabled in case 4 the user can control the motor from the GUI
 			break;
 
         default:
