@@ -76,9 +76,9 @@ uint8_t newActPackRRpacketAvailable(void)
 //****************************************************************************
 
 #if (defined BOARD_TYPE_FLEXSEA_EXECUTE || defined BOARD_TYPE_FLEXSEA_MANAGE)
-static void rx_cmd_actpack_Action1(uint8_t controller, int32_t setpoint, \
+/*static void rx_cmd_actpack_Action1(uint8_t controller, int32_t setpoint, \
 									uint8_t setGains, int16_t g0, int16_t g1, \
-									int16_t g2, int16_t g3, uint8_t system);
+									int16_t g2, int16_t g3, uint8_t system);*/
 #endif //BOARD_TYPE_FLEXSEA_EXECUTE
 
 //****************************************************************************
