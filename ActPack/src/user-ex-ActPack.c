@@ -63,7 +63,7 @@ void initActPack(void)
 	
 	//Controller setup:
 	ctrl[0].active_ctrl = CTRL_NONE;		//No controller at boot
-	setMotorVoltage(0, 0);				//0% PWM
+	setMotorVoltage(0,0);				//0% PWM
 }
 
 //Knee Finite State Machine.
