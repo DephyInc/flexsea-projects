@@ -62,6 +62,7 @@ void MIT_PocketClimb_fsm_2(void);
 #define LEFT_MOTOR				0
 #define RIGHT_MOTOR				1
 #define OPEN_PWM_DEMO_HIGH		200	//Range: -500 to +500 (PWM duty cycle)
+#define FORCE_GAIN				10	//pwm = ticks / gain => 5000 = max PWM
 
 //****************************************************************************
 // Structure(s)

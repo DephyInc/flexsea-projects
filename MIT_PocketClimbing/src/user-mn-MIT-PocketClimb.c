@@ -54,6 +54,7 @@ uint8_t mitClimbInfo[2] = {PORT_RS485_2, PORT_RS485_2};
 //****************************************************************************
 
 static void dualOpenSpeed(void);
+static void forceFeedback(void);
 
 //****************************************************************************
 // Public Function(s)
@@ -79,8 +80,8 @@ void MIT_PocketClimb_fsm_1(void)
 	switch(state)
 	{
 		case 0:
-			//Same power-on delay as FSM2:
-			if(time >= AP_FSM2_POWER_ON_DELAY)
+			//Same power-on delay as FSM2 (+ some time to refresh values)
+			if(time >= (AP_FSM2_POWER_ON_DELAY + 25))
 			{
 				state = 1;
 				time = 0;
@@ -89,7 +90,8 @@ void MIT_PocketClimb_fsm_1(void)
 			break;
 
 		case 1:
-			dualOpenSpeed();
+			//dualOpenSpeed();
+			forceFeedback();
 			break;
 
 		default:
@@ -193,6 +195,42 @@ static void dualOpenSpeed(void)
 
 			break;
 	}
+}
+
+uint16_t zf[2] = {0,0};
+int32_t deltaF[2] = {0,0};
+int16_t pwm[2] = {0,0};
+
+static void forceFeedback(void)
+{
+	static uint8_t firstTime = 1;
+
+
+	//The first time we run this function we save the SG values
+	if(firstTime)
+	{
+		//Measure zeros:
+		zf[LEFT_MOTOR] = pocket1.ex[LEFT_MOTOR].strain;
+		zf[RIGHT_MOTOR] = pocket1.ex[RIGHT_MOTOR].strain;
+
+		//Set controllers:
+		setControlMode(CTRL_OPEN, LEFT_MOTOR);
+		setMotorVoltage(0, LEFT_MOTOR);
+		setControlMode(CTRL_OPEN, RIGHT_MOTOR);
+		setMotorVoltage(0, RIGHT_MOTOR);
+
+		firstTime = 0;
+	}
+
+	//Measure difference between no-load and current value:
+	deltaF[LEFT_MOTOR] = (int32_t)pocket1.ex[LEFT_MOTOR].strain - (int32_t)zf[LEFT_MOTOR];
+	deltaF[RIGHT_MOTOR] = (int32_t)pocket1.ex[RIGHT_MOTOR].strain - (int32_t)zf[RIGHT_MOTOR];
+
+	//Calculate PWM and send it:
+	pwm[LEFT_MOTOR] = (int16_t)deltaF[LEFT_MOTOR] / FORCE_GAIN;
+	pwm[RIGHT_MOTOR] = (int16_t)deltaF[RIGHT_MOTOR] / FORCE_GAIN;
+	setMotorVoltage(pwm[LEFT_MOTOR], LEFT_MOTOR);
+	setMotorVoltage(pwm[RIGHT_MOTOR], RIGHT_MOTOR);
 }
 
 #endif 	//BOARD_TYPE_FLEXSEA_MANAGE
