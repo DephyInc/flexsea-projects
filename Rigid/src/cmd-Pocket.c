@@ -303,9 +303,11 @@ void rx_cmd_pocket_rw(uint8_t *buf, uint8_t *info)
 	tmpGain[3] = (int16_t)REBUILD_UINT16(buf, &index);
 	tmpSystem = buf[index++];
 	
+	#ifdef BOARD_TYPE_EXECUTE
 	//Act on the decoded data:
 	rx_cmd_actpack_Action1(tmpController, tmpSetpoint, tmpSetGains, tmpGain[0],
 									tmpGain[1], tmpGain[2], tmpGain[3], tmpSystem, offset);
+	#endif
 
 	//Reply:
 	tx_cmd_pocket_w(TX_N_DEFAULT, offset);
