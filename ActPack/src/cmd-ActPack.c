@@ -430,6 +430,9 @@ void rx_cmd_actpack_Action1(uint8_t controller, int32_t setpoint, uint8_t setGai
 						int16_t g0,	int16_t g1,	int16_t g2, int16_t g3, uint8_t system, uint8_t ch)
 {
 	(void) system;
+	
+	if(ch > 0)
+		return;	//ToDo
 
 	//Update controller (if needed):
 	control_strategy(controller);

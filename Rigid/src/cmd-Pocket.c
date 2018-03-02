@@ -316,7 +316,7 @@ void rx_cmd_pocket_rw(uint8_t *buf, uint8_t *info)
 	
 	tmpSystem = buf[index++];
 	
-	#ifdef BOARD_TYPE_EXECUTE
+	#ifdef BOARD_TYPE_FLEXSEA_EXECUTE
 	//Act on the decoded data:
 	rx_cmd_actpack_Action1(tmpController, tmpSetpoint, tmpSetGains, tmpGain[0],
 									tmpGain[1], tmpGain[2], tmpGain[3], tmpSystem, 0);
