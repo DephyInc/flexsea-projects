@@ -74,7 +74,7 @@ void MIT_DLeg_fsm_1(void)
 	//begin safety check
     if (safetyFailure()) {
     	//motor behavior changes based on failure mode
-    	//bypass
+    	//bypasses the switch statement if return true
 
     	return;
     }
@@ -129,12 +129,16 @@ void MIT_DLeg_fsm_2(void)
 // Private Function(s)
 //****************************************************************************
 int8_t safetyFailure(void) {
-	//toDo
+	//check joint angles
+//	if (*rigid1.ex.joint_ang <= )
+	//check torque sensor
+
+	//check motor and board temps
 	return 1;
 }
 
 int8_t findPoles(void) {
-	static uint32_t timer = 0, deltaT = 0;
+	static uint32_t timer = 0;
 	static int8_t polesState = 0;
 
 	timer++;
