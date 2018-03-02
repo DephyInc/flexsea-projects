@@ -29,6 +29,7 @@ extern "C" {
 #include "../inc/cmd-Pocket.h"
 #include "flexsea_user_structs.h"
 #include "user-mn.h"
+#include "cmd-ActPack.h"
 
 #ifdef DEPHY
 #include "dephy-mn.h"
@@ -182,6 +183,7 @@ void tx_cmd_pocket_w(uint8_t *shBuf, uint8_t *cmd, uint8_t *cmdType, \
 	#ifdef BOARD_TYPE_FLEXSEA_EXECUTE
 
 		struct pocket_s *ri = &pocket1;
+		//pocket1.ex[0] = rigid1.ex;		
 
 		SPLIT_32((uint32_t)*(ri->ex[offset].enc_ang), shBuf, &index);
 		SPLIT_32((uint32_t)(*ri->ex[offset].enc_ang_vel), shBuf, &index);
@@ -285,10 +287,42 @@ void rx_cmd_pocket_rw(uint8_t *buf, uint8_t *info)
 
 	//Temporary variables
 	uint8_t offset = 0;
+	uint8_t tmpController = 0, tmpSetGains = 0, tmpSystem = 0;
+	int32_t tmpSetpoint = 0;
+	int16_t tmpGain[4] = {0,0,0,0};
+	uint8_t tmpController2 = 0, tmpSetGains2 = 0;
+	int32_t tmpSetpoint2 = 0;
+	int16_t tmpGain2[4] = {0,0,0,0};
 
 	//Decode data received:
 	index = P_DATA1;
 	offset = buf[index++];
+	
+	tmpController = buf[index++];
+	tmpSetpoint = (int32_t)REBUILD_UINT32(buf, &index);
+	tmpSetGains = buf[index++];
+	tmpGain[0] = (int16_t)REBUILD_UINT16(buf, &index);
+	tmpGain[1] = (int16_t)REBUILD_UINT16(buf, &index);
+	tmpGain[2] = (int16_t)REBUILD_UINT16(buf, &index);
+	tmpGain[3] = (int16_t)REBUILD_UINT16(buf, &index);
+	
+	tmpController2 = buf[index++];
+	tmpSetpoint2 = (int32_t)REBUILD_UINT32(buf, &index);
+	tmpSetGains2 = buf[index++];
+	tmpGain2[0] = (int16_t)REBUILD_UINT16(buf, &index);
+	tmpGain2[1] = (int16_t)REBUILD_UINT16(buf, &index);
+	tmpGain2[2] = (int16_t)REBUILD_UINT16(buf, &index);
+	tmpGain2[3] = (int16_t)REBUILD_UINT16(buf, &index);
+	
+	tmpSystem = buf[index++];
+	
+	#ifdef BOARD_TYPE_FLEXSEA_EXECUTE
+	//Act on the decoded data:
+	rx_cmd_actpack_Action1(tmpController, tmpSetpoint, tmpSetGains, tmpGain[0],
+									tmpGain[1], tmpGain[2], tmpGain[3], tmpSystem, 0);
+	rx_cmd_actpack_Action1(tmpController2, tmpSetpoint2, tmpSetGains2, tmpGain2[0],
+									tmpGain2[1], tmpGain2[2], tmpGain2[3], tmpSystem, 1);
+	#endif
 
 	//Reply:
 	tx_cmd_pocket_w(TX_N_DEFAULT, offset);
