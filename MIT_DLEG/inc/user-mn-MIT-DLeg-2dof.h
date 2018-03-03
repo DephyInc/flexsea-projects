@@ -56,8 +56,11 @@ void MIT_DLeg_fsm_2(void);
 //****************************************************************************
 // Private Function Prototype(s):
 //****************************************************************************
-int8_t safetyFailure(void);
+int8_t safetyShutoff(void);
+void clampCurrent(float* pcurrentDes);
+float calcCurrent(float torqueDes);
 int8_t findPoles(void);
+void walkingFSM(void);
 void openSpeedFSM(void);
 void twoPositionFSM(void);
 
@@ -66,23 +69,27 @@ void twoPositionFSM(void);
 //****************************************************************************
 
 //activate one of these for joint limits
-//#define IS_ANKLE
-//#define IS_KNEE
+#define IS_ANKLE_LEFT
+//#define IS_ANKLE_RIGHT
 
-#ifdef IS_ANKLE
-#define JOINT_MIN -10
-#define JOINT_MAX 10
+//toDO check if counterclockwise convention is respected by joint encoders
+#ifdef IS_ANKLE_LEFT
+#define JOINT_MIN -10	//dorsi
+#define JOINT_MAX  10	//plantar
 #endif
 
-#ifdef IS_KNEE
-#define JOINT_MIN -20
-#define JOINT_MAX 20
+#ifdef IS_ANKLE_RIGHT
+#define JOINT_MIN -10
+#define JOINT_MAX  10
 #endif
 
 //safety limits
-#define MOTOR_TEMP_LIMIT 50
-#define TORQUE_LIMIT	 50
+#define FORCE_LIMIT	 	 50
 #define CURRENT_LIMIT    10
+#define CURRENT_SCALAR   1
+#define MOTOR_TEMP_LIMIT 70
+#define BOARD_TEMP_LIMIT 70
+
 
 //Constants used by get_ankle_ang():
 //Where is this equation???

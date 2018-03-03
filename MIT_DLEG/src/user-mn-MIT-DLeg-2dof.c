@@ -71,15 +71,13 @@ void MIT_DLeg_fsm_1(void)
     //Increment time (1 tick = 1ms)
     time++;
 
-	//begin safety check
-    if (safetyFailure()) {
-    	//motor behavior changes based on failure mode
+	//begin shutoff safety check
+    if (safetyShutoff()) {
     	//bypasses the switch statement if return true
-
     	return;
     }
-	//end safety check
 
+    //begin main FSM
 	switch(state)
 	{
 		case 0:
@@ -92,6 +90,7 @@ void MIT_DLeg_fsm_1(void)
 
 			break;
 
+		//find poles during startup. Requires 60 s
 		case 1:
 			if(findPoles()) {
 				state = 2;
@@ -101,9 +100,7 @@ void MIT_DLeg_fsm_1(void)
 			break;
 
 		case 2:
-			//Pick one of those demos:
-			//openSpeedFSM();
-			twoPositionFSM();
+			walkingFSM();
 			break;
 
         default:
@@ -128,15 +125,95 @@ void MIT_DLeg_fsm_2(void)
 //****************************************************************************
 // Private Function(s)
 //****************************************************************************
-int8_t safetyFailure(void) {
-	//check joint angles
-//	if (*rigid1.ex.joint_ang <= )
-	//check torque sensor
 
-	//check motor and board temps
-	return 1;
+/** Safety Shutoff
+    Sets motor current to 0 if something is really wrong.
+    Checked before entering FSM.
+    Return boolean indicates whether safetyShutoff() tripped.
+
+    @return active or passed
+*/
+int8_t safetyShutoff(void) {
+	//toDo variableNames_ to be replaced by real measured values later
+	float force_ = 0;
+
+	//over temperature shutoff
+	if (rigid1.mn.mot_temp > MOTOR_TEMP_LIMIT || rigid1.re.temp > BOARD_TEMP_LIMIT) {
+		setControlMode(CTRL_CURRENT);
+		setMotorCurrent(0);
+		return 1;
+	}
+
+	//over force limit (something must be really wrong)
+	if (abs(force_) > FORCE_LIMIT) {
+		setControlMode(CTRL_CURRENT);
+		setMotorCurrent(0);
+		return 1;
+	}
+
+	return 0;
 }
 
+/** Current Clamp
+	Scales desired output current to safe numbers.
+    Checked after calculating current desired from torque desired.
+
+    @param pcurrentDes
+*/
+void clampCurrent(float* pcurrentDes) {
+
+	int8_t jointAngle_ = 0; //replace
+
+	//check joint angles
+	//toDo BE SURE CURRENT DIRECTIONS ARE CORRECT!!!
+	if (jointAngle_ <= JOINT_MIN) {
+		if (*pcurrentDes < 0) {
+			*pcurrentDes = 0;
+		}
+	} else if (jointAngle_ >= JOINT_MAX) {
+		if (*pcurrentDes > 0) {
+			*pcurrentDes = 0;
+		}
+	}
+
+	//check current limits
+	if (abs(*pcurrentDes) > CURRENT_LIMIT) {
+		*pcurrentDes = (*pcurrentDes < 0) ? -CURRENT_LIMIT : CURRENT_LIMIT;
+	} //should there be thermal throttling also?
+
+
+
+	//final current scaling for testing purposes
+	//CURRENT_SCALAR == 1 at full power
+	*pcurrentDes *= *pcurrentDes * CURRENT_SCALAR;
+}
+
+/** Desired Current from Torque
+	Walking FSM torque -> current
+    Can incorporate transmission and spring functions.
+
+    @param torqueDes
+    @return outputCurrent
+*/
+float calcCurrent(float torqueDes) {
+
+	float currentDes = 0;
+
+	//toDo controls stuff here based on motor
+
+
+	//clamp if necessary
+	clampCurrent(&currentDes);
+
+	return currentDes;
+}
+
+/** Find Poles
+	Startup procedure for locating motor poles.
+    Runs in about 60 s.
+
+    @return success or failure
+*/
 int8_t findPoles(void) {
 	static uint32_t timer = 0;
 	static int8_t polesState = 0;
@@ -182,6 +259,16 @@ int8_t findPoles(void) {
 	}
 
 	return 0;
+}
+
+/** Impedance Control Level-ground Walking FSM
+	Based on Biom ankle.
+	Finds desired torque; converts to desired current; sets ActPack control.
+*/
+void walkingFSM(void) {
+	/* controls should be pretty simple because we use joint state as feedback
+	   and are only concerned with output torque of the device, not net torque
+	*/
 }
 
 void openSpeedFSM(void)
