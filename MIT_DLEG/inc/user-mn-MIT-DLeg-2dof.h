@@ -60,7 +60,6 @@ int8_t safetyShutoff(void);
 void clampCurrent(float* pcurrentDes);
 float calcCurrent(float torqueDes);
 int8_t findPoles(void);
-void walkingFSM(void);
 void openSpeedFSM(void);
 void twoPositionFSM(void);
 

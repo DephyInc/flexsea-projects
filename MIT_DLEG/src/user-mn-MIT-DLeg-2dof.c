@@ -37,6 +37,8 @@
 
 #include "user-mn.h"
 #include <user-mn-MIT-DLeg-2dof.h>
+#include "state_machine.h"
+#include "state_variables.h"
 #include "user-mn-ActPack.h"
 #include <flexsea_comm.h>
 #include <math.h>
@@ -84,6 +86,7 @@ void MIT_DLeg_fsm_1(void)
 			//Same power-on delay as FSM2:
 			if(time >= AP_FSM2_POWER_ON_DELAY)
 			{
+				stateMachine.current_state = STATE_IDLE;
 				state = 1;
 				time = 0;
 			}
@@ -93,19 +96,39 @@ void MIT_DLeg_fsm_1(void)
 		//find poles during startup. Requires 60 s
 		case 1:
 			if(findPoles()) {
+				stateMachine.current_state = STATE_INIT;
+				//toDo global updatable vars for current gains
+				setControlMode(CTRL_CURRENT);
+				setMotorCurrent(0);
 				state = 2;
 				time = 0;
 			}
 
 			break;
 
+		//main walking FSM
 		case 2:
-			walkingFSM();
-			break;
+			//need to declare new scope here(brackets) to initialize vars
+			{
+				static float* ptorqueDes;
+				static float* pcurrentDes;
+
+				//return torqueDes from FSM
+				runFlatGroundFSM(ptorqueDes);
+
+				//convert torque to current and clamp if necessary
+				*pcurrentDes = calcCurrent(*ptorqueDes);
+
+				//send current command
+				setMotorCurrent((int32_t) (*pcurrentDes * 1000));
+
+				break;
+			}
 
         default:
 			//Handle exceptions here
 			break;
+
 	}
 
 	#endif	//ACTIVE_PROJECT == PROJECT_ANKLE_2DOF
@@ -185,7 +208,7 @@ void clampCurrent(float* pcurrentDes) {
 
 	//final current scaling for testing purposes
 	//CURRENT_SCALAR == 1 at full power
-	*pcurrentDes *= *pcurrentDes * CURRENT_SCALAR;
+	*pcurrentDes *= CURRENT_SCALAR;
 }
 
 /** Desired Current from Torque
@@ -256,19 +279,15 @@ int8_t findPoles(void) {
 			return 0;
 
 			break;
+
+		default:
+
+			return 0;
+
+			break;
 	}
 
 	return 0;
-}
-
-/** Impedance Control Level-ground Walking FSM
-	Based on Biom ankle.
-	Finds desired torque; converts to desired current; sets ActPack control.
-*/
-void walkingFSM(void) {
-	/* controls should be pretty simple because we use joint state as feedback
-	   and are only concerned with output torque of the device, not net torque
-	*/
 }
 
 void openSpeedFSM(void)
