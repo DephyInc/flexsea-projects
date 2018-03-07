@@ -257,6 +257,9 @@ void tx_cmd_rigid_w(uint8_t *shBuf, uint8_t *cmd, uint8_t *cmdType, \
 			shBuf[index++] = (uint8_t)rigid2.ctrl.gaitState;
 			//(30 bytes)
 		}
+		else if (offset == 5) {
+			//
+		}
 
 	#endif	//BOARD_TYPE_FLEXSEA_MANAGE
 

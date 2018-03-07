@@ -63,16 +63,6 @@ typedef struct{
 
 } GainParams;
 
-typedef struct{
-
-	GainParams eswGains;
-	GainParams lswGains;
-	GainParams estGains;
-	GainParams lstGains;
-	GainParams lstPowerGains;
-
-} StateGains;
-
 //****************************************************************************
 // Shared variable(s)
 //****************************************************************************

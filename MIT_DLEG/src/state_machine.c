@@ -1,5 +1,6 @@
 #include "state_variables.h"
 #include "state_machine.h"
+#include <math.h>
 
 static float calcTorque(GainParams gainParams);
 
@@ -137,5 +138,6 @@ static float calcTorque(GainParams gainParams) {
 	float angleCurrent_ = 0;
 	float dAngle_ = 0;
 
-	return gainParams.k1 * (angleCurrent_ - gainParams.thetaDes) - gainParams.b * dAngle_;
+	return gainParams.k1 * (angleCurrent_ - gainParams.thetaDes) \
+		 + gainParams.k2 * powf((angleCurrent_ - gainParams.thetaDes), 3) - gainParams.b * dAngle_;
 }

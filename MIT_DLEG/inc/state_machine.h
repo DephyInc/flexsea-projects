@@ -23,6 +23,11 @@
 // Shared Variable(s):
 //****************************************************************************
 //toDO add extern global vars needed here
+extern GainParams eswGains;
+extern GainParams lswGains;
+extern GainParams estGains;
+extern GainParams lstGains; //currently unused in simple implementation
+extern GainParams lstPowerGains;
 
 //****************************************************************************
 // Prototype(s):

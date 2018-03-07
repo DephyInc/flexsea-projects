@@ -77,6 +77,10 @@ extern "C" {
 #include "flexsea_cmd_dephy.h"
 #endif
 
+#if(ACTIVE_PROJECT == PROJECT_MIT_DLEG)
+#include "cmd-DLeg.h"
+#endif
+
 //****************************************************************************
 // Variable(s)
 //****************************************************************************
@@ -109,6 +113,12 @@ void init_flexsea_payload_ptr_user(void)
 	flexsea_payload_ptr[CMD_ACTPACK][RX_PTYPE_READ] = &rx_cmd_actpack_rw;
 	//flexsea_payload_ptr[CMD_ACTPACK][RX_PTYPE_WRITE] = &rx_cmd_actpack_w;
 	flexsea_payload_ptr[CMD_ACTPACK][RX_PTYPE_REPLY] = &rx_cmd_actpack_rr;
+	#endif
+
+	//DLeg gain adjustments
+	#if(ACTIVE_PROJECT == PROJECT_MIT_DLEG)
+	flexsea_payload_ptr[CMD_DLEG][RX_PTYPE_READ] = &rx_cmd_dleg_rw;
+	flexsea_payload_ptr[CMD_DLEG][RX_PTYPE_REPLY] = &rx_cmd_dleg_rr;
 	#endif
 
 	//Rigid:
