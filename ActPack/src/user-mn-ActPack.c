@@ -186,10 +186,8 @@ void ActPack_fsm_2(void)
 			packAndSend(P_AND_S_DEFAULT, FLEXSEA_EXECUTE_1, apInfo, SEND_TO_SLAVE);
 
 			//Reset KEEP/CHANGE once set:
-			if(writeEx[0].setGains == CHANGE)
-			{
-				writeEx[0].setGains = KEEP;
-			}
+			if(writeEx[0].setGains == CHANGE){writeEx[0].setGains = KEEP;}
+			if(writeEx[1].setGains == CHANGE){writeEx[1].setGains = KEEP;}
 
 		#else
 
