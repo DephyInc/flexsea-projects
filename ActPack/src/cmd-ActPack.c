@@ -442,6 +442,7 @@ void rx_cmd_actpack_Action1(uint8_t controller, int32_t setpoint, uint8_t setGai
 		{
 			ctrl[ch].current.gain.g0 = g0;
 			ctrl[ch].current.gain.g1 = g1;
+			ctrl[ch].current.error_sum = 0;
 		}
 	}
 	else if(ctrl[ch].active_ctrl == CTRL_OPEN)
@@ -456,6 +457,7 @@ void rx_cmd_actpack_Action1(uint8_t controller, int32_t setpoint, uint8_t setGai
 			ctrl[ch].position.gain.g0 = g0;
 			ctrl[ch].position.gain.g1 = g1;
 			ctrl[ch].position.gain.g2 = g2;
+			ctrl[ch].position.error_sum = 0;
 		}
 	}
 	else if (ctrl[ch].active_ctrl == CTRL_IMPEDANCE)
@@ -467,6 +469,8 @@ void rx_cmd_actpack_Action1(uint8_t controller, int32_t setpoint, uint8_t setGai
 			ctrl[ch].impedance.gain.g1 = g1;
 			ctrl[ch].current.gain.g0 = g2;
 			ctrl[ch].current.gain.g1 = g3;
+			ctrl[ch].current.error_sum = 0;
+			ctrl[ch].impedance.error_sum = 0;
 		}
 	}
 }
