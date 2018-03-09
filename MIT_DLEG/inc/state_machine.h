@@ -30,6 +30,7 @@ extern GainParams lswGains;
 extern GainParams estGains;
 extern GainParams lstGains; //currently unused in simple implementation
 extern GainParams lstPowerGains;
+extern WalkingStateMachine stateMachine;
 
 //****************************************************************************
 // Prototype(s):

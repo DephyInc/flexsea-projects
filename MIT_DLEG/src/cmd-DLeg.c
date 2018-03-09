@@ -109,7 +109,9 @@ void tx_cmd_dleg_w(uint8_t *shBuf, uint8_t *cmd, uint8_t *cmdType, \
     SPLIT_32((uint32_t) *(uint32_t*) &stateGains[setNumber]->k2, shBuf, &index);
     SPLIT_32((uint32_t) *(uint32_t*) &stateGains[setNumber]->b, shBuf, &index);
     SPLIT_32((uint32_t) *(uint32_t*) &stateGains[setNumber]->thetaDes, shBuf, &index);
-    //(16 bytes)
+    SPLIT_16(stateMachine.current_state, shBuf, &index);
+
+    //(18 bytes)
 
     #endif	//BOARD_TYPE_FLEXSEA_MANAGE
 
@@ -165,11 +167,14 @@ void rx_cmd_dleg_rr(uint8_t *buf, uint8_t *info)
         uint32_t k2 = REBUILD_UINT32(buf, &index);
         uint32_t b = REBUILD_UINT32(buf, &index);
         uint32_t thetaDes = REBUILD_UINT32(buf, &index);
+        uint16_t currentState = REBUILD_UINT16(buf, &index);
+        //18 bytes
 
         stateGains[setNumber]->k1 = *(float*) &k1;
         stateGains[setNumber]->k2 = *(float*) &k2;
         stateGains[setNumber]->b = *(float*) &b;
         stateGains[setNumber]->thetaDes = *(float*) &thetaDes;
+        stateMachine.current_state = currentState;
 
     #endif	//BOARD_TYPE_FLEXSEA_PLAN
 }

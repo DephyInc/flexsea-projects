@@ -17,9 +17,10 @@ enum {
 	STATE_EARLY_SWING = 2,
 	STATE_LATE_SWING = 3,
 	STATE_EARLY_STANCE = 4,
-	STATE_LATE_STANCE_POWER = 5,
-	STATE_EMG_STAND_ON_TOE = 6,
-	STATE_LSW_EMG = 7
+    STATE_LATE_STANCE = 5,
+    STATE_LATE_STANCE_POWER = 6,
+    STATE_EMG_STAND_ON_TOE = 7,
+    STATE_LSW_EMG = 8
 };
 
 typedef struct{
@@ -68,7 +69,6 @@ typedef struct{
 //****************************************************************************
 
 extern ANKLE_SENSORS_T sensors;
-extern WalkingStateMachine stateMachine;
 
 #ifdef __cplusplus
 }

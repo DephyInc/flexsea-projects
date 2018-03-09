@@ -43,6 +43,8 @@ void tx_cmd_dleg_w(uint8_t *shBuf, uint8_t *cmd, uint8_t *cmdType, \
 // Shared variable(s)
 //****************************************************************************
 
+extern GainParams* stateGains[5];
+
 #ifdef __cplusplus
 }
 #endif
