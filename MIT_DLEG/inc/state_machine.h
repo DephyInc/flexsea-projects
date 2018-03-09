@@ -1,11 +1,11 @@
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #if (defined INCLUDE_UPROJ_MIT_DLEG && defined BOARD_TYPE_FLEXSEA_MANAGE) || defined BOARD_TYPE_FLEXSEA_PLAN
 
 #ifndef STATE_MACHINE
 #define STATE_MACHINE
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 //****************************************************************************
 // Include(s)
@@ -37,10 +37,8 @@ extern GainParams lstPowerGains;
 
 void runFlatGroundFSM(float* ptorqueDes);
 
+#endif //STATE_MACHINE
+#endif //(INCLUDE_UPROJ_MIT_DLEG && BOARD_TYPE_FLEXSEA_MANAGE) || BOARD_TYPE_FLEXSEA_PLAN
 #ifdef __cplusplus
 }
 #endif
-
-#endif //STATE_MACHINE
-#endif //(INCLUDE_UPROJ_MIT_DLEG && BOARD_TYPE_FLEXSEA_MANAGE) || BOARD_TYPE_FLEXSEA_PLAN
-

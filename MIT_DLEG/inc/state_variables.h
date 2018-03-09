@@ -70,4 +70,8 @@ typedef struct{
 extern ANKLE_SENSORS_T sensors;
 extern WalkingStateMachine stateMachine;
 
+#ifdef __cplusplus
+}
+#endif
+
 #endif //INC_STATE_VARIABLES
