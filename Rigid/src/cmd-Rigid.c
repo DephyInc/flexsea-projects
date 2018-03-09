@@ -234,7 +234,7 @@ void tx_cmd_rigid_w(uint8_t *shBuf, uint8_t *cmd, uint8_t *cmdType, \
 			SPLIT_16((ri->mn.analog[0]), shBuf, &index);
 			SPLIT_16((ri->mn.analog[1]), shBuf, &index);
 			SPLIT_16((ri->mn.analog[2]), shBuf, &index);
-			SPLIT_16((ri->mn.analog[3]), shBuf, &index);
+            SPLIT_16((ri->mn.analog[3]), shBuf, &index);
 			//(16 bytes)
 		}
 		else if(offset == 4)	//This is used to tweak and test bilateral controllers
@@ -320,8 +320,6 @@ void rx_cmd_rigid_rr(uint8_t *buf, uint8_t *info)
 	#endif
 
 	#ifdef BOARD_TYPE_FLEXSEA_PLAN
-
-		rigidPtrXid(&ri, buf[P_XID]);
 
 		index = P_DATA1;
 		offset = buf[index++];

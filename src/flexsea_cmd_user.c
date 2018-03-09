@@ -117,8 +117,8 @@ void init_flexsea_payload_ptr_user(void)
 
 	//DLeg gain adjustments
 	#if(ACTIVE_PROJECT == PROJECT_MIT_DLEG)
-	flexsea_payload_ptr[CMD_DLEG][RX_PTYPE_READ] = &rx_cmd_dleg_rw;
-	flexsea_payload_ptr[CMD_DLEG][RX_PTYPE_REPLY] = &rx_cmd_dleg_rr;
+    flexsea_payload_ptr[CMD_DLEG][RX_PTYPE_READ] = &rx_cmd_dleg_rw;
+    flexsea_payload_ptr[CMD_DLEG][RX_PTYPE_REPLY] = &rx_cmd_dleg_rr;
 	#endif
 
 	//Rigid:

@@ -21,11 +21,11 @@ void rx_cmd_dleg_rw(uint8_t *buf, uint8_t *info);
 void rx_cmd_dleg_rr(uint8_t *buf, uint8_t *info);
 
 void tx_cmd_dleg_r(uint8_t *shBuf, uint8_t *cmd, uint8_t *cmdType, \
-					uint16_t *len, uint8_t setNumber);
+                    uint16_t *len, uint8_t setNumber);
 void tx_cmd_dleg_rw(uint8_t *shBuf, uint8_t *cmd, uint8_t *cmdType, \
-					uint16_t *len, uint8_t setNumber);
+                    uint16_t *len, uint8_t setNumber);
 void tx_cmd_dleg_w(uint8_t *shBuf, uint8_t *cmd, uint8_t *cmdType, \
-					uint16_t *len, uint8_t setNumber);
+                    uint16_t *len, uint8_t setNumber);
 
 //****************************************************************************
 // Prototype(s) - simplified functions (DLL):
