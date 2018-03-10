@@ -109,7 +109,7 @@ void tx_cmd_dleg_w(uint8_t *shBuf, uint8_t *cmd, uint8_t *cmdType, \
     SPLIT_32((uint32_t) *(uint32_t*) &stateGains[setNumber]->k2, shBuf, &index);
     SPLIT_32((uint32_t) *(uint32_t*) &stateGains[setNumber]->b, shBuf, &index);
     SPLIT_32((uint32_t) *(uint32_t*) &stateGains[setNumber]->thetaDes, shBuf, &index);
-    SPLIT_16(stateMachine.current_state, shBuf, &index);
+    SPLIT_16((uint16_t) stateMachine.current_state, shBuf, &index);
 
     //(18 bytes)
 
