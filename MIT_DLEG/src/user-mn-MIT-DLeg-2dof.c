@@ -166,17 +166,17 @@ void MIT_DLeg_fsm_1(void)
 				rigid1.mn.genVar[8] = act1.jointTorque;
 
 				//begin safety check
-			    if (safetyShutoff()) {
-			    	/*motor behavior changes based on failure mode
-			    	  bypasses the switch statement if return true
-			    	  but sensors check still runs and has a chance
-			    	  to allow code to move past this block
-			    	*/
-
-			    	return;
-			    } else {
+//			    if (safetyShutoff()) {
+//			    	/*motor behavior changes based on failure mode
+//			    	  bypasses the switch statement if return true
+//			    	  but sensors check still runs and has a chance
+//			    	  to allow code to move past this block
+//			    	*/
+//
+//			    	return;
+//			    } else {
 			    	runFlatGroundFSM(ptorqueDes);
-			    }
+//			    }
 
 //				setMotorTorque(&act1, *ptorqueDes);
 //				twoTorqueFSM( &act1);

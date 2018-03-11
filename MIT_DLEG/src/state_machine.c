@@ -10,7 +10,7 @@ extern "C" {
 #include "flexsea.h"
 #include <math.h>
 
-WalkingStateMachine stateMachine = {0, 0, 0};
+WalkingStateMachine stateMachine;
 GainParams eswGains = {0.04, 0, 0.004, 23};
 GainParams lswGains = {0.134, 0, 0.002, 2};
 GainParams estGains = {1.35, 0.025, 0.118, -5};
