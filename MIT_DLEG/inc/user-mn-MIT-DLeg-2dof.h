@@ -16,17 +16,15 @@
 	You should have received a copy of the GNU General Public License
 	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 *****************************************************************************
-	[Lead developper] Luke Mooney, lmooney at dephy dot com.
+	[Lead developers] Luke Mooney, lmooney at dephy dot com.
 	[Origin] Based on Jean-Francois Duval's work at the MIT Media Lab
 	Biomechatronics research group <http://biomech.media.mit.edu/>
-	[Contributors]
+	[Contributors] Matthew Carney, mcarney at mit dot edu, Tony Shu, tonyshu at mit dot edu
 *****************************************************************************
-	[This file] user_ankle_2dof: 2-DoF Ankle Functions
+	[This file] MIT DARPA Leg Main FSM
 ****************************************************************************/
 
 #ifdef INCLUDE_UPROJ_MIT_DLEG
-#include "main.h"
-
 #ifdef BOARD_TYPE_FLEXSEA_MANAGE
 
 #ifndef INC_MIT_DLEG
@@ -35,15 +33,34 @@
 //****************************************************************************
 // Include(s)
 //****************************************************************************
-
+#include "main.h"
 
 //****************************************************************************
 // Shared variable(s)
 //****************************************************************************
+extern struct act_s act1;	//define actuator structure shared
+extern int8_t isEnabledUpdateSensors;
 
-extern int16_t glob_var_1;
-extern int16_t glob_var_2;
-extern int16_t glob_var_3;
+//****************************************************************************
+// Structure(s)
+//****************************************************************************
+
+// Actuator structure to track sensor values, initially built for the TF08 style actuator
+struct act_s
+{
+	float jointAngle;
+	float jointVel;
+	float jointAcc;
+	float linkageMomentArm;
+	float axialForce;
+	float jointTorque;
+	int32_t motorVel;		// motor velocity [rad/s]
+	int32_t motorAcc;		// motor acceleration [rad/s/s]
+	int16_t regTemp;		// regulate temperature
+	int16_t motTemp;		// motor temperature
+	int32_t motCurr;		// motor current.
+	int8_t safetyFlag;		// todo: consider if necessary
+};
 
 //****************************************************************************
 // Public Function Prototype(s):
@@ -56,54 +73,147 @@ void MIT_DLeg_fsm_2(void);
 //****************************************************************************
 // Private Function Prototype(s):
 //****************************************************************************
-int8_t safetyShutoff(void);
-void clampCurrent(float* pcurrentDes);
-float calcCurrent(float torqueDes);
+
+// Safety features
+int8_t safetyShutoff(void); //renamed from safetyFailure(void)
+void   clampCurrent(float* pcurrentDes);
+
+// Initialization
 int8_t findPoles(void);
+void   mit_init_current_controller(void);
+
+// Mechanical transformations
+float*  getJointAngleKinematic(void);
+float   getJointAngularVelocity(void);
+float   getAxialForce(void);
+float   getLinkageMomentArm(float);
+float   getJointTorque(struct act_s *actx);
+int16_t getMotorTempSensor(void);
+void    updateSensorValues(struct act_s *actx);
+
+//Control outputs
+float biomControlImpedance(float theta_set, float k1, float k2, float b); 	// returns a desired joint torque, then use setMotorTorque() to get the motor to do its magic
+void  setMotorTorque(struct act_s *actx, float tor_d);
+
+//Main FSMs
 void openSpeedFSM(void);
 void twoPositionFSM(void);
+void oneTorqueFSM();
+void twoTorqueFSM();
+
 
 //****************************************************************************
 // Definition(s):
 //****************************************************************************
 
-//activate one of these for joint limits
-#define IS_ANKLE_LEFT
-//#define IS_ANKLE_RIGHT
+//Joint Type: activate one of these for joint limit angles.
+//measured from nominal joint configuration, in degrees
 
-//toDO check if counterclockwise convention is respected by joint encoders
-#ifdef IS_ANKLE_LEFT
-#define JOINT_MIN -10	//dorsi
-#define JOINT_MAX  10	//plantar
+//1. Select joint type
+#define IS_ANKLE
+//#define IS_KNEE
+
+//2. Select device
+#define DEVICE_TF08_A01			// Define specific actuator configuration. Ankle 01
+//#define DEVICE_TF08_A02		// Define specific actuator configuration. Ankle 02
+//#define DEVICE_TF08_K01		// Define specific actuator configuration. Knee 01
+//#define DEVICE_TF08_K02		// Define specific actuator configuration. Knee 02
+#define ANG_UNIT	2*M_PI 		// Use Radians 2*M_PI
+
+//Begin device specific configurations
+#ifdef DEVICE_TF08_A01
+
+//Encoder
+#define JOINT_ZERO_OFFSET 	0		// [deg] Joint Angle offset, CW rotation, based on Setup, ie. TEDtalk flexfoot angle = 20, fittings, etc.
+#define JOINT_ENC_DIR 		-1		// Encoder orientation. CW = 1 (knee orientation), CCW = -1
+#define JOINT_ANGLE_DIR 	-1		// Joint angle direction. Std convention is Ankle: Dorsiflexion (+), Plantarflexion (-) with value == -1
+#define JOINT_CPR 			16383	// Counts per revolution (todo: is it (2^14 - 1)?)
+#define JOINT_HS_MIN		( 30 * JOINT_CPR/360 )		// Joint hard stop angle [deg] in dorsiflexion)
+#define JOINT_HS_MAX		( 90 * JOINT_CPR/360 )		// Joint hard stop angle [deg] in plantarflexion)
+#define JOINT_MIN_ABS		10967		// Absolute encoder at MIN (Max dorsiflexion, 30Deg)
+#define JOINT_MAX_ABS		5444		// Absolute encoder reading at MAX (Max Plantarflexion, 90Deg)
+#define JOINT_ZERO_ABS		JOINT_MIN_ABS + JOINT_ENC_DIR * JOINT_HS_MIN 	// Absolute reading of Actuator Zero as designed in CAD
+#define JOINT_ZERO 			JOINT_ZERO_ABS + JOINT_ENC_DIR * JOINT_ZERO_OFFSET *JOINT_CPR/360 	// counts for actual angle.
+
+//Force Sensor
+#define FORCE_DIR			1		// Direction of positive force, Dorsiflexion (-), Plantarflex (+) with value == 1
+#define FORCE_STRAIN_GAIN 	202.6	// Defined by R23 on Execute, better would be G=250 to max range of ADC
+#define FORCE_STRAIN_BIAS	2.5		// Strain measurement Bias
+#define FORCE_EXCIT			5		// Excitation Voltage
+#define FORCE_RATED_OUTPUT	0.002	// 2mV/V, Rated Output
+#define FORCE_MAX			4448	// Newtons, for LCM300 load cell
+#define FORCE_MAX_TICKS		( (FORCE_STRAIN_GAIN * FORCE_EXCIT * FORCE_RATED_OUTPUT + FORCE_STRAIN_BIAS)/5 * 65535 )	// max ticks expected
+#define FORCE_MIN_TICKS		( (FORCE_STRAIN_BIAS - FORCE_STRAIN_GAIN * FORCE_EXCIT * FORCE_RATED_OUTPUT)/5 * 65535 )	// min ticks expected
+#define FORCE_PER_TICK		( ( 2 * FORCE_MAX  ) / (FORCE_MAX_TICKS - FORCE_MIN_TICKS)	)	// Newtons/Tick
+
+
+//Torque Control PID gains
+#define TORQ_KP_INIT			10.
+#define TORQ_KI_INIT			0.
+#define TORQ_KD_INIT			0.
+
+
+// Motor Parameters
+#define MOT_KT 			0.0951	// Kt value
+#define MOT_L			0.068	// mH
+#define MOT_J			0		//0.000322951	// rotor inertia, [kgm^2]
+#define MOT_B			0.0		// damping term for motor and screw combined, drag from rolling elements
+#define MOT_TRANS		0		// lumped mass inertia todo: consider MotorMass on Spring inertia contribution.
+
+// Current Control Parameters  -- Test these on a motor test stand first
+#define ACTRL_I_KP_INIT		100
+#define ACTRL_I_KI_INIT		0
+#define ACTRL_I_KD_INIT		0
+
+//Transmission
+#ifdef IS_ANKLE					//UPDATE THIS WITH NEW SCREWs ankle = 0.002
+#define N_SCREW			(2*M_PI/0.005)	// Ballscrew ratio
+#define N_ETA			0.9		// Transmission efficiency
+#endif
+#ifdef IS_KNEE
+#define N_SCREW			(2*M_PI/0.005)	// Ballscrew ratio
+
+#endif //DEFINED DEVICE_TF08_A01
+
 #endif
 
-#ifdef IS_ANKLE_RIGHT
-#define JOINT_MIN -10
-#define JOINT_MAX  10
+#ifdef DEVICE_TF08_A02
+// copy from above and update, when ready.
+#endif // DEFINED DEVICE_TF08_A02
+
+//Joint software limits [Degrees]
+#ifdef IS_ANKLE
+#define JOINT_MIN_SOFT		-70	* (ANG_UNIT)/360	// [deg] Actuator physical limit min = 30deg dorsiflexion
+#define JOINT_MAX_SOFT		25	* (ANG_UNIT)/360	// [deg] Actuator physical limit  max = -90deg plantarflex
 #endif
 
-//safety limits
-#define FORCE_LIMIT	 	 50
-#define CURRENT_LIMIT    10
-#define CURRENT_SCALAR   1
-#define MOTOR_TEMP_LIMIT 70
-#define BOARD_TEMP_LIMIT 70
+#ifdef IS_KNEE
+#define JOINT_MIN_SOFT		-20	* (ANG_UNIT)/360	// [deg] Actuator physical limit min = -30deg extension
+#define JOINT_MAX_SOFT		20	* (ANG_UNIT)/360	// [deg] Actuator physical limit max = +90deg flexion
+#endif
 
+//Safety limits
+#define PCB_TEMP_LIMIT_INIT		70
+#define MOTOR_TEMP_LIMIT_INIT	70
+#define ABS_TORQUE_LIMIT_INIT	100		    // Joint torque [Nm]
+#define CURRENT_LIMIT_INIT		40000		// [mA] useful in this form
 
-//Constants used by get_ankle_ang():
-//Where is this equation???
-#define A0 				(202.2+1140.0)
-#define A1 				1302.0
-#define A2				-39.06
-#define B1 				14.76
-#define B2 				-7.874
-#define W				0.00223
+// Motor Temp Sensor
+#define V25_TICKS		943		//760mV/3.3V * 4096 = 943
+#define VSENSE_SLOPE	400		//1/2.5mV
+#define TICK_TO_V		1241	//ticks/V
+
+enum {
+	SAFETY_OK			=	0,
+	SAFETY_ANGLE		=	1,
+	SAFETY_TORQUE		=	2,
+	SAFETY_FLEX_TEMP	=	3,  //unused
+	SAFETY_TEMP			=	4,
+};
 
 #define SECONDS			1000
 
-//****************************************************************************
-// Structure(s)
-//****************************************************************************
+
 
 #endif	//INC_MIT_DLEG
 

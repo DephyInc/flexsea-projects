@@ -234,7 +234,7 @@ void tx_cmd_rigid_w(uint8_t *shBuf, uint8_t *cmd, uint8_t *cmdType, \
 			SPLIT_16((ri->mn.analog[0]), shBuf, &index);
 			SPLIT_16((ri->mn.analog[1]), shBuf, &index);
 			SPLIT_16((ri->mn.analog[2]), shBuf, &index);
-            SPLIT_16((ri->mn.analog[3]), shBuf, &index);
+			SPLIT_16((ri->mn.analog[3]), shBuf, &index);
 			//(16 bytes)
 		}
 		else if(offset == 4)	//This is used to tweak and test bilateral controllers
@@ -256,9 +256,6 @@ void tx_cmd_rigid_w(uint8_t *shBuf, uint8_t *cmd, uint8_t *cmdType, \
 			shBuf[index++] = (uint8_t)rigid2.ctrl.walkingState;
 			shBuf[index++] = (uint8_t)rigid2.ctrl.gaitState;
 			//(30 bytes)
-		}
-		else if (offset == 5) {
-			//
 		}
 
 	#endif	//BOARD_TYPE_FLEXSEA_MANAGE

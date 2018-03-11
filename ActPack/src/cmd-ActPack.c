@@ -32,6 +32,7 @@ extern "C" {
 #include "flexsea_global_structs.h"
 #include "flexsea_user_structs.h"
 #include "cmd-ActPack.h"
+#include "cmd-DLeg.h"
 
 //Execute boards only:
 #ifdef BOARD_TYPE_FLEXSEA_EXECUTE
@@ -244,7 +245,8 @@ void tx_cmd_actpack_w(uint8_t *shBuf, uint8_t *cmd, uint8_t *cmdType, \
 			SPLIT_16((ri->mn.analog[1]), shBuf, &index);
 			SPLIT_16((ri->mn.analog[2]), shBuf, &index);
 			SPLIT_16((ri->mn.analog[3]), shBuf, &index);
-			//(16 bytes)
+			SPLIT_16(stateMachine.current_state, shBuf, &index);
+			//(18 bytes)
 		}
 
 	#endif	//BOARD_TYPE_FLEXSEA_MANAGE
@@ -410,7 +412,8 @@ void rx_cmd_actpack_rr(uint8_t *buf, uint8_t *info)
 			ri->mn.analog[1] = REBUILD_UINT16(buf, &index);
 			ri->mn.analog[2] = REBUILD_UINT16(buf, &index);
 			ri->mn.analog[3] = REBUILD_UINT16(buf, &index);
-			//(16 bytes)
+			stateMachine.current_state = REBUILD_UINT16(buf, &index);
+			//(18 bytes)
 		}
 		else
 		{

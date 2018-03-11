@@ -109,7 +109,7 @@ void tx_cmd_dleg_w(uint8_t *shBuf, uint8_t *cmd, uint8_t *cmdType, \
     SPLIT_32((uint32_t) *(uint32_t*) &stateGains[setNumber]->k2, shBuf, &index);
     SPLIT_32((uint32_t) *(uint32_t*) &stateGains[setNumber]->b, shBuf, &index);
     SPLIT_32((uint32_t) *(uint32_t*) &stateGains[setNumber]->thetaDes, shBuf, &index);
-    SPLIT_16(stateMachine.current_state, shBuf, &index);
+    SPLIT_16((uint16_t) stateMachine.current_state, shBuf, &index);
 
     //(18 bytes)
 
@@ -148,7 +148,7 @@ void rx_cmd_dleg_rw(uint8_t *buf, uint8_t *info)
 
     //Reply:
     tx_cmd_dleg_w(TX_N_DEFAULT, setNumber);
-    packAndSend(P_AND_S_DEFAULT, buf[P_XID], info, SEND_TO_MASTER);
+    packAndSend(P_AND_S_DEFAULT, buf[P_XID], info, SEND_TO_MASTER); //3rd arg info unused
 }
 
 //Gets called when our Slave sends us a Reply to our Read Request

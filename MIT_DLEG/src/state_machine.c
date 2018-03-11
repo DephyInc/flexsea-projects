@@ -4,15 +4,16 @@ extern "C" {
 
 #include "state_variables.h"
 #include "state_machine.h"
+#include "user-mn-MIT-DLeg-2dof.h"
+#include "cmd-DLeg.h"
+#include "flexsea_system.h"
+#include "flexsea.h"
 #include <math.h>
 
 //Static functions
 static float calcTorque(GainParams gainParams);
 
 WalkingStateMachine stateMachine;
-ANKLE_SENSORS_T sensors;
-//toDo check that angle setPoints are correct
-//toDo incorporate these into Plan GUI. Need to make these global
 GainParams eswGains = {0.04, 0, 0.004, 23};
 GainParams lswGains = {0.134, 0, 0.002, 2};
 GainParams estGains = {1.35, 0.025, 0.118, -5};
@@ -42,6 +43,11 @@ void runFlatGroundFSM(float* ptorqueDes) {
         // State transition, reset timers and set entry flag
         time_in_state = 0;
         isTransitioning = 1;
+
+        //update Plan with state changes
+//        static uint8_t info[2] = {PORT_USB, PORT_USB};
+//        tx_cmd_dleg_w(TX_N_DEFAULT, stateMachine.current_state);
+//        packAndSend(P_AND_S_DEFAULT, FLEXSEA_PLAN_1, info, SEND_TO_MASTER); //3rd arg unused
     }
 
     switch (stateMachine.current_state) {
@@ -79,9 +85,9 @@ void runFlatGroundFSM(float* ptorqueDes) {
             *ptorqueDes = calcTorque(lswGains);
 
             //Late Swing transition vectors
-            // VECTOR (1): Late Swing -> Early Stance (hard heal strike)
-            //toDo real sensor values
-            if (sensors.SS_torque_dot < HARD_HEALSTRIKE_SS_TORQ_RATE_THRESH) {
+            // VECTOR (1): Late Swing -> Early Stance (hard heel strike)
+            //toDo: better transition criterion than this
+            if (act1.jointAngle > 0) {
                 stateMachine.current_state = STATE_EARLY_STANCE;
             }
 
@@ -93,8 +99,8 @@ void runFlatGroundFSM(float* ptorqueDes) {
 
             //Early Stance transition vectors
             // VECTOR (1): Early Stance -> Late Stance POWER!
-            //toDo real sensor values
-            if (sensors.hardstop_torque > LSTPWR_HS_TORQ_TRIGGER_THRESH) {
+            //toDo counterclockwise is positive?
+            if (act1.jointTorque < LSTPWR_HS_TORQ_TRIGGER_THRESH) {
 
                 stateMachine.current_state = STATE_LATE_STANCE_POWER;
             }
@@ -107,7 +113,7 @@ void runFlatGroundFSM(float* ptorqueDes) {
 
             //Late Stance Power transition vectors
             // VECTOR (1): Late Stance Power -> Early Swing - Condition 1
-            if (sensors.ankle_total_torque < ANKLE_UNLOADED_TORQUE_THRESH) {
+            if (act1.jointTorque > ANKLE_UNLOADED_TORQUE_THRESH) {
                 stateMachine.current_state = STATE_EARLY_SWING;
 
             }
@@ -139,12 +145,9 @@ void runFlatGroundFSM(float* ptorqueDes) {
     @return float desired torque at joint (Nm)
 */
 static float calcTorque(GainParams gainParams) {
-    //toDo replace with real values
-    float angleCurrent_ = 0;
-    float dAngle_ = 0;
 
-    return gainParams.k1 * (angleCurrent_ - gainParams.thetaDes) \
-         + gainParams.k2 * powf((angleCurrent_ - gainParams.thetaDes), 3) - gainParams.b * dAngle_;
+    return gainParams.k1 * (act1.jointAngle - gainParams.thetaDes) \
+         + gainParams.k2 * powf((act1.jointAngle - gainParams.thetaDes), 3) - gainParams.b * act1.jointVel;
 }
 
 #ifdef __cplusplus
