@@ -32,6 +32,9 @@ extern "C" {
 #include "../inc/cmd-Rigid.h"
 #include "flexsea_user_structs.h"
 #include "user-mn.h"
+#include "cmd-DLeg.h"
+#include "state_machine.h"
+#include "state_variables.h"
 
 #ifdef DEPHY
 #include "dephy-mn.h"
@@ -235,7 +238,8 @@ void tx_cmd_rigid_w(uint8_t *shBuf, uint8_t *cmd, uint8_t *cmdType, \
 			SPLIT_16((ri->mn.analog[1]), shBuf, &index);
 			SPLIT_16((ri->mn.analog[2]), shBuf, &index);
 			SPLIT_16((ri->mn.analog[3]), shBuf, &index);
-			//(16 bytes)
+			SPLIT_16(stateMachine.current_state, shBuf, &index);
+			//(18 bytes)
 		}
 		else if(offset == 4)	//This is used to tweak and test bilateral controllers
 		{
@@ -386,7 +390,8 @@ void rx_cmd_rigid_rr(uint8_t *buf, uint8_t *info)
 			ri->mn.analog[1] = REBUILD_UINT16(buf, &index);
 			ri->mn.analog[2] = REBUILD_UINT16(buf, &index);
 			ri->mn.analog[3] = REBUILD_UINT16(buf, &index);
-			//(16 bytes)
+			stateMachine.current_controller = REBUILD_UINT16(buf, &index);
+			//(18 bytes)
 		}
 		else if(offset == 4)	//This is used to tweak and test bilateral controllers
 		{
