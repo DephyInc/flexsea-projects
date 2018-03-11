@@ -24,9 +24,9 @@ enum {
 };
 
 typedef struct{
-	uint16_t current_state;
-	uint16_t on_entry_sm_state;
-	uint16_t last_sm_state;
+    uint16_t current_state;
+    uint16_t on_entry_sm_state;
+    uint16_t last_sm_state;
 
 } WalkingStateMachine;
 
