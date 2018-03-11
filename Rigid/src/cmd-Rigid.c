@@ -390,7 +390,7 @@ void rx_cmd_rigid_rr(uint8_t *buf, uint8_t *info)
 			ri->mn.analog[1] = REBUILD_UINT16(buf, &index);
 			ri->mn.analog[2] = REBUILD_UINT16(buf, &index);
 			ri->mn.analog[3] = REBUILD_UINT16(buf, &index);
-			stateMachine.current_controller = REBUILD_UINT16(buf, &index);
+            stateMachine.current_state = REBUILD_UINT16(buf, &index);
 			//(18 bytes)
 		}
 		else if(offset == 4)	//This is used to tweak and test bilateral controllers
