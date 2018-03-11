@@ -97,7 +97,7 @@ struct fx_rigid_mn_s
 	uint16_t analog[4];
 	uint16_t status;
 
-	int16_t genVar[20];
+	int32_t genVar[20];
 	int8_t mot_temp;
 
 	//Decoded:
@@ -171,6 +171,7 @@ extern int16_t globvar[10];
 extern struct rigid_s rigid1, rigid2;
 extern int16_t globvar[10];
 extern struct dual_utt_s utt;
+extern struct act_s act1;
 
 //****************************************************************************
 // Prototype(s):

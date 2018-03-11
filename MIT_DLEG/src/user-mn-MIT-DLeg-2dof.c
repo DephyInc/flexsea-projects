@@ -88,7 +88,7 @@ static const float nScrew = N_SCREW;
 static const float jointMinSoft = JOINT_MIN_SOFT;
 static const float jointMaxSoft = JOINT_MAX_SOFT;
 
-struct act_s act1;		//actuator sensor structure.
+struct act_s act1;		//actuator sensor structure declared extern in flexsea_user_structs
 
 struct diffarr_s jnt_ang_clks;		//maybe used for velocity and accel calcs.
 
@@ -154,16 +154,8 @@ void MIT_DLeg_fsm_1(void)
 			{
 				static float* ptorqueDes;
 
-				// set genVars to send back to Plan
-				rigid1.mn.genVar[0] = act1.safetyFlag;
-				rigid1.mn.genVar[1] = state;
-				rigid1.mn.genVar[2] = 0;
-				//genVar[3] = tauMeas
-				//genVar[4] = throttled mA
-				rigid1.mn.genVar[5] = act1.jointAngle * 360/(ANG_UNIT);
-				//genVar[6] = tauDes (impedance controller - spring contribution)
-				//genVar[7] = desired mA
-				rigid1.mn.genVar[8] = act1.jointTorque;
+				//populate rigid1.mn.genVars to send to Plan
+				packRigidVars(&act1);
 
 				//begin safety check
 //			    if (safetyShutoff()) {
@@ -275,7 +267,9 @@ void updateSensorValues(struct act_s *actx)
 	pjointKinematic = getJointAngleKinematic();
 
 	actx->jointAngle = *(pjointKinematic + 0);
+	actx->jointAngleDegrees = actx->jointAngle * 360/angleUnit;
 	actx->jointVel = *(pjointKinematic + 1);
+	actx->jointVelDegrees = actx->jointVel * 360/angleUnit;
 	actx->jointAcc = *(pjointKinematic + 2);
 	actx->linkageMomentArm = getLinkageMomentArm(actx->jointAngle);
 	actx->axialForce = getAxialForce();
@@ -476,7 +470,7 @@ void setMotorTorque(struct act_s *actx, float tau_des)
 	tau_des = tau_des / (N*N_ETA) *1000;					// desired joint torque, reflected to motor [mNm]
 
 	//output genVars for ActPack monitoring
-	rigid1.mn.genVar[3] = tau_meas;
+	rigid1.mn.genVar[5] = tau_meas;
 	rigid1.mn.genVar[6] = tau_des;
 
 	tau_err = (tau_des - tau_meas);
@@ -496,7 +490,7 @@ void setMotorTorque(struct act_s *actx, float tau_des)
 	I = 1 / MOT_KT * ( (int32_t) tau_motor + (MOT_J + MOT_TRANS)*ddtheta_m + MOT_B*dtheta_m);		// + (J_rotor + J_screw)*ddtheta_m + B*dtheta_m
 	//I think I needs to be scaled to mA, but not sure yet.
 
-	rigid1.mn.genVar[7] = I; // demanded mA
+	actx->desiredCurrent = I; // demanded mA
 
 	//Saturate I for our current operational limits -- limit can be reduced by safetyShutoff() due to heating
 	if(I > currentOpLimit )
@@ -507,7 +501,7 @@ void setMotorTorque(struct act_s *actx, float tau_des)
 		I = -currentOpLimit;
 	}
 
-	rigid1.mn.genVar[4] = I; // throttled mA
+	actx->currentOpLimit = currentOpLimit; // throttled mA
 
 	setMotorCurrent(I);				// send current command to comm buffer to Execute
 }
@@ -586,6 +580,21 @@ int8_t findPoles(void) {
 	}
 
 	return 0;
+}
+
+void packRigidVars(struct act_s *actx) {
+
+	// set genVars to send back to Plan
+	rigid1.mn.genVar[0] = actx->jointAngleDegrees;
+	rigid1.mn.genVar[1] = actx->jointVelDegrees;
+	rigid1.mn.genVar[2] = actx->linkageMomentArm;
+	rigid1.mn.genVar[3] = actx->axialForce;
+	rigid1.mn.genVar[4] = actx->jointTorque;
+	//genVar[5] = tauMeas
+	//genVar[6] = tauDes (impedance controller - spring contribution)
+	rigid1.mn.genVar[7] = actx->desiredCurrent;
+	rigid1.mn.genVar[8] = actx->currentOpLimit;
+	rigid1.mn.genVar[9] = actx->safetyFlag;
 }
 
 void openSpeedFSM(void)

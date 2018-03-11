@@ -148,8 +148,8 @@ void runFlatGroundFSM(float* ptorqueDes) {
 */
 static float calcTorque(GainParams gainParams) {
 
-    return gainParams.k1 * (act1.jointAngle - gainParams.thetaDes) \
-         + gainParams.k2 * powf((act1.jointAngle - gainParams.thetaDes), 3) - gainParams.b * act1.jointVel;
+    return gainParams.k1 * (act1.jointAngleDegrees - gainParams.thetaDes) \
+         + gainParams.k2 * powf((act1.jointAngleDegrees - gainParams.thetaDes), 3) - gainParams.b * act1.jointVelDegrees;
 }
 
 #endif //BOARD_TYPE_FLEXSEA_PLAN

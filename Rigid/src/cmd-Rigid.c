@@ -52,6 +52,10 @@ extern "C" {
 #endif
 #endif
 
+#ifdef BOARD_TYPE_FLEXSEA_PLAN
+#include "w_gainsCommand.h"
+#endif
+
 //****************************************************************************
 // Variable(s)
 //****************************************************************************
@@ -217,17 +221,24 @@ void tx_cmd_rigid_w(uint8_t *shBuf, uint8_t *cmd, uint8_t *cmdType, \
 		else if(offset == 2)
 		{
 			SPLIT_32(ri->ctrl.timestamp, shBuf, &index);
-			SPLIT_16((uint16_t)(ri->mn.genVar[0]), shBuf, &index);
-			SPLIT_16((uint16_t)(ri->mn.genVar[1]), shBuf, &index);
-			SPLIT_16((uint16_t)(ri->mn.genVar[2]), shBuf, &index);
-			SPLIT_16((uint16_t)(ri->mn.genVar[3]), shBuf, &index);
-			SPLIT_16((uint16_t)(ri->mn.genVar[4]), shBuf, &index);
-			SPLIT_16((uint16_t)(ri->mn.genVar[5]), shBuf, &index);
-			SPLIT_16((uint16_t)(ri->mn.genVar[6]), shBuf, &index);
-			SPLIT_16((uint16_t)(ri->mn.genVar[7]), shBuf, &index);
-			SPLIT_16((uint16_t)(ri->mn.genVar[8]), shBuf, &index);
-			SPLIT_16((uint16_t)(ri->mn.genVar[9]), shBuf, &index);
-			//(24 bytes)
+			SPLIT_32(*(uint32_t*) &(ri->mn.genVar[0]), shBuf, &index);
+			SPLIT_32(*(uint32_t*) &(ri->mn.genVar[1]), shBuf, &index);
+			SPLIT_32(*(uint32_t*) &(ri->mn.genVar[2]), shBuf, &index);
+			SPLIT_32(*(uint32_t*) &(ri->mn.genVar[3]), shBuf, &index);
+			SPLIT_32(*(uint32_t*) &(ri->mn.genVar[4]), shBuf, &index);
+			SPLIT_32(*(uint32_t*) &(ri->mn.genVar[5]), shBuf, &index);
+			SPLIT_32(*(uint32_t*) &(ri->mn.genVar[6]), shBuf, &index);
+			//(32 bytes)
+
+//			// set genVars to send back to Plan
+//			rigid1.mn.genVar[0] = actx->jointAngleDegrees;
+//			rigid1.mn.genVar[1] = actx->jointVelDegrees;
+//			rigid1.mn.genVar[2] = actx->linkageMomentArm;
+//			rigid1.mn.genVar[3] = actx->axialForce;
+//			rigid1.mn.genVar[4] = actx->jointTorque;
+//			rigid1.mn.genVar[5] = tauMeas;
+//			rigid1.mn.genVar[6] = tauDes; (impedance controller - spring contribution)
+
 		}
 		else if(offset == 3)
 		{
@@ -239,7 +250,14 @@ void tx_cmd_rigid_w(uint8_t *shBuf, uint8_t *cmd, uint8_t *cmdType, \
 			SPLIT_16((ri->mn.analog[2]), shBuf, &index);
 			SPLIT_16((ri->mn.analog[3]), shBuf, &index);
 			SPLIT_16(stateMachine.current_state, shBuf, &index);
-			//(18 bytes)
+			SPLIT_32((uint32_t) ri->mn.genVar[7], shBuf, &index);
+			SPLIT_32((uint32_t) ri->mn.genVar[8], shBuf, &index);
+			SPLIT_16((uint16_t) ri->mn.genVar[9], shBuf, &index);
+
+			//rigid1.mn.genVar[7] = actx->desiredCurrent;
+			//rigid1.mn.genVar[8] = actx->currentOpLimit;
+			//rigid1.mn.genVar[9] = actx->safetyFlag;
+			//(26 bytes)
 		}
 		else if(offset == 4)	//This is used to tweak and test bilateral controllers
 		{
@@ -292,6 +310,7 @@ void rx_cmd_rigid_rr(uint8_t *buf, uint8_t *info)
 	uint16_t index = 0;
 	uint8_t offset = 0;
 	struct rigid_s *ri = &rigid1;
+	struct act_s *act = &act1;
 	(void)info;
 
 	#ifdef BOARD_TYPE_FLEXSEA_EXECUTE
@@ -360,17 +379,32 @@ void rx_cmd_rigid_rr(uint8_t *buf, uint8_t *info)
 		else if(offset == 2)
 		{
 			ri->ctrl.timestamp = REBUILD_UINT32(buf, &index);
-			ri->mn.genVar[0] = (int16_t)REBUILD_UINT16(buf, &index);
-			ri->mn.genVar[1] = (int16_t)REBUILD_UINT16(buf, &index);
-			ri->mn.genVar[2] = (int16_t)REBUILD_UINT16(buf, &index);
-			ri->mn.genVar[3] = (int16_t)REBUILD_UINT16(buf, &index);
-			ri->mn.genVar[4] = (int16_t)REBUILD_UINT16(buf, &index);
-			ri->mn.genVar[5] = (int16_t)REBUILD_UINT16(buf, &index);
-			ri->mn.genVar[6] = (int16_t)REBUILD_UINT16(buf, &index);
-			ri->mn.genVar[7] = (int16_t)REBUILD_UINT16(buf, &index);
-			ri->mn.genVar[8] = (int16_t)REBUILD_UINT16(buf, &index);
-			ri->mn.genVar[9] = (int16_t)REBUILD_UINT16(buf, &index);
-			//(24 bytes)
+
+			uint32_t jointAngleDegrees = REBUILD_UINT32(buf, &index);
+			uint32_t jointVelDegrees = REBUILD_UINT32(buf, &index);
+			uint32_t linkageMomentArm = REBUILD_UINT32(buf, &index);
+			uint32_t axialForce = REBUILD_UINT32(buf, &index);
+			uint32_t jointTorque = REBUILD_UINT32(buf, &index);
+			uint32_t tauMeas = REBUILD_UINT32(buf, &index);
+			uint32_t tauDes = REBUILD_UINT32(buf, &index);
+
+			act->jointAngleDegrees = *(float*) &jointAngleDegrees;
+			act->jointVelDegrees = *(float*) &jointVelDegrees;
+			act->linkageMomentArm = *(float*) &linkageMomentArm;
+			act->axialForce = *(float*) &axialForce;
+			act->jointTorque = *(float*) &jointTorque;
+			act->tauMeas = *(float*) &tauMeas;
+			act->tauDes = *(float*) &tauDes;
+
+			//(32 bytes)
+
+			//rigid1.mn.genVar[0] = actx->jointAngleDegrees;
+			//rigid1.mn.genVar[1] = actx->jointVelDegrees;
+			//rigid1.mn.genVar[2] = actx->linkageMomentArm;
+			//rigid1.mn.genVar[3] = actx->axialForce;
+			//rigid1.mn.genVar[4] = actx->jointTorque;
+			//rigid1.mn.genVar[5] = tauMeas;
+			//rigid1.mn.genVar[6] = tauDes; (impedance controller - spring contribution)
 
 			//In some cases genVar contains Strain data:
 			strain1.ch[0].strain_filtered = ri->mn.genVar[0];
@@ -391,7 +425,10 @@ void rx_cmd_rigid_rr(uint8_t *buf, uint8_t *info)
 			ri->mn.analog[2] = REBUILD_UINT16(buf, &index);
 			ri->mn.analog[3] = REBUILD_UINT16(buf, &index);
             stateMachine.current_state = REBUILD_UINT16(buf, &index);
-			//(18 bytes)
+			act->desiredCurrent = (int32_t) REBUILD_UINT32(buf, &index);
+			act->currentOpLimit = (int32_t) REBUILD_UINT32(buf, &index);
+			act->safetyFlag = (int8_t) REBUILD_UINT16(buf, &index);
+			//(24 bytes)
 		}
 		else if(offset == 4)	//This is used to tweak and test bilateral controllers
 		{

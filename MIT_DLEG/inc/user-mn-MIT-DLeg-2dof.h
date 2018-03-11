@@ -51,7 +51,9 @@ extern int8_t isEnabledUpdateSensors;
 struct act_s
 {
 	float jointAngle;
+	float jointAngleDegrees;
 	float jointVel;
+	float jointVelDegrees;
 	float jointAcc;
 	float linkageMomentArm;
 	float axialForce;
@@ -60,7 +62,9 @@ struct act_s
 	int32_t motorAcc;		// motor acceleration [rad/s/s]
 	int16_t regTemp;		// regulate temperature
 	int16_t motTemp;		// motor temperature
-	int32_t motCurr;		// motor current.
+	int32_t motCurr;		// motor current
+	int32_t desiredCurrent; // desired current from getMotorCurrent()
+	int32_t currentOpLimit; // current throttling limit
 	int8_t safetyFlag;		// todo: consider if necessary
 };
 
@@ -96,6 +100,7 @@ void    updateSensorValues(struct act_s *actx);
 //Control outputs
 float biomControlImpedance(float theta_set, float k1, float k2, float b); 	// returns a desired joint torque, then use setMotorTorque() to get the motor to do its magic
 void  setMotorTorque(struct act_s *actx, float tor_d);
+void  packRigidVars(struct act_s *actx);
 
 //Main FSMs
 void openSpeedFSM(void);
