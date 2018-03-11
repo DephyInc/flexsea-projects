@@ -235,7 +235,7 @@ void tx_cmd_actpack_w(uint8_t *shBuf, uint8_t *cmd, uint8_t *cmdType, \
 			SPLIT_16((uint16_t)(ri->mn.genVar[6]), shBuf, &index);
 			SPLIT_16((uint16_t)(ri->mn.genVar[7]), shBuf, &index);
 			SPLIT_16((uint16_t)(ri->mn.genVar[8]), shBuf, &index);
-			SPLIT_16((uint16_t)(ri->mn.genVar[9]), shBuf, &index);
+            SPLIT_16((uint16_t)(stateMachine.current_state), shBuf, &index);
 			//(22 bytes)
 		}
 		else if(offset == 3)
@@ -246,9 +246,8 @@ void tx_cmd_actpack_w(uint8_t *shBuf, uint8_t *cmd, uint8_t *cmdType, \
 			SPLIT_16((ri->mn.analog[0]), shBuf, &index);
 			SPLIT_16((ri->mn.analog[1]), shBuf, &index);
 			SPLIT_16((ri->mn.analog[2]), shBuf, &index);
-			SPLIT_16((ri->mn.analog[3]), shBuf, &index);
-            SPLIT_16((uint16_t) stateMachine.current_state, shBuf, &index);
-			//(18 bytes)
+            SPLIT_16((ri->mn.analog[3]), shBuf, &index);
+            //(16 bytes)
 		}
 
 	#endif	//BOARD_TYPE_FLEXSEA_MANAGE
@@ -414,8 +413,7 @@ void rx_cmd_actpack_rr(uint8_t *buf, uint8_t *info)
 			ri->mn.analog[1] = REBUILD_UINT16(buf, &index);
 			ri->mn.analog[2] = REBUILD_UINT16(buf, &index);
 			ri->mn.analog[3] = REBUILD_UINT16(buf, &index);
-            ri->mn.genVar[19] = REBUILD_UINT16(buf, &index); //current FSM state
-			//(18 bytes)
+            //(16 bytes)
 		}
 		else
 		{
