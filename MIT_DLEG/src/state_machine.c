@@ -5,12 +5,14 @@ extern "C" {
 #include "state_variables.h"
 #include "state_machine.h"
 #include "user-mn-MIT-DLeg-2dof.h"
+#include "flexsea_user_structs.h"
 #include "cmd-DLeg.h"
 #include "flexsea_system.h"
 #include "flexsea.h"
 #include <math.h>
 
 WalkingStateMachine stateMachine;
+Act_s act1;
 GainParams eswGains = {0.04, 0, 0.004, 23};
 GainParams lswGains = {0.134, 0, 0.002, 2};
 GainParams estGains = {1.35, 0.025, 0.118, -5};

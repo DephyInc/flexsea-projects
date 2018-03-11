@@ -47,27 +47,6 @@ extern int8_t isEnabledUpdateSensors;
 // Structure(s)
 //****************************************************************************
 
-// Actuator structure to track sensor values, initially built for the TF08 style actuator
-struct act_s
-{
-	float jointAngle;
-	float jointAngleDegrees;
-	float jointVel;
-	float jointVelDegrees;
-	float jointAcc;
-	float linkageMomentArm;
-	float axialForce;
-	float jointTorque;
-	int32_t motorVel;		// motor velocity [rad/s]
-	int32_t motorAcc;		// motor acceleration [rad/s/s]
-	int16_t regTemp;		// regulate temperature
-	int16_t motTemp;		// motor temperature
-	int32_t motCurr;		// motor current
-	int32_t desiredCurrent; // desired current from getMotorCurrent()
-	int32_t currentOpLimit; // current throttling limit
-	int8_t safetyFlag;		// todo: consider if necessary
-};
-
 //****************************************************************************
 // Public Function Prototype(s):
 //****************************************************************************

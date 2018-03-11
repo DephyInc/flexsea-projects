@@ -171,7 +171,6 @@ extern int16_t globvar[10];
 extern struct rigid_s rigid1, rigid2;
 extern int16_t globvar[10];
 extern struct dual_utt_s utt;
-extern struct act_s act1;
 
 //****************************************************************************
 // Prototype(s):

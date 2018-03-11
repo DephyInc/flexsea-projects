@@ -31,6 +31,7 @@ extern GainParams estGains;
 extern GainParams lstGains; //currently unused in simple implementation
 extern GainParams lstPowerGains;
 extern WalkingStateMachine stateMachine;
+extern Act_s act1;
 
 //****************************************************************************
 // Prototype(s):

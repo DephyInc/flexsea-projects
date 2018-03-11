@@ -88,7 +88,8 @@ static const float nScrew = N_SCREW;
 static const float jointMinSoft = JOINT_MIN_SOFT;
 static const float jointMaxSoft = JOINT_MAX_SOFT;
 
-struct act_s act1;		//actuator sensor structure declared extern in flexsea_user_structs
+//struct act_s act1;		//actuator sensor structure declared extern in flexsea_user_structs
+				//defined in state_machine.c
 
 struct diffarr_s jnt_ang_clks;		//maybe used for velocity and accel calcs.
 
