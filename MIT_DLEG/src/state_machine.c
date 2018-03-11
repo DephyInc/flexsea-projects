@@ -10,15 +10,17 @@ extern "C" {
 #include "flexsea.h"
 #include <math.h>
 
-//Static functions
-static float calcTorque(GainParams gainParams);
-
-WalkingStateMachine stateMachine;
+WalkingStateMachine stateMachine = {0, 0, 0};
 GainParams eswGains = {0.04, 0, 0.004, 23};
 GainParams lswGains = {0.134, 0, 0.002, 2};
 GainParams estGains = {1.35, 0.025, 0.118, -5};
 GainParams lstGains = {0, 0, 0, 0}; //currently unused in simple implementation
 GainParams lstPowerGains = {4.5, 0, 0.005, -18};
+
+#ifndef BOARD_TYPE_FLEXSEA_PLAN
+
+//Static functions
+static float calcTorque(GainParams gainParams);
 
 /** Impedance Control Level-ground Walking FSM
 	Based on BiOM ankle and simplified.
@@ -149,6 +151,8 @@ static float calcTorque(GainParams gainParams) {
     return gainParams.k1 * (act1.jointAngle - gainParams.thetaDes) \
          + gainParams.k2 * powf((act1.jointAngle - gainParams.thetaDes), 3) - gainParams.b * act1.jointVel;
 }
+
+#endif //BOARD_TYPE_FLEXSEA_PLAN
 
 #ifdef __cplusplus
 }

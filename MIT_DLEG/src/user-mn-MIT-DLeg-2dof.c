@@ -24,8 +24,8 @@
 	[This file] user-mn-MIT_DLeg_2dof: User code running on Manage
 *****************************************************************************/
 
-#ifdef INCLUDE_UPROJ_MIT_DLEG
-#ifdef BOARD_TYPE_FLEXSEA_MANAGE
+#if defined INCLUDE_UPROJ_MIT_DLEG || defined BOARD_TYPE_FLEXSEA_PLAN
+#if defined BOARD_TYPE_FLEXSEA_MANAGE || defined BOARD_TYPE_FLEXSEA_PLAN
 
 //****************************************************************************
 // Include(s)
@@ -39,7 +39,8 @@
 #include "flexsea_sys_def.h"
 #include "flexsea_system.h"
 #include "flexsea_cmd_calibration.h"
-#include "filters.h"
+//#include "filters.h"
+#include "flexsea_user_structs.h"
 #include <flexsea_comm.h>
 #include <math.h>
 
@@ -403,19 +404,19 @@ float getLinkageMomentArm(float theta)
 //	theta_r = ANG_UNIT % 360 ? (theta*M_PI/180) : theta; 	// convert deg to radians if necessary.
 //	theta_r = theta * M_PI / 180;	// convert deg to radians.
 
-    static const float t = 47; 		// [mm] tibial offset
-    static const float t_k = 140; 	// [mm] offset from knee along tibia
-    static const float f = 39;  	// [mm] femur offset
-    static const float f_k = 18;	// [mm] offset from knee along femur
+    float t = 47; 		// [mm] tibial offset
+    float t_k = 140; 	// [mm] offset from knee along tibia
+    float f = 39;  	// [mm] femur offset
+    float f_k = 18;	// [mm] offset from knee along femur
 
-    static const float aIn = t*t + t_k*t_k;
+    float aIn = t*t + t_k*t_k;
     a = sqrt(aIn);
-    static const float bIn = f*f + f_k*f_k;
+    float bIn = f*f + f_k*f_k;
     b = sqrt(bIn);
 
-    static const float Tin = t/t_k;
+    float Tin = t/t_k;
     T = atan(Tin);
-    static const float Fin = f/f_k;
+    float Fin = f/f_k;
     F = atan(Fin);
 
     C_ang = M_PI - theta - (T + F); 	// angle
@@ -758,5 +759,5 @@ void oneTorqueFSM(struct act_s *actx)
 	}
 }
 
-#endif 	//BOARD_TYPE_FLEXSEA_MANAGE
-#endif //INCLUDE_UPROJ_MIT_DLEG
+#endif 	//BOARD_TYPE_FLEXSEA_MANAGE || defined BOARD_TYPE_FLEXSEA_PLAN
+#endif //INCLUDE_UPROJ_MIT_DLEG || defined BOARD_TYPE_FLEXSEA_PLAN

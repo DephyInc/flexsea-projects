@@ -33,6 +33,8 @@ extern "C" {
 #include "flexsea_user_structs.h"
 #include "cmd-ActPack.h"
 #include "cmd-DLeg.h"
+#include "state_machine.h"
+#include "state_variables.h"
 
 //Execute boards only:
 #ifdef BOARD_TYPE_FLEXSEA_EXECUTE
@@ -245,7 +247,7 @@ void tx_cmd_actpack_w(uint8_t *shBuf, uint8_t *cmd, uint8_t *cmdType, \
 			SPLIT_16((ri->mn.analog[1]), shBuf, &index);
 			SPLIT_16((ri->mn.analog[2]), shBuf, &index);
 			SPLIT_16((ri->mn.analog[3]), shBuf, &index);
-			SPLIT_16(stateMachine.current_state, shBuf, &index);
+            SPLIT_16((uint16_t) stateMachine.current_state, shBuf, &index);
 			//(18 bytes)
 		}
 
@@ -412,7 +414,7 @@ void rx_cmd_actpack_rr(uint8_t *buf, uint8_t *info)
 			ri->mn.analog[1] = REBUILD_UINT16(buf, &index);
 			ri->mn.analog[2] = REBUILD_UINT16(buf, &index);
 			ri->mn.analog[3] = REBUILD_UINT16(buf, &index);
-			stateMachine.current_state = REBUILD_UINT16(buf, &index);
+            ri->mn.genVar[19] = REBUILD_UINT16(buf, &index); //current FSM state
 			//(18 bytes)
 		}
 		else

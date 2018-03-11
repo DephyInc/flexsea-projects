@@ -24,8 +24,8 @@
 	[This file] MIT DARPA Leg Main FSM
 ****************************************************************************/
 
-#ifdef INCLUDE_UPROJ_MIT_DLEG
-#ifdef BOARD_TYPE_FLEXSEA_MANAGE
+#if defined INCLUDE_UPROJ_MIT_DLEG || defined BOARD_TYPE_FLEXSEA_PLAN
+#if defined BOARD_TYPE_FLEXSEA_MANAGE || defined BOARD_TYPE_FLEXSEA_PLAN
 
 #ifndef INC_MIT_DLEG
 #define INC_MIT_DLEG
@@ -33,7 +33,9 @@
 //****************************************************************************
 // Include(s)
 //****************************************************************************
+#include <stdint.h>
 #include "main.h"
+
 
 //****************************************************************************
 // Shared variable(s)
@@ -213,9 +215,7 @@ enum {
 
 #define SECONDS			1000
 
-
-
 #endif	//INC_MIT_DLEG
 
-#endif 	//BOARD_TYPE_FLEXSEA_MANAGE
-#endif //INCLUDE_UPROJ_MIT_DLEG
+#endif 	//BOARD_TYPE_FLEXSEA_MANAGE || BOARD_TYPE_FLEXSEA_MANAGE
+#endif //INCLUDE_UPROJ_MIT_DLEG || BOARD_TYPE_FLEXSEA_MANAGE

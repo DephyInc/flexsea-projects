@@ -16,7 +16,7 @@
 ****************************************************************************/
 
 #ifdef INCLUDE_UPROJ_ACTPACK
-#ifdef BOARD_TYPE_FLEXSEA_MANAGE
+#if defined BOARD_TYPE_FLEXSEA_MANAGE || defined BOARD_TYPE_FLEXSEA_PLAN
 
 #ifndef INC_ACTPACK_MN_H
 #define INC_ACTPACK_MN_H
@@ -88,5 +88,5 @@ extern writeEx_s writeEx;
 
 #endif	//INC_ACTPACK_MN_H
 
-#endif //BOARD_TYPE_FLEXSEA_EXECUTE
+#endif //BOARD_TYPE_FLEXSEA_MANAGE || defined BOARD_TYPE_FLEXSEA_PLAN
 #endif //INCLUDE_UPROJ_ACTPACK
