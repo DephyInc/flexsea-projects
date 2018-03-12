@@ -60,7 +60,7 @@ static int8_t isTempLimit = 0;
 
 int8_t isEnabledUpdateSensors = 0;
 int16_t fsm1State = -2;
-float currentScalar = 1.0;
+float currentScalar = CURRENT_SCALAR_INIT;
 int32_t currentOpLimit = CURRENT_LIMIT_INIT; 	//operational limit for current.
 
 //torque gain values
@@ -282,6 +282,7 @@ void updateSensorValues(struct act_s *actx)
 	actx->regTemp = rigid1.re.temp;
 	actx->motTemp = getMotorTempSensor();
 	actx->motCurr = rigid1.ex.mot_current;
+	actx->currentOpLimit = currentOpLimit; // throttled mA
 
 	actx->safetyFlag = isSafetyFlag;
 
@@ -289,6 +290,8 @@ void updateSensorValues(struct act_s *actx)
 	{
 		isSafetyFlag = SAFETY_TEMP;
 		isTempLimit = 1;
+	} else {
+		isTempLimit = 0;
 	}
 
 }
@@ -496,8 +499,6 @@ void setMotorTorque(struct act_s *actx, float tau_des)
 		I = -currentOpLimit;
 	}
 
-	actx->currentOpLimit = currentOpLimit; // throttled mA
-
 	setMotorCurrent((int32_t) (I * currentScalar));				// send current command to comm buffer to Execute
 }
 
@@ -559,8 +560,6 @@ void setMotorTorqueFF(struct act_s *actx, float tau_des)
 	{
 		I = -currentOpLimit;
 	}
-
-	actx->currentOpLimit = currentOpLimit; // throttled mA
 
 	setMotorCurrent((int32_t) (I * currentScalar));				// send current command to comm buffer to Execute
 }

@@ -184,6 +184,7 @@ void twoTorqueFSM();
 #define MOTOR_TEMP_LIMIT_INIT	70
 #define ABS_TORQUE_LIMIT_INIT	100		    // Joint torque [Nm]
 #define CURRENT_LIMIT_INIT		40000		// [mA] useful in this form
+#define CURRENT_SCALAR_INIT		1
 
 // Motor Temp Sensor
 #define V25_TICKS		943		//760mV/3.3V * 4096 = 943
