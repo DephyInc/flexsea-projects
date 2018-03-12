@@ -471,8 +471,8 @@ void setMotorTorque(struct act_s *actx, float tau_des)
 	tau_des = tau_des / (N*N_ETA) *1000;					// desired joint torque, reflected to motor [mNm]
 
 	//output genVars for ActPack monitoring
-	rigid1.mn.genVar[5] = tau_meas;
-	rigid1.mn.genVar[6] = tau_des;
+	rigid1.mn.userVar[5] = tau_meas;
+	rigid1.mn.userVar[6] = tau_des;
 
 	tau_err = (tau_des - tau_meas);
 	tau_err_dot = (tau_err - tau_err_last)/time;
@@ -528,8 +528,8 @@ void setMotorTorqueFF(struct act_s *actx, float tau_des)
 	tau_des = tau_des / (N*N_ETA) *1000;					// desired joint torque, reflected to motor [mNm]
 
 	//output genVars for ActPack monitoring
-	rigid1.mn.genVar[5] = tau_meas;
-	rigid1.mn.genVar[6] = tau_des;
+	rigid1.mn.userVar[5] = tau_meas;
+	rigid1.mn.userVar[6] = tau_des;
 
 	tau_diff = (tau_des - tau_meas);
 
@@ -644,16 +644,16 @@ int8_t findPoles(void) {
 void packRigidVars(struct act_s *actx) {
 
 	// set genVars to send back to Plan
-	rigid1.mn.genVar[0] = actx->jointAngleDegrees;
-	rigid1.mn.genVar[1] = actx->jointVelDegrees;
-	rigid1.mn.genVar[2] = actx->linkageMomentArm;
-	rigid1.mn.genVar[3] = actx->axialForce;
-	rigid1.mn.genVar[4] = actx->jointTorque;
+	rigid1.mn.userVar[0] = actx->jointAngleDegrees;
+	rigid1.mn.userVar[1] = actx->jointVelDegrees;
+	rigid1.mn.userVar[2] = actx->linkageMomentArm;
+	rigid1.mn.userVar[3] = actx->axialForce;
+	rigid1.mn.userVar[4] = actx->jointTorque;
 	//genVar[5] = tauMeas
 	//genVar[6] = tauDes (impedance controller - spring contribution)
-	rigid1.mn.genVar[7] = actx->desiredCurrent;
-	rigid1.mn.genVar[8] = actx->currentOpLimit;
-	rigid1.mn.genVar[9] = actx->safetyFlag;
+	rigid1.mn.userVar[7] = actx->desiredCurrent;
+	rigid1.mn.userVar[8] = actx->currentOpLimit;
+	rigid1.mn.userVar[9] = actx->safetyFlag;
 }
 
 void openSpeedFSM(void)
