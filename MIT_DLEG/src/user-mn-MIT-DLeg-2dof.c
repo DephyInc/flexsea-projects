@@ -131,10 +131,10 @@ void MIT_DLeg_fsm_1(void)
 		case -1:
 			stateMachine.current_state = STATE_INIT;
 			//turned off for testing without Motor usage
-			if(findPoles()) {
-				fsm1State = 0;
-				time = 0;
-			}
+//			if(findPoles()) {
+//				fsm1State = 0;
+//				time = 0;
+//			}
 
 			fsm1State = 0;
 
@@ -160,19 +160,22 @@ void MIT_DLeg_fsm_1(void)
 
 				//begin safety check
 			    if (safetyShutoff()) {
-			    	/*motor behavior changes based on failure mode
-			    	  bypasses the switch statement if return true
+			    	/*motor behavior changes based on failure mode.
+			    	  Bypasses the switch statement if return true
 			    	  but sensors check still runs and has a chance
-			    	  to allow code to move past this block
+			    	  to allow code to move past this block.
+			    	  Only update the walking FSM, but don't output torque.
 			    	*/
+			    	runFlatGroundFSM(ptorqueDes);
 
 			    	return;
-			    } else {
-			    	runFlatGroundFSM(ptorqueDes);
-			    }
 
-				setMotorTorque(&act1, *ptorqueDes);
-//				twoTorqueFSM( &act1);
+			    } else {
+
+			    	runFlatGroundFSM(ptorqueDes);
+					setMotorTorque(&act1, *ptorqueDes);
+	//				twoTorqueFSM( &act1);
+			    }
 
 				break;
 			}
@@ -488,8 +491,6 @@ void setMotorTorque(struct act_s *actx, float tau_des)
 	I = 1 / MOT_KT * ( (int32_t) tau_motor + (MOT_J + MOT_TRANS)*ddtheta_m + MOT_B*dtheta_m);		// + (J_rotor + J_screw)*ddtheta_m + B*dtheta_m
 	//I think I needs to be scaled to mA, but not sure yet.
 
-	actx->desiredCurrent = I; // demanded mA
-
 	//Saturate I for our current operational limits -- limit can be reduced by safetyShutoff() due to heating
 	if(I > currentOpLimit )
 	{
@@ -499,7 +500,8 @@ void setMotorTorque(struct act_s *actx, float tau_des)
 		I = -currentOpLimit;
 	}
 
-	setMotorCurrent((int32_t) (I * currentScalar));				// send current command to comm buffer to Execute
+	actx->desiredCurrent = (int32_t) (I * currentScalar); // demanded mA
+	setMotorCurrent(actx->desiredCurrent);				// send current command to comm buffer to Execute
 }
 
 /*
@@ -550,8 +552,6 @@ void setMotorTorqueFF(struct act_s *actx, float tau_des)
 	I = 1 / MOT_KT * ( (int32_t) tau_motor + (MOT_J + MOT_TRANS)*ddtheta_m + MOT_B*dtheta_m);		// + (J_rotor + J_screw)*ddtheta_m + B*dtheta_m
 	//I think I needs to be scaled to mA, but not sure yet.
 
-	actx->desiredCurrent = I; // demanded mA
-
 	//Saturate I for our current operational limits -- limit can be reduced by safetyShutoff() due to heating
 	if(I > currentOpLimit )
 	{
@@ -561,7 +561,10 @@ void setMotorTorqueFF(struct act_s *actx, float tau_des)
 		I = -currentOpLimit;
 	}
 
-	setMotorCurrent((int32_t) (I * currentScalar));				// send current command to comm buffer to Execute
+	actx->desiredCurrent = (int32_t) (I * currentScalar); // demanded mA
+	setMotorCurrent(actx->desiredCurrent);				// send current command to comm buffer to Execute
+
+
 }
 
 //UNUSED. See state_machine

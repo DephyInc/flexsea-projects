@@ -259,9 +259,9 @@ void tx_cmd_rigid_w(uint8_t *shBuf, uint8_t *cmd, uint8_t *cmdType, \
 			SPLIT_16((uint16_t) rigid1.mn.genVar[7], shBuf, &index);
 			SPLIT_16((uint16_t) rigid1.mn.genVar[8], shBuf, &index);
 
-			//rigid1.mn.genVar[7] = actx->desiredCurrent;
-			//rigid1.mn.genVar[8] = actx->currentOpLimit;
-			//rigid1.mn.genVar[9] = actx->safetyFlag;
+			//rigid1.mn.userVar[7] = actx->desiredCurrent;
+			//rigid1.mn.userVar[8] = actx->currentOpLimit;
+			//rigid1.mn.userVar[9] = actx->safetyFlag;
 			//(36 bytes)
 		}
 		else if(offset == 4)	//This is used to tweak and test bilateral controllers
@@ -439,7 +439,7 @@ void rx_cmd_rigid_rr(uint8_t *buf, uint8_t *info)
             stateMachine.current_state = REBUILD_UINT16(buf, &index);
 			act->desiredCurrent = (int32_t) REBUILD_UINT32(buf, &index);
 			act->currentOpLimit = (int32_t) REBUILD_UINT32(buf, &index);
-			act->safetyFlag = (int8_t) REBUILD_UINT16(buf, &index);
+			act->safetyFlag = (int16_t) REBUILD_UINT16(buf, &index);
 			ri->mn.genVar[5] = (int16_t) REBUILD_UINT16(buf, &index);
 			ri->mn.genVar[6] = (int16_t) REBUILD_UINT16(buf, &index);
 			ri->mn.genVar[7] = (int16_t) REBUILD_UINT16(buf, &index);

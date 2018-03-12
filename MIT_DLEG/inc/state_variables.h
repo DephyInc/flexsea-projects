@@ -63,7 +63,7 @@ typedef struct act_s
     int32_t motCurr;		// motor current
     int32_t desiredCurrent; // desired current from getMotorCurrent()
     int32_t currentOpLimit; // current throttling limit
-    int8_t safetyFlag;		// todo: consider if necessary
+    int16_t safetyFlag;		// todo: consider if necessary
 } Act_s;
 
 
