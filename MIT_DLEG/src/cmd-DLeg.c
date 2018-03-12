@@ -11,7 +11,7 @@ extern "C" {
 #include <flexsea.h>
 #include <flexsea_system.h>
 #include <flexsea_cmd_user.h>
-#include <cmd-DLeg.h>
+#include "cmd-DLeg.h"
 #include "state_variables.h"
 #include "state_machine.h"
 #include "user-mn.h"
@@ -22,6 +22,8 @@ extern "C" {
 
 //array used for indexing in cmd-DLeg !ORDER MATTERS!
 GainParams* stateGains[5] = {&eswGains, &lswGains, &estGains, &lstGains, &lstPowerGains};
+int16_t fsm1StatePlan;
+float currentScalarPlan;
 
 //****************************************************************************
 // DLL Function(s)
@@ -77,7 +79,9 @@ void tx_cmd_dleg_rw(uint8_t *shBuf, uint8_t *cmd, uint8_t *cmdType, \
         SPLIT_32((uint32_t) *(uint32_t*) &stateGains[setNumber]->k2, shBuf, &index);
         SPLIT_32((uint32_t) *(uint32_t*) &stateGains[setNumber]->b, shBuf, &index);
         SPLIT_32((uint32_t) *(uint32_t*) &stateGains[setNumber]->thetaDes, shBuf, &index);
-        //(16 bytes)
+        SPLIT_16(fsm1StatePlan, shBuf, &index);
+        SPLIT_32((uint32_t) *(uint32_t*) &currentScalarPlan, shBuf, &index);
+        //(22 bytes)
 
     #endif	//BOARD_TYPE_FLEXSEA_PLAN
 
@@ -110,8 +114,10 @@ void tx_cmd_dleg_w(uint8_t *shBuf, uint8_t *cmd, uint8_t *cmdType, \
     SPLIT_32((uint32_t) *(uint32_t*) &stateGains[setNumber]->b, shBuf, &index);
     SPLIT_32((uint32_t) *(uint32_t*) &stateGains[setNumber]->thetaDes, shBuf, &index);
     SPLIT_16((uint16_t) stateMachine.current_state, shBuf, &index);
+    SPLIT_16((uint16_t) fsm1State, shBuf, &index);
+    SPLIT_32((uint32_t) *(uint32_t*) &currentScalar, shBuf, &index);
 
-    //(18 bytes)
+    //(24 bytes)
 
     #endif	//BOARD_TYPE_FLEXSEA_MANAGE
 
@@ -144,6 +150,12 @@ void rx_cmd_dleg_rw(uint8_t *buf, uint8_t *info)
     stateGains[setNumber]->b = *(float*) &b;
     stateGains[setNumber]->thetaDes = *(float*) &thetaDes;
 
+    fsm1State = (int16_t) REBUILD_UINT16(buf, &index);
+
+    uint32_t curScale = REBUILD_UINT32(buf, &index);
+    currentScalar = *(float*) &curScale;
+
+    //22 bytes
     #endif	//BOARD_TYPE_FLEXSEA_MANAGE
 
     //Reply:
@@ -168,13 +180,19 @@ void rx_cmd_dleg_rr(uint8_t *buf, uint8_t *info)
         uint32_t b = REBUILD_UINT32(buf, &index);
         uint32_t thetaDes = REBUILD_UINT32(buf, &index);
         uint16_t currentState = REBUILD_UINT16(buf, &index);
-        //18 bytes
 
         stateGains[setNumber]->k1 = *(float*) &k1;
         stateGains[setNumber]->k2 = *(float*) &k2;
         stateGains[setNumber]->b = *(float*) &b;
         stateGains[setNumber]->thetaDes = *(float*) &thetaDes;
         stateMachine.current_state = currentState;
+
+        fsm1StatePlan = REBUILD_UINT16(buf, &index);
+
+        uint32_t curScale = REBUILD_UINT32(buf, &index);
+        currentScalarPlan = *(float*) &curScale;
+
+        //24 bytes
 
     #endif	//BOARD_TYPE_FLEXSEA_PLAN
 }

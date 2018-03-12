@@ -79,6 +79,7 @@ void    updateSensorValues(struct act_s *actx);
 //Control outputs
 float biomControlImpedance(float theta_set, float k1, float k2, float b); 	// returns a desired joint torque, then use setMotorTorque() to get the motor to do its magic
 void  setMotorTorque(struct act_s *actx, float tor_d);
+void  setMotorTorqueFF(struct act_s *actx, float tor_d);
 void  packRigidVars(struct act_s *actx);
 
 //Main FSMs

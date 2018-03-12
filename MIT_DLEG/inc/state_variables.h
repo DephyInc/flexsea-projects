@@ -66,9 +66,14 @@ typedef struct act_s
     int8_t safetyFlag;		// todo: consider if necessary
 } Act_s;
 
+
+
 //****************************************************************************
 // Shared variable(s)
 //****************************************************************************
+extern int16_t fsm1State;
+extern float currentScalar;
+
 
 #ifdef __cplusplus
 }

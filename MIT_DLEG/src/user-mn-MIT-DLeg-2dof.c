@@ -59,7 +59,8 @@ static int8_t isTorqueLimit = 0;
 static int8_t isTempLimit = 0;
 
 int8_t isEnabledUpdateSensors = 0;
-
+int16_t fsm1State = -2;
+float currentScalar = 1.0;
 int32_t currentOpLimit = CURRENT_LIMIT_INIT; 	//operational limit for current.
 
 //torque gain values
@@ -110,19 +111,18 @@ void MIT_DLeg_fsm_1(void)
 	#if(ACTIVE_PROJECT == PROJECT_MIT_DLEG)
 
     static uint32_t time = 0;
-    static int32_t state = -2;
 
     //Increment time (1 tick = 1ms nominally; need to confirm)
     time++;
 
     //begin main FSM
-	switch(state)
+	switch(fsm1State)
 	{
 		case -2:
 			stateMachine.current_state = STATE_IDLE;
 			//Same power-on delay as FSM2:
 			if(time >= AP_FSM2_POWER_ON_DELAY + 3*SECONDS) {
-				state = -1;
+				fsm1State = -1;
 				time = 0;
 			}
 
@@ -136,7 +136,7 @@ void MIT_DLeg_fsm_1(void)
 //				time = 0;
 //			}
 
-			state = 0;
+			fsm1State = 0;
 
 			break;
 
@@ -146,7 +146,7 @@ void MIT_DLeg_fsm_1(void)
 			//reserve for additional initialization
 			mit_init_current_controller();		//initialize Current Controller with gains
 
-			state = 1;
+			fsm1State = 1;
 			time = 0;
 
 			break;
@@ -479,6 +479,64 @@ void setMotorTorque(struct act_s *actx, float tau_des)
 	tau_err_int = tau_err_int + tau_err;
 	tau_err_last = tau_err;
 
+	//PID around motor torque
+	tau_motor = tau_err * torqueKp + (tau_err_dot) * torqueKd + (tau_err_int) * torqueKi;
+
+	I = 1 / MOT_KT * ( (int32_t) tau_motor + (MOT_J + MOT_TRANS)*ddtheta_m + MOT_B*dtheta_m);		// + (J_rotor + J_screw)*ddtheta_m + B*dtheta_m
+	//I think I needs to be scaled to mA, but not sure yet.
+
+	actx->desiredCurrent = I; // demanded mA
+
+	//Saturate I for our current operational limits -- limit can be reduced by safetyShutoff() due to heating
+	if(I > currentOpLimit )
+	{
+		I = currentOpLimit;
+	} else if (I < -currentOpLimit)
+	{
+		I = -currentOpLimit;
+	}
+
+	actx->currentOpLimit = currentOpLimit; // throttled mA
+
+	setMotorCurrent((int32_t) (I * currentScalar));				// send current command to comm buffer to Execute
+}
+
+/*
+ * Calculate required motor torque, based on joint torque and using feedforward of desired torque from motor
+ * input:	*actx,  actuator structure reference
+ * 			tor_d, 	desired torque at joint [Nm]
+ */
+void setMotorTorqueFF(struct act_s *actx, float tau_des)
+{
+	static int8_t time = 1; 		// ms
+	static float N = 1;				// moment arm [m]
+	static float tau_meas = 0;  	//joint torque reflected to motor.
+	static float tau_diff = 0;
+	static float tau_err = 0, tau_err_last = 0;
+	static float tau_err_dot = 0, tau_err_int = 0;
+	static float tau_motor = 0;		// motor torque signal
+	static int32_t dtheta_m = 0, ddtheta_m = 0;	//motor vel, accel
+	static int32_t I = 0;			// motor current signal
+
+	N = actx->linkageMomentArm * nScrew;
+	dtheta_m = actx->motorVel;
+	ddtheta_m = actx->motorAcc;
+
+
+	// todo: better fidelity may be had if we modeled N_ETA as a function of torque, long term goal, if necessary
+	tau_meas =  actx->jointTorque / (N) * 1000;	// measured torque reflected to motor [mNm]
+	tau_des = tau_des / (N*N_ETA) *1000;					// desired joint torque, reflected to motor [mNm]
+
+	//output genVars for ActPack monitoring
+	rigid1.mn.genVar[5] = tau_meas;
+	rigid1.mn.genVar[6] = tau_des;
+
+	tau_diff = (tau_des - tau_meas);
+
+	tau_err_dot = (tau_err - tau_err_last)/time;
+	tau_err_int = tau_err_int + tau_err;
+	tau_err_last = tau_err;
+
 
 
 	//PID around motor torque.
@@ -504,7 +562,7 @@ void setMotorTorque(struct act_s *actx, float tau_des)
 
 	actx->currentOpLimit = currentOpLimit; // throttled mA
 
-	setMotorCurrent(I);				// send current command to comm buffer to Execute
+	setMotorCurrent((int32_t) (I * currentScalar));				// send current command to comm buffer to Execute
 }
 
 //UNUSED. See state_machine

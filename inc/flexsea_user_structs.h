@@ -97,7 +97,8 @@ struct fx_rigid_mn_s
 	uint16_t analog[4];
 	uint16_t status;
 
-	int32_t genVar[20];
+	int16_t genVar[20];
+	int32_t userVar[20];
 	int8_t mot_temp;
 
 	//Decoded:
