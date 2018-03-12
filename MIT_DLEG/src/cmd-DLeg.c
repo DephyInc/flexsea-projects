@@ -79,7 +79,7 @@ void tx_cmd_dleg_rw(uint8_t *shBuf, uint8_t *cmd, uint8_t *cmdType, \
         SPLIT_32((uint32_t) *(uint32_t*) &stateGains[setNumber]->k2, shBuf, &index);
         SPLIT_32((uint32_t) *(uint32_t*) &stateGains[setNumber]->b, shBuf, &index);
         SPLIT_32((uint32_t) *(uint32_t*) &stateGains[setNumber]->thetaDes, shBuf, &index);
-        SPLIT_16(fsm1StatePlan, shBuf, &index);
+        SPLIT_16((uint16_t) fsm1StatePlan, shBuf, &index);
         SPLIT_32((uint32_t) *(uint32_t*) &currentScalarPlan, shBuf, &index);
         //(22 bytes)
 
@@ -187,7 +187,7 @@ void rx_cmd_dleg_rr(uint8_t *buf, uint8_t *info)
         stateGains[setNumber]->thetaDes = *(float*) &thetaDes;
         stateMachine.current_state = currentState;
 
-        fsm1StatePlan = REBUILD_UINT16(buf, &index);
+        fsm1StatePlan = (int16_t) REBUILD_UINT16(buf, &index);
 
         uint32_t curScale = REBUILD_UINT32(buf, &index);
         currentScalarPlan = *(float*) &curScale;

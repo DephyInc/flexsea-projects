@@ -399,19 +399,19 @@ float getLinkageMomentArm(float theta)
 //	theta_r = ANG_UNIT % 360 ? (theta*M_PI/180) : theta; 	// convert deg to radians if necessary.
 //	theta_r = theta * M_PI / 180;	// convert deg to radians.
 
-    float t = 47; 		// [mm] tibial offset
-    float t_k = 140; 	// [mm] offset from knee along tibia
-    float f = 39;  	// [mm] femur offset
-    float f_k = 18;	// [mm] offset from knee along femur
+    static const float t = 47; 		// [mm] tibial offset
+    static const float t_k = 140; 	// [mm] offset from knee along tibia
+    static const float f = 39;  	// [mm] femur offset
+    static const float f_k = 18;	// [mm] offset from knee along femur
 
-    float aIn = t*t + t_k*t_k;
+    static float aIn = t*t + t_k*t_k;
     a = sqrt(aIn);
-    float bIn = f*f + f_k*f_k;
+    static float bIn = f*f + f_k*f_k;
     b = sqrt(bIn);
 
-    float Tin = t/t_k;
+    static float Tin = t/t_k;
     T = atan(Tin);
-    float Fin = f/f_k;
+    static float Fin = f/f_k;
     F = atan(Fin);
 
     C_ang = M_PI - theta - (T + F); 	// angle
@@ -649,8 +649,8 @@ void packRigidVars(struct act_s *actx) {
 	rigid1.mn.userVar[2] = actx->linkageMomentArm;
 	rigid1.mn.userVar[3] = actx->axialForce;
 	rigid1.mn.userVar[4] = actx->jointTorque;
-	//genVar[5] = tauMeas
-	//genVar[6] = tauDes (impedance controller - spring contribution)
+    //userVar[5] = tauMeas
+    //userVar[6] = tauDes (impedance controller - spring contribution)
 	rigid1.mn.userVar[7] = actx->desiredCurrent;
 	rigid1.mn.userVar[8] = actx->currentOpLimit;
 	rigid1.mn.userVar[9] = actx->safetyFlag;
