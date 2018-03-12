@@ -212,9 +212,9 @@ void tx_cmd_rigid_w(uint8_t *shBuf, uint8_t *cmd, uint8_t *cmdType, \
 			SPLIT_16(rigid1.re.status, shBuf, &index);
 			shBuf[index++] = (uint8_t)ri->ctrl.walkingState;
 			shBuf[index++] = (uint8_t)ri->ctrl.gaitState;
-			SPLIT_16(rigid1.mn.genVar[0], shBuf, &index);
-			SPLIT_16(rigid1.mn.genVar[1], shBuf, &index);
-			SPLIT_16(rigid1.mn.genVar[2], shBuf, &index);
+			SPLIT_16((uint16_t) rigid1.mn.genVar[0], shBuf, &index);
+			SPLIT_16((uint16_t) rigid1.mn.genVar[1], shBuf, &index);
+			SPLIT_16((uint16_t) rigid1.mn.genVar[2], shBuf, &index);
 			//(35 bytes)
 		}
 		else if(offset == 2)
@@ -227,8 +227,8 @@ void tx_cmd_rigid_w(uint8_t *shBuf, uint8_t *cmd, uint8_t *cmdType, \
 			SPLIT_32((uint32_t) *(uint32_t*) &(ri->mn.userVar[4]), shBuf, &index);
 			SPLIT_32((uint32_t) *(uint32_t*) &(ri->mn.userVar[5]), shBuf, &index);
 			SPLIT_32((uint32_t) *(uint32_t*) &(ri->mn.userVar[6]), shBuf, &index);
-			SPLIT_16(rigid1.mn.genVar[3], shBuf, &index);
-			SPLIT_16(rigid1.mn.genVar[4], shBuf, &index);
+			SPLIT_16((uint16_t) rigid1.mn.genVar[3], shBuf, &index);
+			SPLIT_16((uint16_t) rigid1.mn.genVar[4], shBuf, &index);
 			//(36 bytes)
 
 //			// set genVars to send back to Plan
@@ -254,10 +254,10 @@ void tx_cmd_rigid_w(uint8_t *shBuf, uint8_t *cmd, uint8_t *cmdType, \
 			SPLIT_32((uint32_t) ri->mn.userVar[7], shBuf, &index);
 			SPLIT_32((uint32_t) ri->mn.userVar[8], shBuf, &index);
 			SPLIT_16((uint16_t) ri->mn.userVar[9], shBuf, &index);
-			SPLIT_16(rigid1.mn.genVar[5], shBuf, &index);
-			SPLIT_16(rigid1.mn.genVar[6], shBuf, &index);
-			SPLIT_16(rigid1.mn.genVar[7], shBuf, &index);
-			SPLIT_16(rigid1.mn.genVar[8], shBuf, &index);
+			SPLIT_16((uint16_t) rigid1.mn.genVar[5], shBuf, &index);
+			SPLIT_16((uint16_t) rigid1.mn.genVar[6], shBuf, &index);
+			SPLIT_16((uint16_t) rigid1.mn.genVar[7], shBuf, &index);
+			SPLIT_16((uint16_t) rigid1.mn.genVar[8], shBuf, &index);
 
 			//rigid1.mn.genVar[7] = actx->desiredCurrent;
 			//rigid1.mn.genVar[8] = actx->currentOpLimit;

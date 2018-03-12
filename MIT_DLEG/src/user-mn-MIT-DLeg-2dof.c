@@ -131,10 +131,10 @@ void MIT_DLeg_fsm_1(void)
 		case -1:
 			stateMachine.current_state = STATE_INIT;
 			//turned off for testing without Motor usage
-//			if(findPoles()) {
-//				state = 0;
-//				time = 0;
-//			}
+			if(findPoles()) {
+				fsm1State = 0;
+				time = 0;
+			}
 
 			fsm1State = 0;
 
@@ -159,19 +159,19 @@ void MIT_DLeg_fsm_1(void)
 				packRigidVars(&act1);
 
 				//begin safety check
-//			    if (safetyShutoff()) {
-//			    	/*motor behavior changes based on failure mode
-//			    	  bypasses the switch statement if return true
-//			    	  but sensors check still runs and has a chance
-//			    	  to allow code to move past this block
-//			    	*/
-//
-//			    	return;
-//			    } else {
-			    	runFlatGroundFSM(ptorqueDes);
-//			    }
+			    if (safetyShutoff()) {
+			    	/*motor behavior changes based on failure mode
+			    	  bypasses the switch statement if return true
+			    	  but sensors check still runs and has a chance
+			    	  to allow code to move past this block
+			    	*/
 
-//				setMotorTorque(&act1, *ptorqueDes);
+			    	return;
+			    } else {
+			    	runFlatGroundFSM(ptorqueDes);
+			    }
+
+				setMotorTorque(&act1, *ptorqueDes);
 //				twoTorqueFSM( &act1);
 
 				break;
