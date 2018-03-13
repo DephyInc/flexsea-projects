@@ -410,14 +410,14 @@ float getLinkageMomentArm(float theta)
     static const float f = 39;  	// [mm] femur offset
     static const float f_k = 18;	// [mm] offset from knee along femur
 
-    static float aIn = t*t + t_k*t_k;
+    static const float aIn = t*t + t_k*t_k;
     a = sqrt(aIn);
-    static float bIn = f*f + f_k*f_k;
+    static const float bIn = f*f + f_k*f_k;
     b = sqrt(bIn);
 
-    static float Tin = t/t_k;
+    static const float Tin = t/t_k;
     T = atan(Tin);
-    static float Fin = f/f_k;
+    static const float Fin = f/f_k;
     F = atan(Fin);
 
     C_ang = M_PI - theta - (T + F); 	// angle
