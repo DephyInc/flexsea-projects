@@ -68,7 +68,8 @@ int8_t findPoles(void);
 void   mit_init_current_controller(void);
 
 // Mechanical transformations
-float*  getJointAngleKinematic(void);
+//float*  getJointAngleKinematic(void);
+void   getJointAngleKinematic(float [3]);
 float   getJointAngularVelocity(void);
 float   getAxialForce(void);
 float   getLinkageMomentArm(float);
@@ -113,17 +114,17 @@ void twoTorqueFSM();
 //Encoder
 #define JOINT_ZERO_OFFSET 	0		// [deg] Joint Angle offset, CW rotation, based on Setup, ie. TEDtalk flexfoot angle = 20, fittings, etc.
 #define JOINT_ENC_DIR 		-1		// Encoder orientation. CW = 1 (knee orientation), CCW = -1
-#define JOINT_ANGLE_DIR 	-1		// Joint angle direction. Std convention is Ankle: Dorsiflexion (+), Plantarflexion (-) with value == -1
-#define JOINT_CPR 			16383	// Counts per revolution (todo: is it (2^14 - 1)?)
+#define JOINT_ANGLE_DIR 	1		// Joint angle direction. RHR convention is Ankle: Dorsiflexion (-), Plantarflexion (+) with value == 1
+#define JOINT_CPR 			16384	// Counts per revolution (todo: is it (2^14 - 1)?)
 #define JOINT_HS_MIN		( 30 * JOINT_CPR/360 )		// Joint hard stop angle [deg] in dorsiflexion)
 #define JOINT_HS_MAX		( 90 * JOINT_CPR/360 )		// Joint hard stop angle [deg] in plantarflexion)
-#define JOINT_MIN_ABS		10967		// Absolute encoder at MIN (Max dorsiflexion, 30Deg)
-#define JOINT_MAX_ABS		5444		// Absolute encoder reading at MAX (Max Plantarflexion, 90Deg)
+#define JOINT_MIN_ABS		11790		// Absolute encoder at MIN (Max dorsiflexion, 30Deg)
+#define JOINT_MAX_ABS		6195		// Absolute encoder reading at MAX (Max Plantarflexion, 90Deg)
 #define JOINT_ZERO_ABS		JOINT_MIN_ABS + JOINT_ENC_DIR * JOINT_HS_MIN 	// Absolute reading of Actuator Zero as designed in CAD
 #define JOINT_ZERO 			JOINT_ZERO_ABS + JOINT_ENC_DIR * JOINT_ZERO_OFFSET *JOINT_CPR/360 	// counts for actual angle.
 
 //Force Sensor
-#define FORCE_DIR			1		// Direction of positive force, Dorsiflexion (-), Plantarflex (+) with value == 1
+#define FORCE_DIR			-1		// Direction of positive force, Dorsiflexion (-), Plantarflex (+) with value == 1
 #define FORCE_STRAIN_GAIN 	202.6	// Defined by R23 on Execute, better would be G=250 to max range of ADC
 #define FORCE_STRAIN_BIAS	2.5		// Strain measurement Bias
 #define FORCE_EXCIT			5		// Excitation Voltage
@@ -141,7 +142,7 @@ void twoTorqueFSM();
 
 
 // Motor Parameters
-#define MOT_KT 			0.0951	// Kt value
+#define MOT_KT 			0.09549	// Kt value
 #define MOT_L			0.068	// mH
 #define MOT_J			0		//0.000322951	// rotor inertia, [kgm^2]
 #define MOT_B			0.0		// damping term for motor and screw combined, drag from rolling elements
@@ -170,8 +171,8 @@ void twoTorqueFSM();
 
 //Joint software limits [Degrees]
 #ifdef IS_ANKLE
-#define JOINT_MIN_SOFT		-70	* (ANG_UNIT)/360	// [deg] Actuator physical limit min = 30deg dorsiflexion
-#define JOINT_MAX_SOFT		25	* (ANG_UNIT)/360	// [deg] Actuator physical limit  max = -90deg plantarflex
+#define JOINT_MIN_SOFT		-20	* (ANG_UNIT)/360	// [deg] Actuator physical limit min = -30deg dorsiflexion
+#define JOINT_MAX_SOFT		60	* (ANG_UNIT)/360	// [deg] Actuator physical limit  max = 90deg plantarflex
 #endif
 
 #ifdef IS_KNEE
@@ -182,9 +183,9 @@ void twoTorqueFSM();
 //Safety limits
 #define PCB_TEMP_LIMIT_INIT		70
 #define MOTOR_TEMP_LIMIT_INIT	70
-#define ABS_TORQUE_LIMIT_INIT	100		    // Joint torque [Nm]
-#define CURRENT_LIMIT_INIT		40000		// [mA] useful in this form
-#define CURRENT_SCALAR_INIT		1
+#define ABS_TORQUE_LIMIT_INIT	10		    // Joint torque [Nm]
+#define CURRENT_LIMIT_INIT		3000		// [mA] useful in this form
+#define CURRENT_SCALAR_INIT		1000
 
 // Motor Temp Sensor
 #define V25_TICKS		943		//760mV/3.3V * 4096 = 943

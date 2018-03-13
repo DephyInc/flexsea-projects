@@ -89,7 +89,7 @@ static const float nScrew = N_SCREW;
 static const float jointMinSoft = JOINT_MIN_SOFT;
 static const float jointMaxSoft = JOINT_MAX_SOFT;
 
-static float* ptorqueDes;
+//static float* ptorqueDes;
 
 //struct act_s act1;		//actuator sensor structure declared extern in flexsea_user_structs
 				//defined in state_machine.c
@@ -155,22 +155,10 @@ void MIT_DLeg_fsm_1(void)
 
 		case 1:
 			{
-//				static float* ptorqueDes;
+				static float* ptorqueDes;
 
 				//populate rigid1.mn.genVars to send to Plan
 				packRigidVars(&act1);
-
-				rigid1.mn.genVar[0] = isSafetyFlag;
-				rigid1.mn.genVar[1] = (int16_t) act1.jointAngle;
-				rigid1.mn.genVar[2] = (int16_t) act1.jointTorque;
-				rigid1.mn.genVar[3] = (int16_t) act1.linkageMomentArm;
-//				rigid1.mn.genVar[4] = tau_des;
-//				rigid1.mn.genVar[5] = tau_des;
-				rigid1.mn.genVar[6] = 0;
-				rigid1.mn.genVar[7] = 0;
-				rigid1.mn.genVar[8] = 0;
-
-				*ptorqueDes = user_data_1.w[0]; //check this pointer
 
 				torqueKp = user_data_1.w[1];
 				torqueKi = user_data_1.w[2];
@@ -195,7 +183,19 @@ void MIT_DLeg_fsm_1(void)
 //					setMotorTorque(&act1, *ptorqueDes);
 
 					oneTorqueFSM( &act1);
+
 			    }
+
+				rigid1.mn.genVar[0] = isSafetyFlag;
+				rigid1.mn.genVar[1] = act1.jointAngleDegrees; //deg
+				rigid1.mn.genVar[2] = act1.jointTorque;  //Nm
+				rigid1.mn.genVar[3] = act1.linkageMomentArm*1000; //mm
+				rigid1.mn.genVar[4] = 0;
+//				rigid1.mn.genVar[5] = tau_meas;
+//				rigid1.mn.genVar[6] = tau_motor*1000;  //mNm
+				rigid1.mn.genVar[7] = act1.desiredCurrent;
+//				rigid1.mn.genVar[8] = I;
+
 
 				break;
 			}
@@ -286,15 +286,16 @@ int8_t safetyShutoff(void) {
  */
 void updateSensorValues(struct act_s *actx)
 {
-	static float* pjointKinematic;
+//	static float* pjointKinematic;
+//	pjointKinematic = getJointAngleKinematic();
+	static float joint[3];
+	getJointAngleKinematic( joint );
 
-	pjointKinematic = getJointAngleKinematic();
-
-	actx->jointAngle = *(pjointKinematic + 0);
+	actx->jointAngle = joint[0]; //*(pjointKinematic + 0);
 	actx->jointAngleDegrees = actx->jointAngle * 360/angleUnit;
-	actx->jointVel = *(pjointKinematic + 1);
+	actx->jointVel = joint[1]; // *(pjointKinematic + 1);
 	actx->jointVelDegrees = actx->jointVel * 360/angleUnit;
-	actx->jointAcc = *(pjointKinematic + 2);
+	actx->jointAcc = joint[2]; //*(pjointKinematic + 2);
 	actx->linkageMomentArm = getLinkageMomentArm(actx->jointAngle);
 	actx->axialForce = getAxialForce();
 	actx->jointTorque = getJointTorque(&act1);
@@ -334,19 +335,21 @@ int16_t getMotorTempSensor(void)
 //
 /*
  * Output joint angle, vel, accel in ANG_UNIT, measured from joint zero,
- * Return:
+ * Input:	joint[3] empty array reference
+ * Return:	updated joint[3] array
  * 		joint[0] = angle
  * 		joint[1] = velocity
  * 		joint[2] = acceleration
  * 		todo: pass a reference to the act_s structure to set flags.
  */
-float* getJointAngleKinematic( void )
+//float* getJointAngleKinematic( void )
+void getJointAngleKinematic( float joint[] )
 {
 	static int32_t jointAngleCnts = 0;
 	static float last_jointVel = 0;
 	static int32_t jointAngleCntsAbsolute = 0;
 	static float jointAngleAbsolute = 0;
-	static float joint[3] = {0, 0, 0};
+//	static float joint[3] = {0, 0, 0};
 
 	//ANGLE
 	//Configuration orientation
@@ -372,7 +375,7 @@ float* getJointAngleKinematic( void )
 	joint[2] = (( joint[1] - last_jointVel )) * (angleUnit)/JOINT_CPR * SECONDS;
 	last_jointVel = joint[1];
 
-	return joint;
+//	return joint;
 }
 
 
@@ -452,6 +455,7 @@ float getLinkageMomentArm(float theta)
  *  Determine torque at joint due to moment arm and axial force
  *  input:	struct act_s
  *  return: joint torque [Nm]
+ *  //todo: more accurate is to track angle of axial force. maybe at getLinkageMomentArm
  */
 float getJointTorque(struct act_s *actx)
 {
@@ -493,12 +497,12 @@ void setMotorTorque(struct act_s *actx, float tau_des)
 
 
 	// todo: better fidelity may be had if we modeled N_ETA as a function of torque, long term goal, if necessary
-	tau_meas =  actx->jointTorque / (N) * 1000;	// measured torque reflected to motor [mNm]
-	tau_des = tau_des / (N*N_ETA) *1000;					// desired joint torque, reflected to motor [mNm]
+	tau_meas =  actx->jointTorque / (N) ;	// measured torque reflected to motor [Nm]
+	tau_des = tau_des / (N*N_ETA) ;					// desired joint torque, reflected to motor [Nm]
 
 	//output genVars for ActPack monitoring
-	rigid1.mn.userVar[5] = tau_meas;
-	rigid1.mn.userVar[6] = tau_des;
+	rigid1.mn.genVar[5] = tau_meas*1000; //mNm
+
 
 	tau_err = (tau_des - tau_meas);
 	tau_err_dot = (tau_err - tau_err_last)/time;
@@ -508,8 +512,11 @@ void setMotorTorque(struct act_s *actx, float tau_des)
 	//PID around motor torque
 	tau_motor = tau_err * torqueKp + (tau_err_dot) * torqueKd + (tau_err_int) * torqueKi;
 
-	I = 1 / MOT_KT * ( (int32_t) tau_motor + (MOT_J + MOT_TRANS)*ddtheta_m + MOT_B*dtheta_m);		// + (J_rotor + J_screw)*ddtheta_m + B*dtheta_m
-	//I think I needs to be scaled to mA, but not sure yet.
+	rigid1.mn.genVar[6] = tau_motor*1000;  //mNm
+
+	I = 1 / MOT_KT * ( tau_motor + (MOT_J + MOT_TRANS)*ddtheta_m + MOT_B*dtheta_m) * currentScalar;		// + (J_rotor + J_screw)*ddtheta_m + B*dtheta_m, scaled to mA
+
+	rigid1.mn.genVar[8] = I;
 
 	//Saturate I for our current operational limits -- limit can be reduced by safetyShutoff() due to heating
 	if(I > currentOpLimit )
@@ -520,7 +527,7 @@ void setMotorTorque(struct act_s *actx, float tau_des)
 		I = -currentOpLimit;
 	}
 
-	actx->desiredCurrent = (int32_t) (I * currentScalar); // demanded mA
+	actx->desiredCurrent = (int32_t) ( I ); // demanded mA
 	setMotorCurrent(actx->desiredCurrent);				// send current command to comm buffer to Execute
 }
 
@@ -547,12 +554,12 @@ void setMotorTorqueFF(struct act_s *actx, float tau_des)
 
 
 	// todo: better fidelity may be had if we modeled N_ETA as a function of torque, long term goal, if necessary
-	tau_meas =  actx->jointTorque / (N) * 1000;	// measured torque reflected to motor [mNm]
-	tau_des = tau_des / (N*N_ETA) *1000;					// desired joint torque, reflected to motor [mNm]
+	tau_meas =  actx->jointTorque / (N) ;	// measured torque reflected to motor [mNm]
+	tau_des = tau_des / (N*N_ETA) ;					// desired joint torque, reflected to motor [mNm]
 
 	//output genVars for ActPack monitoring
-	rigid1.mn.userVar[5] = tau_meas;
-	rigid1.mn.userVar[6] = tau_des;
+	rigid1.mn.genVar[5] = tau_meas * 1000;
+	rigid1.mn.genVar[6] = tau_des * 1000;
 
 	tau_diff = (tau_des - tau_meas);
 
@@ -569,7 +576,7 @@ void setMotorTorqueFF(struct act_s *actx, float tau_des)
 	 */
 	tau_motor = tau_err * torqueKp + (tau_err_dot) * torqueKd + (tau_err_int) * torqueKi;
 
-	I = 1 / MOT_KT * ( (int32_t) tau_motor + (MOT_J + MOT_TRANS)*ddtheta_m + MOT_B*dtheta_m);		// + (J_rotor + J_screw)*ddtheta_m + B*dtheta_m
+	I = 1 / MOT_KT * ( tau_motor + (MOT_J + MOT_TRANS)*ddtheta_m + MOT_B*dtheta_m);		// + (J_rotor + J_screw)*ddtheta_m + B*dtheta_m
 	//I think I needs to be scaled to mA, but not sure yet.
 
 	//Saturate I for our current operational limits -- limit can be reduced by safetyShutoff() due to heating
@@ -806,8 +813,10 @@ void oneTorqueFSM(struct act_s *actx)
 	static uint32_t timer = 0, deltaT = 0;
 	static int8_t fsm1State = -1;
 	static int32_t initPos = 0;
+	static int setPt = 0;
 
-
+	setPt = user_data_1.w[0]; //check this pointer
+	rigid1.mn.genVar[7] = setPt;
 	switch(fsm1State)
 	{
 		case -1:
@@ -831,7 +840,8 @@ void oneTorqueFSM(struct act_s *actx)
 				deltaT = 0;
 				fsm1State = 2;
 			}
-			setMotorTorque( actx, 2);
+
+			setMotorTorque( actx, setPt);
 			break;
 		case 2:
 			deltaT++;
