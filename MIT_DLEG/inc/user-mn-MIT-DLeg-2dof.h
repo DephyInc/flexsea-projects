@@ -79,6 +79,7 @@ void    updateSensorValues(struct act_s *actx);
 //Control outputs
 float biomControlImpedance(float theta_set, float k1, float k2, float b); 	// returns a desired joint torque, then use setMotorTorque() to get the motor to do its magic
 void  setMotorTorque(struct act_s *actx, float tor_d);
+void  setMotorTorqueFF(struct act_s *actx, float tor_d);
 void  packRigidVars(struct act_s *actx);
 
 //Main FSMs
@@ -183,6 +184,7 @@ void twoTorqueFSM();
 #define MOTOR_TEMP_LIMIT_INIT	70
 #define ABS_TORQUE_LIMIT_INIT	100		    // Joint torque [Nm]
 #define CURRENT_LIMIT_INIT		40000		// [mA] useful in this form
+#define CURRENT_SCALAR_INIT		1
 
 // Motor Temp Sensor
 #define V25_TICKS		943		//760mV/3.3V * 4096 = 943

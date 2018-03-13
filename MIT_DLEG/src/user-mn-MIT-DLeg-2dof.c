@@ -59,7 +59,8 @@ static int8_t isTorqueLimit = 0;
 static int8_t isTempLimit = 0;
 
 int8_t isEnabledUpdateSensors = 0;
-
+int16_t fsm1State = -2;
+float currentScalar = CURRENT_SCALAR_INIT;
 int32_t currentOpLimit = CURRENT_LIMIT_INIT; 	//operational limit for current.
 
 //torque gain values
@@ -110,19 +111,18 @@ void MIT_DLeg_fsm_1(void)
 	#if(ACTIVE_PROJECT == PROJECT_MIT_DLEG)
 
     static uint32_t time = 0;
-    static int32_t state = -2;
 
     //Increment time (1 tick = 1ms nominally; need to confirm)
     time++;
 
     //begin main FSM
-	switch(state)
+	switch(fsm1State)
 	{
 		case -2:
 			stateMachine.current_state = STATE_IDLE;
 			//Same power-on delay as FSM2:
 			if(time >= AP_FSM2_POWER_ON_DELAY + 3*SECONDS) {
-				state = -1;
+				fsm1State = -1;
 				time = 0;
 			}
 
@@ -132,11 +132,12 @@ void MIT_DLeg_fsm_1(void)
 			stateMachine.current_state = STATE_INIT;
 			//turned off for testing without Motor usage
 //			if(findPoles()) {
-//				state = 0;
+//				mit_init_current_controller();		//initialize Current Controller with gains
+//				fsm1State = 0;
 //				time = 0;
 //			}
 
-			state = 0;
+			fsm1State = 0;
 
 			break;
 
@@ -144,9 +145,8 @@ void MIT_DLeg_fsm_1(void)
 			//sensor update happens in mainFSM2(void) in main_fsm.c
 			isEnabledUpdateSensors = 1;
 			//reserve for additional initialization
-			mit_init_current_controller();		//initialize Current Controller with gains
 
-			state = 1;
+			fsm1State = 1;
 			time = 0;
 
 			break;
@@ -159,20 +159,23 @@ void MIT_DLeg_fsm_1(void)
 				packRigidVars(&act1);
 
 				//begin safety check
-//			    if (safetyShutoff()) {
-//			    	/*motor behavior changes based on failure mode
-//			    	  bypasses the switch statement if return true
-//			    	  but sensors check still runs and has a chance
-//			    	  to allow code to move past this block
-//			    	*/
-//
-//			    	return;
-//			    } else {
+			    if (safetyShutoff()) {
+			    	/*motor behavior changes based on failure mode.
+			    	  Bypasses the switch statement if return true
+			    	  but sensors check still runs and has a chance
+			    	  to allow code to move past this block.
+			    	  Only update the walking FSM, but don't output torque.
+			    	*/
 			    	runFlatGroundFSM(ptorqueDes);
-//			    }
 
-//				setMotorTorque(&act1, *ptorqueDes);
-//				twoTorqueFSM( &act1);
+			    	return;
+
+			    } else {
+
+			    	runFlatGroundFSM(ptorqueDes);
+					setMotorTorque(&act1, *ptorqueDes);
+	//				twoTorqueFSM( &act1);
+			    }
 
 				break;
 			}
@@ -282,6 +285,7 @@ void updateSensorValues(struct act_s *actx)
 	actx->regTemp = rigid1.re.temp;
 	actx->motTemp = getMotorTempSensor();
 	actx->motCurr = rigid1.ex.mot_current;
+	actx->currentOpLimit = currentOpLimit; // throttled mA
 
 	actx->safetyFlag = isSafetyFlag;
 
@@ -289,6 +293,8 @@ void updateSensorValues(struct act_s *actx)
 	{
 		isSafetyFlag = SAFETY_TEMP;
 		isTempLimit = 1;
+	} else {
+		isTempLimit = 0;
 	}
 
 }
@@ -471,10 +477,65 @@ void setMotorTorque(struct act_s *actx, float tau_des)
 	tau_des = tau_des / (N*N_ETA) *1000;					// desired joint torque, reflected to motor [mNm]
 
 	//output genVars for ActPack monitoring
-	rigid1.mn.genVar[5] = tau_meas;
-	rigid1.mn.genVar[6] = tau_des;
+	rigid1.mn.userVar[5] = tau_meas;
+	rigid1.mn.userVar[6] = tau_des;
 
 	tau_err = (tau_des - tau_meas);
+	tau_err_dot = (tau_err - tau_err_last)/time;
+	tau_err_int = tau_err_int + tau_err;
+	tau_err_last = tau_err;
+
+	//PID around motor torque
+	tau_motor = tau_err * torqueKp + (tau_err_dot) * torqueKd + (tau_err_int) * torqueKi;
+
+	I = 1 / MOT_KT * ( (int32_t) tau_motor + (MOT_J + MOT_TRANS)*ddtheta_m + MOT_B*dtheta_m);		// + (J_rotor + J_screw)*ddtheta_m + B*dtheta_m
+	//I think I needs to be scaled to mA, but not sure yet.
+
+	//Saturate I for our current operational limits -- limit can be reduced by safetyShutoff() due to heating
+	if(I > currentOpLimit )
+	{
+		I = currentOpLimit;
+	} else if (I < -currentOpLimit)
+	{
+		I = -currentOpLimit;
+	}
+
+	actx->desiredCurrent = (int32_t) (I * currentScalar); // demanded mA
+	setMotorCurrent(actx->desiredCurrent);				// send current command to comm buffer to Execute
+}
+
+/*
+ * Calculate required motor torque, based on joint torque and using feedforward of desired torque from motor
+ * input:	*actx,  actuator structure reference
+ * 			tor_d, 	desired torque at joint [Nm]
+ */
+void setMotorTorqueFF(struct act_s *actx, float tau_des)
+{
+	static int8_t time = 1; 		// ms
+	static float N = 1;				// moment arm [m]
+	static float tau_meas = 0;  	//joint torque reflected to motor.
+	static float tau_diff = 0;
+	static float tau_err = 0, tau_err_last = 0;
+	static float tau_err_dot = 0, tau_err_int = 0;
+	static float tau_motor = 0;		// motor torque signal
+	static int32_t dtheta_m = 0, ddtheta_m = 0;	//motor vel, accel
+	static int32_t I = 0;			// motor current signal
+
+	N = actx->linkageMomentArm * nScrew;
+	dtheta_m = actx->motorVel;
+	ddtheta_m = actx->motorAcc;
+
+
+	// todo: better fidelity may be had if we modeled N_ETA as a function of torque, long term goal, if necessary
+	tau_meas =  actx->jointTorque / (N) * 1000;	// measured torque reflected to motor [mNm]
+	tau_des = tau_des / (N*N_ETA) *1000;					// desired joint torque, reflected to motor [mNm]
+
+	//output genVars for ActPack monitoring
+	rigid1.mn.userVar[5] = tau_meas;
+	rigid1.mn.userVar[6] = tau_des;
+
+	tau_diff = (tau_des - tau_meas);
+
 	tau_err_dot = (tau_err - tau_err_last)/time;
 	tau_err_int = tau_err_int + tau_err;
 	tau_err_last = tau_err;
@@ -491,8 +552,6 @@ void setMotorTorque(struct act_s *actx, float tau_des)
 	I = 1 / MOT_KT * ( (int32_t) tau_motor + (MOT_J + MOT_TRANS)*ddtheta_m + MOT_B*dtheta_m);		// + (J_rotor + J_screw)*ddtheta_m + B*dtheta_m
 	//I think I needs to be scaled to mA, but not sure yet.
 
-	actx->desiredCurrent = I; // demanded mA
-
 	//Saturate I for our current operational limits -- limit can be reduced by safetyShutoff() due to heating
 	if(I > currentOpLimit )
 	{
@@ -502,9 +561,10 @@ void setMotorTorque(struct act_s *actx, float tau_des)
 		I = -currentOpLimit;
 	}
 
-	actx->currentOpLimit = currentOpLimit; // throttled mA
+	actx->desiredCurrent = (int32_t) (I * currentScalar); // demanded mA
+	setMotorCurrent(actx->desiredCurrent);				// send current command to comm buffer to Execute
 
-	setMotorCurrent(I);				// send current command to comm buffer to Execute
+
 }
 
 //UNUSED. See state_machine
@@ -585,17 +645,14 @@ int8_t findPoles(void) {
 
 void packRigidVars(struct act_s *actx) {
 
-	// set genVars to send back to Plan
-	rigid1.mn.genVar[0] = actx->jointAngleDegrees;
-	rigid1.mn.genVar[1] = actx->jointVelDegrees;
-	rigid1.mn.genVar[2] = actx->linkageMomentArm;
-	rigid1.mn.genVar[3] = actx->axialForce;
-	rigid1.mn.genVar[4] = actx->jointTorque;
-	//genVar[5] = tauMeas
-	//genVar[6] = tauDes (impedance controller - spring contribution)
-	rigid1.mn.genVar[7] = actx->desiredCurrent;
-	rigid1.mn.genVar[8] = actx->currentOpLimit;
-	rigid1.mn.genVar[9] = actx->safetyFlag;
+	// set float userVars to send back to Plan
+	rigid1.mn.userVar[0] = actx->jointAngleDegrees;
+	rigid1.mn.userVar[1] = actx->jointVelDegrees;
+	rigid1.mn.userVar[2] = actx->linkageMomentArm;
+	rigid1.mn.userVar[3] = actx->axialForce;
+	rigid1.mn.userVar[4] = actx->jointTorque;
+    //userVar[5] = tauMeas
+    //userVar[6] = tauDes (impedance controller - spring contribution)
 }
 
 void openSpeedFSM(void)
