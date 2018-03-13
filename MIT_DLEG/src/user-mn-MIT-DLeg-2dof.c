@@ -132,6 +132,7 @@ void MIT_DLeg_fsm_1(void)
 			stateMachine.current_state = STATE_INIT;
 			//turned off for testing without Motor usage
 //			if(findPoles()) {
+//				mit_init_current_controller();		//initialize Current Controller with gains
 //				fsm1State = 0;
 //				time = 0;
 //			}
@@ -144,7 +145,6 @@ void MIT_DLeg_fsm_1(void)
 			//sensor update happens in mainFSM2(void) in main_fsm.c
 			isEnabledUpdateSensors = 1;
 			//reserve for additional initialization
-			mit_init_current_controller();		//initialize Current Controller with gains
 
 			fsm1State = 1;
 			time = 0;

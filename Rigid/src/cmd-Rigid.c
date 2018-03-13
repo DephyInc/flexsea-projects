@@ -196,8 +196,8 @@ void tx_cmd_rigid_w(uint8_t *shBuf, uint8_t *cmd, uint8_t *cmdType, \
 			SPLIT_16((uint16_t)*(ri->ctrl.ank_ang_from_mot), shBuf, &index);
 			SPLIT_16((uint16_t)ri->ex.strain, shBuf, &index);
 			SPLIT_16((uint16_t)(ri->ex.ctrl.current.setpoint_val >> 3), shBuf, &index);
-            SPLIT_16((uint16_t) rigid1.mn.genVar[0], shBuf, &index);
-            SPLIT_16((uint16_t) rigid1.mn.genVar[1], shBuf, &index);
+            SPLIT_16((uint16_t) ri->mn.genVar[0], shBuf, &index);
+            SPLIT_16((uint16_t) ri->mn.genVar[1], shBuf, &index);
 			//(32 bytes)
 		}
 		else if(offset == 1)
@@ -214,20 +214,20 @@ void tx_cmd_rigid_w(uint8_t *shBuf, uint8_t *cmd, uint8_t *cmdType, \
 			SPLIT_16(rigid1.re.status, shBuf, &index);
 			shBuf[index++] = (uint8_t)ri->ctrl.walkingState;
 			shBuf[index++] = (uint8_t)ri->ctrl.gaitState;
-            SPLIT_16((uint16_t) rigid1.mn.genVar[2], shBuf, &index);
-            SPLIT_16((uint16_t) rigid1.mn.genVar[3], shBuf, &index);
+            SPLIT_16((uint16_t) ri->mn.genVar[2], shBuf, &index);
+            SPLIT_16((uint16_t) ri->mn.genVar[3], shBuf, &index);
             //(33 bytes)
 		}
 		else if(offset == 2)
 		{
 			SPLIT_32(ri->ctrl.timestamp, shBuf, &index);
-			SPLIT_32((uint32_t) *(uint32_t*) &(ri->mn.userVar[0]), shBuf, &index);
-			SPLIT_32((uint32_t) *(uint32_t*) &(ri->mn.userVar[1]), shBuf, &index);
-			SPLIT_32((uint32_t) *(uint32_t*) &(ri->mn.userVar[2]), shBuf, &index);
-			SPLIT_32((uint32_t) *(uint32_t*) &(ri->mn.userVar[3]), shBuf, &index);
-			SPLIT_32((uint32_t) *(uint32_t*) &(ri->mn.userVar[4]), shBuf, &index);
-			SPLIT_32((uint32_t) *(uint32_t*) &(ri->mn.userVar[5]), shBuf, &index);
-            SPLIT_32((uint32_t) *(uint32_t*) &(ri->mn.userVar[6]), shBuf, &index);
+			SPLIT_32( *(uint32_t*) &(ri->mn.userVar[0]), shBuf, &index);
+			SPLIT_32( *(uint32_t*) &(ri->mn.userVar[1]), shBuf, &index);
+			SPLIT_32( *(uint32_t*) &(ri->mn.userVar[2]), shBuf, &index);
+			SPLIT_32( *(uint32_t*) &(ri->mn.userVar[3]), shBuf, &index);
+			SPLIT_32( *(uint32_t*) &(ri->mn.userVar[4]), shBuf, &index);
+			SPLIT_32( *(uint32_t*) &(ri->mn.userVar[5]), shBuf, &index);
+            SPLIT_32( *(uint32_t*) &(ri->mn.userVar[6]), shBuf, &index);
 
             //(32 bytes)
 
@@ -251,11 +251,10 @@ void tx_cmd_rigid_w(uint8_t *shBuf, uint8_t *cmd, uint8_t *cmdType, \
 			SPLIT_16((ri->mn.analog[2]), shBuf, &index);
 			SPLIT_16((ri->mn.analog[3]), shBuf, &index);
 			SPLIT_16(stateMachine.current_state, shBuf, &index);
-			SPLIT_32((uint32_t) ri->mn.userVar[7], shBuf, &index);
-			SPLIT_32((uint32_t) ri->mn.userVar[8], shBuf, &index);
-			SPLIT_16((uint16_t) ri->mn.userVar[9], shBuf, &index);
-            SPLIT_16((uint16_t) rigid1.mn.genVar[4], shBuf, &index);
-            SPLIT_16((uint16_t) rigid1.mn.genVar[5], shBuf, &index);
+			SPLIT_32(*(uint32_t*) &(ri->mn.userVar[7]), shBuf, &index);
+			SPLIT_32(*(uint32_t*) &(ri->mn.userVar[8]), shBuf, &index);
+			SPLIT_32(*(uint32_t*) &(ri->mn.userVar[9]), shBuf, &index);
+            SPLIT_16((uint16_t) ri->mn.genVar[4], shBuf, &index);
 
 
 			//rigid1.mn.userVar[7] = actx->desiredCurrent;
@@ -436,9 +435,8 @@ void rx_cmd_rigid_rr(uint8_t *buf, uint8_t *info)
             stateMachine.current_state = REBUILD_UINT16(buf, &index);
 			act->desiredCurrent = (int32_t) REBUILD_UINT32(buf, &index);
 			act->currentOpLimit = (int32_t) REBUILD_UINT32(buf, &index);
-			act->safetyFlag = (int16_t) REBUILD_UINT16(buf, &index);
+			act->safetyFlag = (int16_t) REBUILD_UINT32(buf, &index);
             ri->mn.genVar[4] = (int16_t) REBUILD_UINT16(buf, &index);
-            ri->mn.genVar[5] = (int16_t) REBUILD_UINT16(buf, &index);
             //(32 bytes)
 		}
 		else if(offset == 4)	//This is used to tweak and test bilateral controllers
