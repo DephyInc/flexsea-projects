@@ -251,10 +251,11 @@ void tx_cmd_rigid_w(uint8_t *shBuf, uint8_t *cmd, uint8_t *cmdType, \
 			SPLIT_16((ri->mn.analog[2]), shBuf, &index);
 			SPLIT_16((ri->mn.analog[3]), shBuf, &index);
 			SPLIT_16(stateMachine.current_state, shBuf, &index);
-			SPLIT_32(*(uint32_t*) &(ri->mn.userVar[7]), shBuf, &index);
-			SPLIT_32(*(uint32_t*) &(ri->mn.userVar[8]), shBuf, &index);
-			SPLIT_32(*(uint32_t*) &(ri->mn.userVar[9]), shBuf, &index);
+			SPLIT_32((uint32_t) act1.desiredCurrent, shBuf, &index);
+			SPLIT_32((uint32_t) act1.currentOpLimit, shBuf, &index);
+			SPLIT_16((uint16_t) act1.safetyFlag, shBuf, &index);
             SPLIT_16((uint16_t) ri->mn.genVar[4], shBuf, &index);
+            SPLIT_16((uint16_t) ri->mn.genVar[5], shBuf, &index);
 
 
 			//rigid1.mn.userVar[7] = actx->desiredCurrent;
@@ -437,6 +438,7 @@ void rx_cmd_rigid_rr(uint8_t *buf, uint8_t *info)
 			act->currentOpLimit = (int32_t) REBUILD_UINT32(buf, &index);
 			act->safetyFlag = (int16_t) REBUILD_UINT32(buf, &index);
             ri->mn.genVar[4] = (int16_t) REBUILD_UINT16(buf, &index);
+            ri->mn.genVar[5] = (int16_t) REBUILD_UINT16(buf, &index);
             //(32 bytes)
 		}
 		else if(offset == 4)	//This is used to tweak and test bilateral controllers

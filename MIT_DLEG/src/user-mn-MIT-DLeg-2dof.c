@@ -645,7 +645,7 @@ int8_t findPoles(void) {
 
 void packRigidVars(struct act_s *actx) {
 
-	// set genVars to send back to Plan
+	// set float userVars to send back to Plan
 	rigid1.mn.userVar[0] = actx->jointAngleDegrees;
 	rigid1.mn.userVar[1] = actx->jointVelDegrees;
 	rigid1.mn.userVar[2] = actx->linkageMomentArm;
@@ -653,9 +653,6 @@ void packRigidVars(struct act_s *actx) {
 	rigid1.mn.userVar[4] = actx->jointTorque;
     //userVar[5] = tauMeas
     //userVar[6] = tauDes (impedance controller - spring contribution)
-	rigid1.mn.userVar[7] = actx->desiredCurrent;
-	rigid1.mn.userVar[8] = actx->currentOpLimit;
-	rigid1.mn.userVar[9] = actx->safetyFlag;
 }
 
 void openSpeedFSM(void)
