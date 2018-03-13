@@ -254,11 +254,8 @@ void tx_cmd_rigid_w(uint8_t *shBuf, uint8_t *cmd, uint8_t *cmdType, \
 			SPLIT_32((uint32_t) act1.desiredCurrent, shBuf, &index);
 			SPLIT_32((uint32_t) act1.currentOpLimit, shBuf, &index);
 			SPLIT_16((uint16_t) act1.safetyFlag, shBuf, &index);
-
-			int16_t a = -3;
-			int16_t b = 6;
-            SPLIT_16((uint16_t) a, shBuf, &index);
-            SPLIT_16((uint16_t) b, shBuf, &index);
+            SPLIT_16((uint16_t) ri->mn.genVar[4], shBuf, &index);
+            SPLIT_16((uint16_t) ri->mn.genVar[5], shBuf, &index);
 
 
 			//rigid1.mn.userVar[7] = actx->desiredCurrent;
