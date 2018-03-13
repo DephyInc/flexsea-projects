@@ -148,8 +148,8 @@ void twoTorqueFSM();
 #define MOT_TRANS		0		// lumped mass inertia todo: consider MotorMass on Spring inertia contribution.
 
 // Current Control Parameters  -- Test these on a motor test stand first
-#define ACTRL_I_KP_INIT		100
-#define ACTRL_I_KI_INIT		0
+#define ACTRL_I_KP_INIT		15
+#define ACTRL_I_KI_INIT		15
 #define ACTRL_I_KD_INIT		0
 
 //Transmission

@@ -89,6 +89,8 @@ static const float nScrew = N_SCREW;
 static const float jointMinSoft = JOINT_MIN_SOFT;
 static const float jointMaxSoft = JOINT_MAX_SOFT;
 
+static float* ptorqueDes;
+
 //struct act_s act1;		//actuator sensor structure declared extern in flexsea_user_structs
 				//defined in state_machine.c
 
@@ -153,10 +155,27 @@ void MIT_DLeg_fsm_1(void)
 
 		case 1:
 			{
-				static float* ptorqueDes;
+//				static float* ptorqueDes;
 
 				//populate rigid1.mn.genVars to send to Plan
 				packRigidVars(&act1);
+
+				rigid1.mn.genVar[0] = isSafetyFlag;
+				rigid1.mn.genVar[1] = (int16_t) act1.jointAngle;
+				rigid1.mn.genVar[2] = (int16_t) act1.jointTorque;
+				rigid1.mn.genVar[3] = (int16_t) act1.linkageMomentArm;
+//				rigid1.mn.genVar[4] = tau_des;
+//				rigid1.mn.genVar[5] = tau_des;
+				rigid1.mn.genVar[6] = 0;
+				rigid1.mn.genVar[7] = 0;
+				rigid1.mn.genVar[8] = 0;
+
+				*ptorqueDes = user_data_1.w[0]; //check this pointer
+
+				torqueKp = user_data_1.w[1];
+				torqueKi = user_data_1.w[2];
+				torqueKd = user_data_1.w[3];
+
 
 				//begin safety check
 			    if (safetyShutoff()) {
@@ -166,15 +185,16 @@ void MIT_DLeg_fsm_1(void)
 			    	  to allow code to move past this block.
 			    	  Only update the walking FSM, but don't output torque.
 			    	*/
-			    	runFlatGroundFSM(ptorqueDes);
-
+//			    	runFlatGroundFSM(ptorqueDes);
+			    	setMotorTorque(&act1, 0);
 			    	return;
 
 			    } else {
 
-			    	runFlatGroundFSM(ptorqueDes);
-					setMotorTorque(&act1, *ptorqueDes);
-	//				twoTorqueFSM( &act1);
+//			    	runFlatGroundFSM(ptorqueDes);
+//					setMotorTorque(&act1, *ptorqueDes);
+
+					oneTorqueFSM( &act1);
 			    }
 
 				break;
@@ -743,8 +763,6 @@ void twoTorqueFSM(struct act_s *actx)
 	static int8_t fsm1State = -1;
 	static int32_t initPos = 0;
 
-	rigid1.mn.genVar[9] = fsm1State;
-
 
 	switch(fsm1State)
 	{
@@ -788,8 +806,6 @@ void oneTorqueFSM(struct act_s *actx)
 	static uint32_t timer = 0, deltaT = 0;
 	static int8_t fsm1State = -1;
 	static int32_t initPos = 0;
-
-	rigid1.mn.genVar[9] = fsm1State;
 
 
 	switch(fsm1State)
