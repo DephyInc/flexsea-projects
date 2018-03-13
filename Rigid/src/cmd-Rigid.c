@@ -196,7 +196,9 @@ void tx_cmd_rigid_w(uint8_t *shBuf, uint8_t *cmd, uint8_t *cmdType, \
 			SPLIT_16((uint16_t)*(ri->ctrl.ank_ang_from_mot), shBuf, &index);
 			SPLIT_16((uint16_t)ri->ex.strain, shBuf, &index);
 			SPLIT_16((uint16_t)(ri->ex.ctrl.current.setpoint_val >> 3), shBuf, &index);
-			//(28 bytes)
+			SPLIT_16((uint16_t) rigid1.mn.genVar[4], shBuf, &index);
+			SPLIT_16((uint16_t) rigid1.mn.genVar[8], shBuf, &index);
+			//(32 bytes)
 		}
 		else if(offset == 1)
 		{
@@ -228,8 +230,8 @@ void tx_cmd_rigid_w(uint8_t *shBuf, uint8_t *cmd, uint8_t *cmdType, \
 			SPLIT_32((uint32_t) *(uint32_t*) &(ri->mn.userVar[5]), shBuf, &index);
 			SPLIT_32((uint32_t) *(uint32_t*) &(ri->mn.userVar[6]), shBuf, &index);
 			SPLIT_16((uint16_t) rigid1.mn.genVar[3], shBuf, &index);
-			SPLIT_16((uint16_t) rigid1.mn.genVar[4], shBuf, &index);
-			//(36 bytes)
+
+			//(34 bytes)
 
 //			// set genVars to send back to Plan
 //			rigid1.mn.userVar[0] = actx->jointAngleDegrees;
@@ -257,12 +259,12 @@ void tx_cmd_rigid_w(uint8_t *shBuf, uint8_t *cmd, uint8_t *cmdType, \
 			SPLIT_16((uint16_t) rigid1.mn.genVar[5], shBuf, &index);
 			SPLIT_16((uint16_t) rigid1.mn.genVar[6], shBuf, &index);
 			SPLIT_16((uint16_t) rigid1.mn.genVar[7], shBuf, &index);
-			SPLIT_16((uint16_t) rigid1.mn.genVar[8], shBuf, &index);
+
 
 			//rigid1.mn.userVar[7] = actx->desiredCurrent;
 			//rigid1.mn.userVar[8] = actx->currentOpLimit;
 			//rigid1.mn.userVar[9] = actx->safetyFlag;
-			//(36 bytes)
+			//(34 bytes)
 		}
 		else if(offset == 4)	//This is used to tweak and test bilateral controllers
 		{
@@ -363,7 +365,9 @@ void rx_cmd_rigid_rr(uint8_t *buf, uint8_t *info)
 			*(ri->ex.joint_ang_from_mot) = (int16_t) REBUILD_UINT16(buf, &index);
 			ri->ex.strain = REBUILD_UINT16(buf, &index);
 			ri->ex.ctrl.current.setpoint_val = (int32_t)(((int16_t)REBUILD_UINT16(buf, &index)) << 3);
-			//(28 bytes)
+			ri->mn.genVar[4] = (int16_t) REBUILD_UINT16(buf, &index);
+			ri->mn.genVar[8] = (int16_t) REBUILD_UINT16(buf, &index);
+			//(32 bytes)
 		}
 		else if(offset == 1)
 		{
@@ -405,10 +409,9 @@ void rx_cmd_rigid_rr(uint8_t *buf, uint8_t *info)
 			act->tauDes = *(float*) &tauDes;
 
 			ri->mn.genVar[3] = (int16_t) REBUILD_UINT16(buf, &index);
-			ri->mn.genVar[4] = (int16_t) REBUILD_UINT16(buf, &index);
 
 
-			//(36 bytes)
+			//(34 bytes)
 
 			//rigid1.mn.userVar[0] = actx->jointAngleDegrees;
 			//rigid1.mn.userVar[1] = actx->jointVelDegrees;
@@ -443,8 +446,7 @@ void rx_cmd_rigid_rr(uint8_t *buf, uint8_t *info)
 			ri->mn.genVar[5] = (int16_t) REBUILD_UINT16(buf, &index);
 			ri->mn.genVar[6] = (int16_t) REBUILD_UINT16(buf, &index);
 			ri->mn.genVar[7] = (int16_t) REBUILD_UINT16(buf, &index);
-			ri->mn.genVar[8] = (int16_t) REBUILD_UINT16(buf, &index);
-			//(36 bytes)
+			//(34 bytes)
 		}
 		else if(offset == 4)	//This is used to tweak and test bilateral controllers
 		{
