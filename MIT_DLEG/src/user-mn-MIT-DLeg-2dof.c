@@ -844,16 +844,24 @@ void oneTorqueFSM(struct act_s *actx)
 void torqueSweepTest(struct act_s *actx) {
 		static int32_t timer = 0;
 
-		int32_t torqueAmp = user_data_1[2];
-		int32_t frequency = user_data_1[3];
+		int32_t torqueAmp = user_data_1.w[2];
+		int32_t frequency = user_data_1.w[3];
 
 		timer++;
 
-		if (user_data_1[3] > 0) {
+		if (frequency > 0) {
 			float torqueDes = torqueAmp * sin(frequency*timer*2*M_PI/1000);
 			setMotorTorque(actx, torqueDes);
+
+			//pass back for plotting purposes
+			user_data_1.r[2] = torqueDes;
+			user_data_1.r[3] = frequency;
 		} else {
 			timer = 0;
+			setMotorTorque(actx, 0);
+
+			user_data_1.r[2] = 0;
+			user_data_1.r[3] = 0;
 		}
 
 }
