@@ -151,7 +151,7 @@ void MIT_DLeg_fsm_1(void)
 
 		case 1:
 			{
-				static float* ptorqueDes;
+				float* ptorqueDes;
 
 				//populate rigid1.mn.genVars to send to Plan
 				packRigidVars(&act1);
@@ -174,6 +174,9 @@ void MIT_DLeg_fsm_1(void)
 //					setMotorTorque(&act1, *ptorqueDes);
 //	//				twoTorqueFSM( &act1);
 //			    }
+
+				//torque sweep test
+				torqueSweepTest(&act1);
 
 				break;
 			}
@@ -833,6 +836,26 @@ void oneTorqueFSM(struct act_s *actx)
 			setMotorTorque( actx, 0);
 			break;
 	}
+
+}
+
+
+//control ankle torque by through user_data_1[2] as amplitude and user_data_1[3] as frequency
+void torqueSweepTest(struct act_s *actx) {
+		static int32_t timer = 0;
+
+		int32_t torqueAmp = user_data_1[2];
+		int32_t frequency = user_data_1[3];
+
+		timer++;
+
+		if (user_data_1[3] > 0) {
+			float torqueDes = torqueAmp * sin(frequency*timer*2*M_PI/1000);
+			setMotorTorque(actx, torqueDes);
+		} else {
+			timer = 0;
+		}
+
 }
 
 #endif 	//BOARD_TYPE_FLEXSEA_MANAGE || defined BOARD_TYPE_FLEXSEA_PLAN
