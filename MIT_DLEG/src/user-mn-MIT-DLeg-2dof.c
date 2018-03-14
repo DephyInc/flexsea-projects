@@ -131,13 +131,11 @@ void MIT_DLeg_fsm_1(void)
 		case -1:
 			stateMachine.current_state = STATE_INIT;
 			//turned off for testing without Motor usage
-//			if(findPoles()) {
-//				mit_init_current_controller();		//initialize Current Controller with gains
-//				fsm1State = 0;
-//				time = 0;
-//			}
-
-			fsm1State = 0;
+			if(findPoles()) {
+				mit_init_current_controller();		//initialize Current Controller with gains
+				fsm1State = 0;
+				time = 0;
+			}
 
 			break;
 
@@ -159,23 +157,23 @@ void MIT_DLeg_fsm_1(void)
 				packRigidVars(&act1);
 
 				//begin safety check
-			    if (safetyShutoff()) {
-			    	/*motor behavior changes based on failure mode.
-			    	  Bypasses the switch statement if return true
-			    	  but sensors check still runs and has a chance
-			    	  to allow code to move past this block.
-			    	  Only update the walking FSM, but don't output torque.
-			    	*/
-			    	runFlatGroundFSM(ptorqueDes);
-
-			    	return;
-
-			    } else {
-
-			    	runFlatGroundFSM(ptorqueDes);
-					setMotorTorque(&act1, *ptorqueDes);
-	//				twoTorqueFSM( &act1);
-			    }
+//			    if (safetyShutoff()) {
+//			    	/*motor behavior changes based on failure mode.
+//			    	  Bypasses the switch statement if return true
+//			    	  but sensors check still runs and has a chance
+//			    	  to allow code to move past this block.
+//			    	  Only update the walking FSM, but don't output torque.
+//			    	*/
+//			    	runFlatGroundFSM(ptorqueDes);
+//
+//			    	return;
+//
+//			    } else {
+//
+//			    	runFlatGroundFSM(ptorqueDes);
+//					setMotorTorque(&act1, *ptorqueDes);
+//	//				twoTorqueFSM( &act1);
+//			    }
 
 				break;
 			}
@@ -405,19 +403,19 @@ float getLinkageMomentArm(float theta)
 //	theta_r = ANG_UNIT % 360 ? (theta*M_PI/180) : theta; 	// convert deg to radians if necessary.
 //	theta_r = theta * M_PI / 180;	// convert deg to radians.
 
-    static const float t = 47; 		// [mm] tibial offset
-    static const float t_k = 140; 	// [mm] offset from knee along tibia
-    static const float f = 39;  	// [mm] femur offset
-    static const float f_k = 18;	// [mm] offset from knee along femur
+    const float t = 47; 		// [mm] tibial offset
+    const float t_k = 140; 	// [mm] offset from knee along tibia
+    const float f = 39;  	// [mm] femur offset
+    const float f_k = 18;	// [mm] offset from knee along femur
 
-    static const float aIn = t*t + t_k*t_k;
+    const float aIn = t*t + t_k*t_k;
     a = sqrt(aIn);
-    static const float bIn = f*f + f_k*f_k;
+    const float bIn = f*f + f_k*f_k;
     b = sqrt(bIn);
 
-    static const float Tin = t/t_k;
+    const float Tin = t/t_k;
     T = atan(Tin);
-    static const float Fin = f/f_k;
+    const float Fin = f/f_k;
     F = atan(Fin);
 
     C_ang = M_PI - theta - (T + F); 	// angle
@@ -511,15 +509,20 @@ void setMotorTorque(struct act_s *actx, float tau_des)
  */
 void setMotorTorqueFF(struct act_s *actx, float tau_des)
 {
-	static int8_t time = 1; 		// ms
-	static float N = 1;				// moment arm [m]
-	static float tau_meas = 0;  	//joint torque reflected to motor.
-	static float tau_diff = 0;
-	static float tau_err = 0, tau_err_last = 0;
-	static float tau_err_dot = 0, tau_err_int = 0;
-	static float tau_motor = 0;		// motor torque signal
-	static int32_t dtheta_m = 0, ddtheta_m = 0;	//motor vel, accel
-	static int32_t I = 0;			// motor current signal
+	float N = 1;				// moment arm [m]
+	float tau_meas = 0;  	//joint torque reflected to motor.
+	float tau_desired = 0;
+	static int32_t prev_tau_des = 0;
+	static int32_t prev_tau_error = 0;
+	int32_t tau_error = 0;
+	int32_t dtau_error = 0;
+	static int32_t itau_error = 0;
+	int32_t curr_error = 0;
+	float tau_comp = 0;
+	float tauFF = 0;
+	int32_t currFF = 0;
+	int32_t dtheta_m = 0, ddtheta_m = 0;	//motor vel, accel
+	int32_t I = 0;			// motor current signal
 
 	N = actx->linkageMomentArm * nScrew;
 	dtheta_m = actx->motorVel;
@@ -528,29 +531,33 @@ void setMotorTorqueFF(struct act_s *actx, float tau_des)
 
 	// todo: better fidelity may be had if we modeled N_ETA as a function of torque, long term goal, if necessary
 	tau_meas =  actx->jointTorque / (N) * 1000;	// measured torque reflected to motor [mNm]
-	tau_des = tau_des / (N*N_ETA) *1000;					// desired joint torque, reflected to motor [mNm]
-
-	//output genVars for ActPack monitoring
-	rigid1.mn.userVar[5] = tau_meas;
-	rigid1.mn.userVar[6] = tau_des;
-
-	tau_diff = (tau_des - tau_meas);
-
-	tau_err_dot = (tau_err - tau_err_last)/time;
-	tau_err_int = tau_err_int + tau_err;
-	tau_err_last = tau_err;
+	tau_desired = tau_des / (N*N_ETA) *1000;		// desired joint torque, reflected to motor [mNm]
 
 
+	//calculate feedforward current based on desired - actual joint torque
+	tauFF = tau_desired - tau_meas;
+	currFF = tauFF / MOT_KT; //feed forward current in mA
 
-	//PID around motor torque.
-	//Is this correct? - Tony
-	/*shouldn't we apply current to exactly produce the demanded torque,
-	 * then correct based on the remaining error?
-	 */
-	tau_motor = tau_err * torqueKp + (tau_err_dot) * torqueKd + (tau_err_int) * torqueKi;
+	//account for deadzone current
+	if (abs(dtheta_m) < 2 && currFF < 0) {
+		currFF -= MOT_DEAD_CURR;
+	} else if (abs(dtheta_m) < 2 && currFF > 0) {
+		currFF += MOT_DEAD_CURR;
+	}
 
-	I = 1 / MOT_KT * ( (int32_t) tau_motor + (MOT_J + MOT_TRANS)*ddtheta_m + MOT_B*dtheta_m);		// + (J_rotor + J_screw)*ddtheta_m + B*dtheta_m
-	//I think I needs to be scaled to mA, but not sure yet.
+	//PID around error
+	tau_error = prev_tau_des - tau_meas; //nMn
+	itau_error += tau_error;
+	dtau_error = tau_error - prev_tau_error; // mNm/s
+
+	tau_comp = tau_error*FF_KP + itau_error*FF_KI + dtau_error*FF_KD;
+
+	//combined current demand
+	I = currFF + (1/MOT_KT) * (tau_comp + (MOT_J + MOT_TRANS)*ddtheta_m + MOT_B*dtheta_m);		// + (J_rotor + J_screw)*ddtheta_m + B*dtheta_m
+
+
+	prev_tau_des = tau_desired;
+	prev_tau_error = tau_error;
 
 	//Saturate I for our current operational limits -- limit can be reduced by safetyShutoff() due to heating
 	if(I > currentOpLimit )
@@ -564,7 +571,9 @@ void setMotorTorqueFF(struct act_s *actx, float tau_des)
 	actx->desiredCurrent = (int32_t) (I * currentScalar); // demanded mA
 	setMotorCurrent(actx->desiredCurrent);				// send current command to comm buffer to Execute
 
-
+	//output genVars for ActPack monitoring
+	rigid1.mn.userVar[5] = tau_meas;
+	rigid1.mn.userVar[6] = tau_desired;
 }
 
 //UNUSED. See state_machine
