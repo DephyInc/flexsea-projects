@@ -77,7 +77,7 @@ int16_t getMotorTempSensor(void);
 void    updateSensorValues(struct act_s *actx);
 
 //Control outputs
-float biomControlImpedance(float theta_set, float k1, float k2, float b); 	// returns a desired joint torque, then use setMotorTorque() to get the motor to do its magic
+float biomCalcImpedance(float theta_set, float k1, float k2, float b); 	// returns a desired joint torque, then use setMotorTorque() to get the motor to do its magic
 void  setMotorTorque(struct act_s *actx, float tor_d);
 void  setMotorTorqueFF(struct act_s *actx, float tor_d);
 void  packRigidVars(struct act_s *actx);
@@ -112,7 +112,7 @@ void torqueSweepTest(struct act_s *actx);
 #ifdef DEVICE_TF08_A01
 
 //Encoder
-#define JOINT_ZERO_OFFSET 	0		// [deg] Joint Angle offset, CW rotation, based on Setup, ie. TEDtalk flexfoot angle = 20, fittings, etc.
+#define JOINT_ZERO_OFFSET 	20		// [deg] Joint Angle offset, CW rotation, based on Setup, ie. TEDtalk flexfoot angle = 20, fittings, etc.
 #define JOINT_ENC_DIR 		-1		// Encoder orientation. CW = 1 (knee orientation), CCW = -1
 #define JOINT_ANGLE_DIR 	-1		// Joint angle direction. Std convention is Ankle: Dorsiflexion (+), Plantarflexion (-) with value == -1
 #define JOINT_CPR 			16383	// Counts per revolution (todo: is it (2^14 - 1)?)
@@ -142,11 +142,11 @@ void torqueSweepTest(struct act_s *actx);
 
 
 // Motor Parameters
-#define MOT_KT 			0.0951	// Kt value
+#define MOT_KT 			0.055	// Phase Kt value = linearKt/(3^0.5)
 #define MOT_L			0.068	// mH
-#define MOT_J			0		//0.000322951	// rotor inertia, [kgm^2]
-#define MOT_B			0.0		// damping term for motor and screw combined, drag from rolling elements
-#define MOT_TRANS		0		// lumped mass inertia todo: consider MotorMass on Spring inertia contribution.
+#define MOT_J			0.		//0.000322951	// rotor inertia, [kgm^2]
+#define MOT_B			0.		// damping term for motor and screw combined, drag from rolling elements
+#define MOT_TRANS		0.		// lumped mass inertia todo: consider MotorMass on Spring inertia contribution.
 #define MOT_DEAD_CURR   1000    // mA required to move from rest
 
 // Current Control Parameters  -- Test these on a motor test stand first
@@ -155,9 +155,9 @@ void torqueSweepTest(struct act_s *actx);
 #define ACTRL_I_KD_INIT		0
 
 // Feed Forward error PID
-#define FF_KP		0.5
-#define FF_KI		0.
-#define FF_KD		0.
+#define FF_KP_INIT		0.5
+#define FF_KI_INIT		0.
+#define FF_KD_INIT		0.
 
 //Transmission
 #ifdef IS_ANKLE					//UPDATE THIS WITH NEW SCREWs ankle = 0.002

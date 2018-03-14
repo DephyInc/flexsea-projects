@@ -73,6 +73,11 @@ int16_t currentKp = ACTRL_I_KP_INIT;
 int16_t currentKi = ACTRL_I_KI_INIT;
 int16_t currentKd = ACTRL_I_KD_INIT;
 
+//feed forward error gain values
+float ffKp = FF_KP_INIT;
+float ffKi = FF_KI_INIT;
+float ffKd = FF_KD_INIT;
+
 //const vars taken from defines (done to speed up computation time)
 static const float angleUnit    = ANG_UNIT;
 static const float jointHSMin   = JOINT_HS_MIN;
@@ -157,7 +162,7 @@ void MIT_DLeg_fsm_1(void)
 				packRigidVars(&act1);
 
 				//begin safety check
-//			    if (safetyShutoff()) {
+			    if (safetyShutoff()) {
 //			    	/*motor behavior changes based on failure mode.
 //			    	  Bypasses the switch statement if return true
 //			    	  but sensors check still runs and has a chance
@@ -166,17 +171,20 @@ void MIT_DLeg_fsm_1(void)
 //			    	*/
 //			    	runFlatGroundFSM(ptorqueDes);
 //
-//			    	return;
+			    	return;
 //
-//			    } else {
+			    } else {
 //
 //			    	runFlatGroundFSM(ptorqueDes);
 //					setMotorTorque(&act1, *ptorqueDes);
-//	//				twoTorqueFSM( &act1);
-//			    }
 
-				//torque sweep test
-				torqueSweepTest(&act1);
+					//Testing functions
+
+			    	*ptorqueDes = biomCalcImpedance(user_data_1.w[0], user_data_1.w[1], user_data_1.w[2], user_data_1.w[3]);
+			    	setMotorTorqueFF(&act1, *ptorqueDes);
+			    }
+
+
 
 				break;
 			}
@@ -543,17 +551,17 @@ void setMotorTorqueFF(struct act_s *actx, float tau_des)
 
 	//account for deadzone current
 	if (abs(dtheta_m) < 2 && currFF < 0) {
-		currFF -= MOT_DEAD_CURR;
+		currFF -= MOT_DEAD_CURR; //in mA
 	} else if (abs(dtheta_m) < 2 && currFF > 0) {
 		currFF += MOT_DEAD_CURR;
 	}
 
 	//PID around error
-	tau_error = prev_tau_des - tau_meas; //nMn
+	tau_error = prev_tau_des - tau_meas; //mNm
 	itau_error += tau_error;
-	dtau_error = tau_error - prev_tau_error; // mNm/s
+	dtau_error = tau_error - prev_tau_error; // mNm/ms
 
-	tau_comp = tau_error*FF_KP + itau_error*FF_KI + dtau_error*FF_KD;
+	tau_comp = tau_error*ffKp + itau_error*ffKi + dtau_error*ffKd;
 
 	//combined current demand
 	I = currFF + (1/MOT_KT) * (tau_comp + (MOT_J + MOT_TRANS)*ddtheta_m + MOT_B*dtheta_m);		// + (J_rotor + J_screw)*ddtheta_m + B*dtheta_m
@@ -586,14 +594,14 @@ void setMotorTorqueFF(struct act_s *actx, float tau_des)
  * 			k1,k2,b, impedance parameters
  * return: 	tor_d, desired torque
  */
-float biomControlImpedance(float theta_set, float k1, float k2, float b)
+float biomCalcImpedance(float theta_set, float k1, float k2, float b)
 {
-	static float theta = 0, theta_d = 0;
-	static float tor_d = 0;
+	float theta = 0, theta_d = 0;
+	float tor_d = 0;
 
 	theta = act1.jointAngle;
 	theta_d = act1.jointVel;
-	tor_d = k1 *(theta - theta_set) + k2 * (theta-theta_set)*(theta-theta_set)*(theta-theta_set) + b*theta_d;
+	tor_d = k1 *(theta - theta_set) + k2 * powf((theta-theta_set), 3) - b*theta_d;
 
 	return tor_d;
 
