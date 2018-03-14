@@ -520,7 +520,7 @@ void setMotorTorque(struct act_s *actx, float tau_des)
 
 //	I = 1 / MOT_KT * ( tau_motor + (MOT_J + MOT_TRANS)*ddtheta_m + MOT_B*dtheta_m) * currentScalar;		// + (J_rotor + J_screw)*ddtheta_m + B*dtheta_m, scaled to mA
 
-	I = 1/MOT_KT * ( tau_ff + tau_motor +(MOT_J + MOT_TRANS)*ddtheta_m + MOT_B*dtheta_m) ) * currentScalar;	// Feed forward desired torque, combine with error
+	I = 1/MOT_KT * ( tau_ff + tau_motor +(MOT_J + MOT_TRANS)*ddtheta_m + MOT_B*dtheta_m ) * currentScalar;	// Feed forward desired torque, combine with error
 
 	rigid1.mn.genVar[8] = I;
 
