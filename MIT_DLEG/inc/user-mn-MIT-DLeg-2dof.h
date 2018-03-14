@@ -124,7 +124,7 @@ void twoTorqueFSM();
 #define JOINT_ZERO 			JOINT_ZERO_ABS + JOINT_ENC_DIR * JOINT_ZERO_OFFSET *JOINT_CPR/360 	// counts for actual angle.
 
 //Force Sensor
-#define FORCE_DIR			-1		// Direction of positive force, Dorsiflexion (-), Plantarflex (+) with value == 1
+#define FORCE_DIR			-1		// Direction of positive force, Dorsiflexion (-), Plantarflex (+) with value == -1
 #define FORCE_STRAIN_GAIN 	202.6	// Defined by R23 on Execute, better would be G=250 to max range of ADC
 #define FORCE_STRAIN_BIAS	2.5		// Strain measurement Bias
 #define FORCE_EXCIT			5		// Excitation Voltage
@@ -133,10 +133,11 @@ void twoTorqueFSM();
 #define FORCE_MAX_TICKS		( (FORCE_STRAIN_GAIN * FORCE_EXCIT * FORCE_RATED_OUTPUT + FORCE_STRAIN_BIAS)/5 * 65535 )	// max ticks expected
 #define FORCE_MIN_TICKS		( (FORCE_STRAIN_BIAS - FORCE_STRAIN_GAIN * FORCE_EXCIT * FORCE_RATED_OUTPUT)/5 * 65535 )	// min ticks expected
 #define FORCE_PER_TICK		( ( 2 * FORCE_MAX  ) / (FORCE_MAX_TICKS - FORCE_MIN_TICKS)	)	// Newtons/Tick
-
+#define TORQ_CALIB_M		1.0978	// y=Mx+b, from collected data set, applied load
+#define TORQ_CALIB_B		0.0656	// y=Mx+b, from collected data set, applied load
 
 //Torque Control PID gains
-#define TORQ_KP_INIT			10.
+#define TORQ_KP_INIT			1.
 #define TORQ_KI_INIT			0.
 #define TORQ_KD_INIT			0.
 
@@ -144,9 +145,11 @@ void twoTorqueFSM();
 // Motor Parameters
 #define MOT_KT 			0.09549	// Kt value
 #define MOT_L			0.068	// mH
-#define MOT_J			0		//0.000322951	// rotor inertia, [kgm^2]
-#define MOT_B			0.0		// damping term for motor and screw combined, drag from rolling elements
+#define MOT_J			0.000322951		//0.000322951	// rotor inertia, [kgm^2]
+#define MOT_B			0		// damping term for motor and screw combined, drag from rolling elements
 #define MOT_TRANS		0		// lumped mass inertia todo: consider MotorMass on Spring inertia contribution.
+#define MOT_STIC_POS	1400	// stiction current, 1800
+#define MOT_STIC_NEG	1600	// stiction current, 1800
 
 // Current Control Parameters  -- Test these on a motor test stand first
 #define ACTRL_I_KP_INIT		15
@@ -183,8 +186,8 @@ void twoTorqueFSM();
 //Safety limits
 #define PCB_TEMP_LIMIT_INIT		70
 #define MOTOR_TEMP_LIMIT_INIT	70
-#define ABS_TORQUE_LIMIT_INIT	10		    // Joint torque [Nm]
-#define CURRENT_LIMIT_INIT		3000		// [mA] useful in this form
+#define ABS_TORQUE_LIMIT_INIT	20		    // Joint torque [Nm]
+#define CURRENT_LIMIT_INIT		5000		// [mA] useful in this form, 40000 max
 #define CURRENT_SCALAR_INIT		1000
 
 // Motor Temp Sensor

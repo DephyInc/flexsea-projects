@@ -133,12 +133,12 @@ void MIT_DLeg_fsm_1(void)
 		case -1:
 			stateMachine.current_state = STATE_INIT;
 			//turned off for testing without Motor usage
-//			if(findPoles()) {
-//				fsm1State = 0;
-//				time = 0;
-//			}
+			if(findPoles()) {
+				fsm1State = 0;
+				time = 0;
+			}
 
-			fsm1State = 0;
+//			fsm1State = 0; // turned on for testing without motor
 
 			break;
 
@@ -160,6 +160,7 @@ void MIT_DLeg_fsm_1(void)
 				//populate rigid1.mn.genVars to send to Plan
 				packRigidVars(&act1);
 
+//				torqueSetPt = user_data_1.w[0];
 				torqueKp = user_data_1.w[1];
 				torqueKi = user_data_1.w[2];
 				torqueKd = user_data_1.w[3];
@@ -175,7 +176,7 @@ void MIT_DLeg_fsm_1(void)
 			    	*/
 //			    	runFlatGroundFSM(ptorqueDes);
 			    	setMotorTorque(&act1, 0);
-			    	return;
+			    		//return  switched so i can read torque values
 
 			    } else {
 
@@ -188,7 +189,7 @@ void MIT_DLeg_fsm_1(void)
 
 				rigid1.mn.genVar[0] = isSafetyFlag;
 				rigid1.mn.genVar[1] = act1.jointAngleDegrees; //deg
-				rigid1.mn.genVar[2] = act1.jointTorque;  //Nm
+				rigid1.mn.genVar[2] = act1.jointTorque*1000;  //mNm
 				rigid1.mn.genVar[3] = act1.linkageMomentArm*1000; //mm
 				rigid1.mn.genVar[4] = 0;
 //				rigid1.mn.genVar[5] = tau_meas;
@@ -460,8 +461,11 @@ float getLinkageMomentArm(float theta)
 float getJointTorque(struct act_s *actx)
 {
 	static float torque = 0;
+//	static float torqueCalib = 0;
 
 	torque = actx->linkageMomentArm * actx->axialForce;
+
+	torque = torque * TORQ_CALIB_M + TORQ_CALIB_B;		//apply calibration to torque measurement
 
 	if(torque >= ABS_TORQUE_LIMIT_INIT || torque <= -ABS_TORQUE_LIMIT_INIT) {
 		isSafetyFlag = SAFETY_TORQUE;
@@ -484,7 +488,7 @@ void setMotorTorque(struct act_s *actx, float tau_des)
 {
 	static int8_t time = 1; 		// ms
 	static float N = 1;				// moment arm [m]
-	static float tau_meas = 0;  	//joint torque reflected to motor.
+	static float tau_meas = 0, tau_ff=0;  	//joint torque reflected to motor.
 	static float tau_err = 0, tau_err_last = 0;
 	static float tau_err_dot = 0, tau_err_int = 0;
 	static float tau_motor = 0;		// motor torque signal
@@ -498,14 +502,14 @@ void setMotorTorque(struct act_s *actx, float tau_des)
 
 	// todo: better fidelity may be had if we modeled N_ETA as a function of torque, long term goal, if necessary
 	tau_meas =  actx->jointTorque / (N) ;	// measured torque reflected to motor [Nm]
-	tau_des = tau_des / (N*N_ETA) ;					// desired joint torque, reflected to motor [Nm]
+	tau_ff = tau_des / (N*N_ETA) ;					// desired joint torque, reflected to motor [Nm]
 
 	//output genVars for ActPack monitoring
 	rigid1.mn.genVar[5] = tau_meas*1000; //mNm
 
 
 	tau_err = (tau_des - tau_meas);
-	tau_err_dot = (tau_err - tau_err_last)/time;
+	tau_err_dot = (tau_err - tau_err_last);
 	tau_err_int = tau_err_int + tau_err;
 	tau_err_last = tau_err;
 
@@ -514,9 +518,20 @@ void setMotorTorque(struct act_s *actx, float tau_des)
 
 	rigid1.mn.genVar[6] = tau_motor*1000;  //mNm
 
-	I = 1 / MOT_KT * ( tau_motor + (MOT_J + MOT_TRANS)*ddtheta_m + MOT_B*dtheta_m) * currentScalar;		// + (J_rotor + J_screw)*ddtheta_m + B*dtheta_m, scaled to mA
+//	I = 1 / MOT_KT * ( tau_motor + (MOT_J + MOT_TRANS)*ddtheta_m + MOT_B*dtheta_m) * currentScalar;		// + (J_rotor + J_screw)*ddtheta_m + B*dtheta_m, scaled to mA
+
+	I = 1/MOT_KT * ( tau_ff + tau_motor +(MOT_J + MOT_TRANS)*ddtheta_m + MOT_B*dtheta_m) ) * currentScalar;	// Feed forward desired torque, combine with error
 
 	rigid1.mn.genVar[8] = I;
+
+	//Stiction compensation
+	if(I < 0)
+	{
+		I -= MOT_STIC_NEG;
+	} else if ( I > 0)
+	{
+		I += MOT_STIC_POS;
+	}
 
 	//Saturate I for our current operational limits -- limit can be reduced by safetyShutoff() due to heating
 	if(I > currentOpLimit )
@@ -578,6 +593,8 @@ void setMotorTorqueFF(struct act_s *actx, float tau_des)
 
 	I = 1 / MOT_KT * ( tau_motor + (MOT_J + MOT_TRANS)*ddtheta_m + MOT_B*dtheta_m);		// + (J_rotor + J_screw)*ddtheta_m + B*dtheta_m
 	//I think I needs to be scaled to mA, but not sure yet.
+
+
 
 	//Saturate I for our current operational limits -- limit can be reduced by safetyShutoff() due to heating
 	if(I > currentOpLimit )
