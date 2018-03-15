@@ -22,7 +22,7 @@ GainParams lstPowerGains = {4.5, 0, 0.005, -18};
 #ifndef BOARD_TYPE_FLEXSEA_PLAN
 
 //Static functions
-static float calcTorque(GainParams gainParams);
+static float calcJointTorque(GainParams gainParams);
 
 /** Impedance Control Level-ground Walking FSM
 	Based on BiOM ankle and simplified.
@@ -72,7 +72,7 @@ void runFlatGroundFSM(float* ptorqueDes) {
 //
 //			}
 
-            *ptorqueDes = calcTorque(eswGains);
+            *ptorqueDes = calcJointTorque(eswGains);
 
             //Early Swing transition vectors
             // VECTOR(1): Early Swing -> Late Swing
@@ -86,7 +86,7 @@ void runFlatGroundFSM(float* ptorqueDes) {
 
         case STATE_LATE_SWING:
 
-            *ptorqueDes = calcTorque(lswGains);
+            *ptorqueDes = calcJointTorque(lswGains);
 
             //Late Swing transition vectors
             // VECTOR (1): Late Swing -> Early Stance (hard heel strike)
@@ -99,7 +99,7 @@ void runFlatGroundFSM(float* ptorqueDes) {
 
         case STATE_EARLY_STANCE:
 
-            *ptorqueDes = calcTorque(estGains);
+            *ptorqueDes = calcJointTorque(estGains);
 
             //Early Stance transition vectors
             // VECTOR (1): Early Stance -> Late Stance POWER!
@@ -113,7 +113,7 @@ void runFlatGroundFSM(float* ptorqueDes) {
 		
         case STATE_LATE_STANCE_POWER:
 
-            *ptorqueDes = calcTorque(lstPowerGains);
+            *ptorqueDes = calcJointTorque(lstPowerGains);
 
             //Late Stance Power transition vectors
             // VECTOR (1): Late Stance Power -> Early Swing - Condition 1
@@ -148,7 +148,7 @@ void runFlatGroundFSM(float* ptorqueDes) {
 	@param  gainParams struct with all the state's impedance parameters
     @return float desired torque at joint (Nm)
 */
-static float calcTorque(GainParams gainParams) {
+static float calcJointTorque(GainParams gainParams) {
 
     return gainParams.k1 * (act1.jointAngleDegrees - gainParams.thetaDes) \
          + gainParams.k2 * powf((act1.jointAngleDegrees - gainParams.thetaDes), 3) - gainParams.b * act1.jointVelDegrees;
