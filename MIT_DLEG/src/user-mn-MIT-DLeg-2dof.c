@@ -201,8 +201,7 @@ void MIT_DLeg_fsm_1(void)
 					//Testing functions
 			    	torqueKp = user_data_1.w[0]/100.;
 			    	torqueKd = user_data_1.w[1]/100.;
-			    	motJ = user_data_1.w[2]/1000000.;
-			    	motB = user_data_1.w[3]/1000000.;
+			    	torqueKi = user_data_1.w[2]/100.;
 //			    	motSticNeg = user_data_1.w[1];
 //			    	motSticPos = user_data_1.w[2];
 
@@ -210,7 +209,6 @@ void MIT_DLeg_fsm_1(void)
 //			    	torqueDes = biomCalcImpedance(user_data_1.w[0], user_data_1.w[1], user_data_1.w[2], user_data_1.w[3]);
 			    	setMotorTorque(&act1, torqueDes);
 			    }
-			    float32_t someval = 9999.0;
 
 				rigid1.mn.genVar[0] = isSafetyFlag;
 				rigid1.mn.genVar[1] = act1.jointAngleDegrees; //deg
