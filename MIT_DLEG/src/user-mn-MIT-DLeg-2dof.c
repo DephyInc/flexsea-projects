@@ -163,8 +163,8 @@ void MIT_DLeg_fsm_1(void)
 			isEnabledUpdateSensors = 1;
 			//reserve for additional initialization
 		
-			// init_LPF();						// initialize low pass filter
-			// mit_init_current_controller();		//initialize Current Controller with gains
+			 init_LPF();						// initialize low pass filter
+
 			// to use filter on data use this
 			// filter_LPF(rigid1.mn.accel.x);
 			// lpf_result;  // this is teh result value.
@@ -176,16 +176,10 @@ void MIT_DLeg_fsm_1(void)
 
 		case 1:
 			{
-				float torqueDes;
+				float torqueDes = 0;
 
 				//populate rigid1.mn.genVars to send to Plan
 				packRigidVars(&act1);
-
-//				torqueSetPt = user_data_1.w[0];
-				torqueKp = user_data_1.w[1];
-				torqueKi = user_data_1.w[2];
-				torqueKd = user_data_1.w[3];
-
 
 				//begin safety check
 			    if (safetyShutoff()) {
@@ -205,12 +199,13 @@ void MIT_DLeg_fsm_1(void)
 //					setMotorTorque(&act1, *ptorqueDes);
 
 					//Testing functions
-			    	torqueDes = user_data_1.w[0]/100.;
-			    	motJ = user_data_1.w[1]/10000.;
-			    	motB = user_data_1.w[2]/10000.;
+			    	torqueKp = user_data_1.w[0]/100.;
+			    	torqueKd = user_data_1.w[1]/100.;
+			    	motJ = user_data_1.w[2]/1000000.;
+			    	motB = user_data_1.w[3]/1000000.;
 //			    	motSticNeg = user_data_1.w[1];
 //			    	motSticPos = user_data_1.w[2];
-			    	torqueKp = user_data_1.w[3]/100.;
+
 
 //			    	torqueDes = biomCalcImpedance(user_data_1.w[0], user_data_1.w[1], user_data_1.w[2], user_data_1.w[3]);
 			    	setMotorTorque(&act1, torqueDes);
@@ -222,10 +217,9 @@ void MIT_DLeg_fsm_1(void)
 				rigid1.mn.genVar[2] = act1.jointTorque*1000;  //mNm
 				rigid1.mn.genVar[3] = act1.linkageMomentArm*1000; //mm
 				rigid1.mn.genVar[4] = (float) lpf_result;
-//				rigid1.mn.genVar[5] = tau_meas;
+				rigid1.mn.genVar[5] = act1.motorAcc;
 //				rigid1.mn.genVar[6] = tau_motor*1000;  //mNm
 				rigid1.mn.genVar[7] = act1.desiredCurrent;
-//				rigid1.mn.genVar[8] = I;
 				rigid1.mn.genVar[9] = (int16_t)lpf_index;
 
 
@@ -289,6 +283,7 @@ int8_t safetyShutoff(void) {
 				break;
 			} else {
 				setMotorTorque(&act1, 0); //run this in order to update torque genVars sent to Plan
+				setMotorCurrent(0); // turn off motor. might need something better than this.
 			}
 
 			return 1;
@@ -337,6 +332,11 @@ void updateSensorValues(struct act_s *actx)
 
 	actx->motorVel =  *rigid1.ex.enc_ang_vel / 16.384 * angleUnit;	// rad/s
 	actx->motorAcc = rigid1.ex.mot_acc;	// rad/s/s
+
+	// Lowpass filter on Acceleration.
+	filter_LPF(actx->motorAcc);
+	actx->motorAcc = lpf_result;  // this is teh result value.
+
 
 	actx->regTemp = rigid1.re.temp;
 	actx->motTemp = getMotorTempSensor();
@@ -494,7 +494,7 @@ float getLinkageMomentArm(float theta)
  */
 float getJointTorque(struct act_s *actx)
 {
-	static float torque = 0;
+	float torque = 0;
 //	static float torqueCalib = 0;
 
 	torque = actx->linkageMomentArm * actx->axialForce;
@@ -522,9 +522,9 @@ void setMotorTorque(struct act_s *actx, float tau_des)
 {
 	float N = 1;				// moment arm [m]
 	float tau_meas = 0, tau_ff=0;  	//joint torque reflected to motor.
-	static float tau_err = 0, tau_err_last = 0;
-	static float tau_err_dot = 0, tau_err_int = 0;
-	float tau_motor = 0;		// motor torque signal
+	float tau_err = 0;
+	static float tau_err_last = 0, tau_err_int = 0;
+	float tau_motor = 0, tau_err_dot = 0;		// motor torque signal
 	int32_t dtheta_m = 0, ddtheta_m = 0;	//motor vel, accel
 	int32_t I = 0;			// motor current signal
 
@@ -538,7 +538,7 @@ void setMotorTorque(struct act_s *actx, float tau_des)
 	tau_ff = tau_des / (N*N_ETA) ;					// desired joint torque, reflected to motor [Nm]
 
 	//output genVars for ActPack monitoring
-	rigid1.mn.genVar[5] = tau_meas*1000; //mNm
+
 
 
 	tau_err = (tau_des - tau_meas);
@@ -553,11 +553,17 @@ void setMotorTorque(struct act_s *actx, float tau_des)
 
 	I = 1/MOT_KT * ( tau_ff + tau_motor +(motJ + MOT_TRANS)*ddtheta_m + motB*dtheta_m) * currentScalar;
 	//account for deadzone current
-	if (abs(dtheta_m) < 3 && I < 0) {
-		I -= motSticNeg; //in mA
-	} else if (abs(dtheta_m) < 3 && I > 0) {
-		I += motSticPos;
-	}
+//	if (abs(dtheta_m) < 3 && I < 0) {
+//		I -= motSticNeg; //in mA
+//	} else if (abs(dtheta_m) < 3 && I > 0) {
+//		I += motSticPos;
+//	}
+
+//	if ( I < 0) {
+//		I -= motSticNeg; //in mA
+//	} else if ( I > 0) {
+//		I += motSticPos;
+//	}
 
 	//Saturate I for our current operational limits -- limit can be reduced by safetyShutoff() due to heating
 	if(I > currentOpLimit )
@@ -574,6 +580,7 @@ void setMotorTorque(struct act_s *actx, float tau_des)
 	//output genVars for ActPack monitoring
 	rigid1.mn.userVar[5] = tau_meas;
 	rigid1.mn.userVar[6] = tau_ff;
+	rigid1.mn.genVar[8] = tau_err;
 }
 
 //UNUSED. See state_machine

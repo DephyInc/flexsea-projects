@@ -2,13 +2,13 @@
  * mit_filters.h
  *
  *  Created on: Mar 14, 2018
- *      Author: matt
+ *      Author: Seong Ho
  */
 
 //#ifndef BIOMECH_FLEXSEA_PROJECTS_MIT_DLEG_INC_MIT_FILTERS_H_
 //#define BIOMECH_FLEXSEA_PROJECTS_MIT_DLEG_INC_MIT_FILTERS_H_
 #include "arm_math.h"
-#define LPF_ORDER             30
+#define LPF_ORDER             37	// Order + 1 from matlb.
 
 extern float lpf_result;
 extern uint16_t lpf_index;

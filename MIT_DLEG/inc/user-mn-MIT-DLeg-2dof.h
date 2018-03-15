@@ -144,11 +144,11 @@ void torqueSweepTest(struct act_s *actx);
 // Motor Parameters
 #define MOT_KT 			0.055	// Phase Kt value = linearKt/(3^0.5)
 #define MOT_L			0.068	// mH
-#define MOT_J			0 //0.000322951		//0.000322951	// rotor inertia, [kgm^2]
-#define MOT_B			0 //0.000131		// damping term for motor and screw combined, drag from rolling elements
+#define MOT_J			0.0001 //0.000322951		//0.000322951	// rotor inertia, [kgm^2]
+#define MOT_B			0.00005 //0.000131		// damping term for motor and screw combined, drag from rolling elements
 #define MOT_TRANS		0		// lumped mass inertia todo: consider MotorMass on Spring inertia contribution.
-#define MOT_STIC_POS	1400	// stiction current, 1800
-#define MOT_STIC_NEG	1600	// stiction current, 1800
+#define MOT_STIC_POS	1000 //1400	// stiction current, 1800
+#define MOT_STIC_NEG	1000 //1600	// stiction current, 1800
 
 // Current Control Parameters  -- Test these on a motor test stand first
 #define ACTRL_I_KP_INIT		15
