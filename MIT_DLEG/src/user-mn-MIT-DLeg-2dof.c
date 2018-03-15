@@ -44,6 +44,10 @@
 #include <flexsea_comm.h>
 #include <math.h>
 
+
+#include "mit_filters.h"
+#include "arm_math.h"
+
 //****************************************************************************
 // Variable(s)
 //****************************************************************************
@@ -133,12 +137,12 @@ void MIT_DLeg_fsm_1(void)
 		case -1:
 			stateMachine.current_state = STATE_INIT;
 			//turned off for testing without Motor usage
-			if(findPoles()) {
-				fsm1State = 0;
-				time = 0;
-			}
+//			if(findPoles()) {
+//				fsm1State = 0;
+//				time = 0;
+//			}
 
-//			fsm1State = 0; // turned on for testing without motor
+			fsm1State = 0; // turned on for testing without motor
 
 			break;
 
@@ -146,6 +150,7 @@ void MIT_DLeg_fsm_1(void)
 			//sensor update happens in mainFSM2(void) in main_fsm.c
 			isEnabledUpdateSensors = 1;
 			//reserve for additional initialization
+			init_LPF();						// initialize low pass filter
 			mit_init_current_controller();		//initialize Current Controller with gains
 
 			fsm1State = 1;
@@ -186,16 +191,19 @@ void MIT_DLeg_fsm_1(void)
 					oneTorqueFSM( &act1);
 
 			    }
+			    float32_t someval = 9999.0;
 
 				rigid1.mn.genVar[0] = isSafetyFlag;
 				rigid1.mn.genVar[1] = act1.jointAngleDegrees; //deg
 				rigid1.mn.genVar[2] = act1.jointTorque*1000;  //mNm
 				rigid1.mn.genVar[3] = act1.linkageMomentArm*1000; //mm
-				rigid1.mn.genVar[4] = 0;
+				rigid1.mn.genVar[4] = (float) lpf_result;
 //				rigid1.mn.genVar[5] = tau_meas;
 //				rigid1.mn.genVar[6] = tau_motor*1000;  //mNm
 				rigid1.mn.genVar[7] = act1.desiredCurrent;
 //				rigid1.mn.genVar[8] = I;
+				rigid1.mn.genVar[9] = (int16_t)lpf_index;
+
 
 
 				break;
@@ -292,7 +300,12 @@ void updateSensorValues(struct act_s *actx)
 	static float joint[3];
 	getJointAngleKinematic( joint );
 
+
+
 	actx->jointAngle = joint[0]; //*(pjointKinematic + 0);
+
+	filter_LPF(rigid1.mn.accel.x);
+
 	actx->jointAngleDegrees = actx->jointAngle * 360/angleUnit;
 	actx->jointVel = joint[1]; // *(pjointKinematic + 1);
 	actx->jointVelDegrees = actx->jointVel * 360/angleUnit;
