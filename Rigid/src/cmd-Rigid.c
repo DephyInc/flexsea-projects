@@ -183,82 +183,109 @@ void tx_cmd_rigid_w(uint8_t *shBuf, uint8_t *cmd, uint8_t *cmdType, \
 
 		//Arguments:
 		if(offset == 0)
-				{
-					SPLIT_32(ri->ctrl.timestamp, shBuf, &index);
-					SPLIT_16((uint16_t)ri->mn.gyro.x, shBuf, &index);
-					SPLIT_16((uint16_t)ri->mn.gyro.y, shBuf, &index);
-					SPLIT_16((uint16_t)ri->mn.gyro.z, shBuf, &index);
-					SPLIT_16((uint16_t)ri->mn.accel.x, shBuf, &index);
-					SPLIT_16((uint16_t)ri->mn.accel.y, shBuf, &index);
-					SPLIT_16((uint16_t)ri->mn.accel.z, shBuf, &index);
-					SPLIT_16((uint16_t)*(encoder), shBuf, &index);
-					SPLIT_16((uint16_t)*(encoderVel), shBuf, &index);
-					SPLIT_16((uint16_t)*(ri->ctrl.ank_ang_from_mot), shBuf, &index);
-					SPLIT_16((uint16_t)ri->ex.strain, shBuf, &index);
-					SPLIT_16((uint16_t)(ri->ex.ctrl.current.setpoint_val >> 3), shBuf, &index);
-					//(28 bytes)
-				}
-				else if(offset == 1)
-				{
-					SPLIT_32(ri->ctrl.timestamp, shBuf, &index);
-					SPLIT_32((uint32_t)*(ri->ex.enc_ang), shBuf, &index);
-					SPLIT_32((uint32_t)*(ri->ex.enc_ang_vel), shBuf, &index);
-					SPLIT_32((uint32_t)ri->ex.mot_acc, shBuf, &index);
-					SPLIT_16((uint16_t)(ri->ex.mot_current >> 3), shBuf, &index);
-					SPLIT_16((uint16_t)(ri->ex.mot_volt >> 3), shBuf, &index);
-					SPLIT_16(rigid1.re.vb, shBuf, &index);
-					SPLIT_16((uint16_t)rigid1.re.current, shBuf, &index);
-					shBuf[index++] = rigid1.re.temp;
-					SPLIT_16(rigid1.re.status, shBuf, &index);
-					shBuf[index++] = (uint8_t)ri->ctrl.walkingState;
-					shBuf[index++] = (uint8_t)ri->ctrl.gaitState;
-					//(29 bytes)
-				}
-				else if(offset == 2)
-				{
-					SPLIT_32(ri->ctrl.timestamp, shBuf, &index);
-					SPLIT_16((uint16_t)(ri->mn.genVar[0]), shBuf, &index);
-					SPLIT_16((uint16_t)(ri->mn.genVar[1]), shBuf, &index);
-					SPLIT_16((uint16_t)(ri->mn.genVar[2]), shBuf, &index);
-					SPLIT_16((uint16_t)(ri->mn.genVar[3]), shBuf, &index);
-					SPLIT_16((uint16_t)(ri->mn.genVar[4]), shBuf, &index);
-					SPLIT_16((uint16_t)(ri->mn.genVar[5]), shBuf, &index);
-					SPLIT_16((uint16_t)(ri->mn.genVar[6]), shBuf, &index);
-					SPLIT_16((uint16_t)(ri->mn.genVar[7]), shBuf, &index);
-					SPLIT_16((uint16_t)(ri->mn.genVar[8]), shBuf, &index);
-					SPLIT_16((uint16_t)(ri->mn.genVar[9]), shBuf, &index);
-					//(24 bytes)
-				}
-				else if(offset == 3)
-				{
-					SPLIT_32(ri->ctrl.timestamp, shBuf, &index);
-					SPLIT_16(rigid1.re.vg, shBuf, &index);
-					SPLIT_16(rigid1.re.v5, shBuf, &index);
-					SPLIT_16((ri->mn.analog[0]), shBuf, &index);
-					SPLIT_16((ri->mn.analog[1]), shBuf, &index);
-					SPLIT_16((ri->mn.analog[2]), shBuf, &index);
-					SPLIT_16((ri->mn.analog[3]), shBuf, &index);
-					//(16 bytes)
-				}
-				else if(offset == 4)	//This is used to tweak and test bilateral controllers
-				{
-					SPLIT_32(ri->ctrl.timestamp, shBuf, &index);
-					SPLIT_16((uint16_t)ri->mn.gyro.z, shBuf, &index);
-					SPLIT_16((uint16_t)*(ri->ctrl.ank_ang_deg), shBuf, &index);
-					SPLIT_16((uint16_t)*(ri->ctrl.ank_ang_from_mot), shBuf, &index);
-					SPLIT_16((uint16_t)(ri->ctrl.contra_hs), shBuf, &index);
-					SPLIT_16((uint16_t)(ri->ctrl.step_energy), shBuf, &index);
-					shBuf[index++] = (uint8_t)ri->ctrl.walkingState;
-					shBuf[index++] = (uint8_t)ri->ctrl.gaitState;
+		{
+			SPLIT_32(ri->ctrl.timestamp, shBuf, &index);
+			SPLIT_16((uint16_t)ri->mn.gyro.x, shBuf, &index);
+			SPLIT_16((uint16_t)ri->mn.gyro.y, shBuf, &index);
+			SPLIT_16((uint16_t)ri->mn.gyro.z, shBuf, &index);
+			SPLIT_16((uint16_t)ri->mn.accel.x, shBuf, &index);
+			SPLIT_16((uint16_t)ri->mn.accel.y, shBuf, &index);
+			SPLIT_16((uint16_t)ri->mn.accel.z, shBuf, &index);
+			SPLIT_16((uint16_t)*(encoder), shBuf, &index);
+			SPLIT_16((uint16_t)*(encoderVel), shBuf, &index);
+			SPLIT_16((uint16_t)*(ri->ctrl.ank_ang_from_mot), shBuf, &index);
+			SPLIT_16((uint16_t)ri->ex.strain, shBuf, &index);
+			SPLIT_16((uint16_t)(ri->ex.ctrl.current.setpoint_val >> 3), shBuf, &index);
+			//(26 bytes)
+		}
+		else if(offset == 1)
+		{
+			SPLIT_32(ri->ctrl.timestamp, shBuf, &index);
+			SPLIT_32((uint32_t)*(ri->ex.enc_ang), shBuf, &index);
+			SPLIT_32((uint32_t)*(ri->ex.enc_ang_vel), shBuf, &index);
+			SPLIT_32((uint32_t)ri->ex.mot_acc, shBuf, &index);
+			SPLIT_16((uint16_t)(ri->ex.mot_current >> 3), shBuf, &index);
+			SPLIT_16((uint16_t)(ri->ex.mot_volt >> 3), shBuf, &index);
+			SPLIT_16(rigid1.re.vb, shBuf, &index);
+			SPLIT_16((uint16_t)rigid1.re.current, shBuf, &index);
+			shBuf[index++] = rigid1.re.temp;
+			SPLIT_16(rigid1.re.status, shBuf, &index);
+			shBuf[index++] = (uint8_t)ri->ctrl.walkingState;
+			shBuf[index++] = (uint8_t)ri->ctrl.gaitState;
+			//(29 bytes)
+		}
+		else if(offset == 2)
+		{
+			SPLIT_32(ri->ctrl.timestamp, shBuf, &index);
+			SPLIT_32( *(uint32_t*) &(ri->mn.userVar[0]), shBuf, &index);
+			SPLIT_16((uint16_t)(ri->mn.genVar[0]), shBuf, &index);
+			SPLIT_16((uint16_t)(ri->mn.genVar[1]), shBuf, &index);
+			SPLIT_16((uint16_t)(ri->mn.genVar[2]), shBuf, &index);
+			SPLIT_16((uint16_t)(ri->mn.genVar[3]), shBuf, &index);
+			SPLIT_16((uint16_t)(ri->mn.genVar[4]), shBuf, &index);
+			SPLIT_16((uint16_t)(ri->mn.genVar[5]), shBuf, &index);
+			SPLIT_16((uint16_t)(ri->mn.genVar[6]), shBuf, &index);
+			SPLIT_16((uint16_t)(ri->mn.genVar[7]), shBuf, &index);
+			SPLIT_16((uint16_t)(ri->mn.genVar[8]), shBuf, &index);
+			SPLIT_16((uint16_t)(ri->mn.genVar[9]), shBuf, &index);
+			//(28 bytes)
 
-					SPLIT_16((uint16_t)rigid2.mn.gyro.z, shBuf, &index);
-					SPLIT_16((uint16_t)*(rigid2.ctrl.ank_ang_deg), shBuf, &index);
-					SPLIT_16((uint16_t)*(rigid2.ctrl.ank_ang_from_mot), shBuf, &index);
-					SPLIT_16((uint16_t)(rigid2.ctrl.contra_hs), shBuf, &index);
-					SPLIT_16((uint16_t)(rigid2.ctrl.step_energy), shBuf, &index);
-					shBuf[index++] = (uint8_t)rigid2.ctrl.walkingState;
-					shBuf[index++] = (uint8_t)rigid2.ctrl.gaitState;
-					//(30 bytes)
+		}
+		else if(offset == 3)
+		{
+			SPLIT_32(ri->ctrl.timestamp, shBuf, &index);
+			SPLIT_16(rigid1.re.vg, shBuf, &index);
+			SPLIT_16(rigid1.re.v5, shBuf, &index);
+			SPLIT_16((ri->mn.analog[0]), shBuf, &index);
+			SPLIT_16((ri->mn.analog[1]), shBuf, &index);
+			SPLIT_16((ri->mn.analog[2]), shBuf, &index);
+			SPLIT_16((ri->mn.analog[3]), shBuf, &index);
+			SPLIT_16(stateMachine.current_state, shBuf, &index);
+			SPLIT_32((uint32_t) act1.desiredCurrent, shBuf, &index);
+			SPLIT_32((uint32_t) act1.currentOpLimit, shBuf, &index);
+			SPLIT_16((uint16_t) act1.safetyFlag, shBuf, &index);
+
+            //(28 bytes)
+		}
+		else if(offset == 4)	//This is used to tweak and test bilateral controllers
+		{
+			SPLIT_32(ri->ctrl.timestamp, shBuf, &index);
+			SPLIT_16((uint16_t)ri->mn.gyro.z, shBuf, &index);
+			SPLIT_16((uint16_t)*(ri->ctrl.ank_ang_deg), shBuf, &index);
+			SPLIT_16((uint16_t)*(ri->ctrl.ank_ang_from_mot), shBuf, &index);
+			SPLIT_16((uint16_t)(ri->ctrl.contra_hs), shBuf, &index);
+			SPLIT_16((uint16_t)(ri->ctrl.step_energy), shBuf, &index);
+			shBuf[index++] = (uint8_t)ri->ctrl.walkingState;
+			shBuf[index++] = (uint8_t)ri->ctrl.gaitState;
+
+			SPLIT_16((uint16_t)rigid2.mn.gyro.z, shBuf, &index);
+			SPLIT_16((uint16_t)*(rigid2.ctrl.ank_ang_deg), shBuf, &index);
+			SPLIT_16((uint16_t)*(rigid2.ctrl.ank_ang_from_mot), shBuf, &index);
+			SPLIT_16((uint16_t)(rigid2.ctrl.contra_hs), shBuf, &index);
+			SPLIT_16((uint16_t)(rigid2.ctrl.step_energy), shBuf, &index);
+			shBuf[index++] = (uint8_t)rigid2.ctrl.walkingState;
+			shBuf[index++] = (uint8_t)rigid2.ctrl.gaitState;
+			//(30 bytes)
+		} else if (offset == 5) {
+
+			SPLIT_32(ri->ctrl.timestamp, shBuf, &index);
+			SPLIT_32( *(uint32_t*) &(ri->mn.userVar[1]), shBuf, &index);
+			SPLIT_32( *(uint32_t*) &(ri->mn.userVar[2]), shBuf, &index);
+			SPLIT_32( *(uint32_t*) &(ri->mn.userVar[3]), shBuf, &index);
+			SPLIT_32( *(uint32_t*) &(ri->mn.userVar[4]), shBuf, &index);
+			SPLIT_32( *(uint32_t*) &(ri->mn.userVar[5]), shBuf, &index);
+			SPLIT_32( *(uint32_t*) &(ri->mn.userVar[6]), shBuf, &index);
+
+			//(28 bytes)
+
+//			// set genVars to send back to Plan
+//			rigid1.mn.userVar[0] = actx->jointAngleDegrees;
+//			rigid1.mn.userVar[1] = actx->jointVelDegrees;
+//			rigid1.mn.userVar[2] = actx->linkageMomentArm;
+//			rigid1.mn.userVar[3] = actx->axialForce;
+//			rigid1.mn.userVar[4] = actx->jointTorque;
+//			rigid1.mn.userVar[5] = tauMeas;
+//			rigid1.mn.userVar[6] = tauDes; (impedance controller - spring contribution)
 		}
 
 	#endif	//BOARD_TYPE_FLEXSEA_MANAGE
@@ -328,105 +355,136 @@ void rx_cmd_rigid_rr(uint8_t *buf, uint8_t *info)
 		offset = buf[index++];
 
 		if(offset == 0)
-				{
-					ri->ctrl.timestamp = REBUILD_UINT32(buf, &index);
-					ri->mn.gyro.x = (int16_t) REBUILD_UINT16(buf, &index);
-					ri->mn.gyro.y = (int16_t) REBUILD_UINT16(buf, &index);
-					ri->mn.gyro.z = (int16_t) REBUILD_UINT16(buf, &index);
-					ri->mn.accel.x = (int16_t) REBUILD_UINT16(buf, &index);
-					ri->mn.accel.y = (int16_t) REBUILD_UINT16(buf, &index);
-					ri->mn.accel.z = (int16_t) REBUILD_UINT16(buf, &index);
-					*(ri->ex.joint_ang) = (int16_t) REBUILD_UINT16(buf, &index);
-					*(ri->ex.joint_ang_vel) = (int16_t) REBUILD_UINT16(buf, &index);
-					*(ri->ex.joint_ang_from_mot) = (int16_t) REBUILD_UINT16(buf, &index);
-					ri->ex.strain = REBUILD_UINT16(buf, &index);
-					ri->ex.ctrl.current.setpoint_val = (int32_t)(((int16_t)REBUILD_UINT16(buf, &index)) << 3);
-					//(28 bytes)
-				}
-				else if(offset == 1)
-				{
-					ri->ctrl.timestamp = REBUILD_UINT32(buf, &index);
-					*(ri->ex.enc_ang) = (int32_t) REBUILD_UINT32(buf, &index);
-					*(ri->ex.enc_ang_vel) = (int32_t) REBUILD_UINT32(buf, &index);
-					ri->ex.mot_acc = (int32_t) REBUILD_UINT32(buf, &index);
-					ri->ex.mot_current = (int32_t)(((int16_t)REBUILD_UINT16(buf, &index)) << 3);
-					ri->ex.mot_volt = (int32_t)(((int16_t)REBUILD_UINT16(buf, &index)) << 3);
-					ri->re.vb = REBUILD_UINT16(buf, &index);
-					ri->re.current = (int16_t)REBUILD_UINT16(buf, &index);
-					ri->re.temp = buf[index++];
-					ri->re.status = REBUILD_UINT16(buf, &index);
-					ri->ctrl.walkingState = (int8_t)buf[index++];
-					ri->ctrl.gaitState = (int8_t)buf[index++];
-					//(29 bytes)
-				}
-				else if(offset == 2)
-				{
-					ri->ctrl.timestamp = REBUILD_UINT32(buf, &index);
-					ri->mn.genVar[0] = (int16_t)REBUILD_UINT16(buf, &index);
-					ri->mn.genVar[1] = (int16_t)REBUILD_UINT16(buf, &index);
-					ri->mn.genVar[2] = (int16_t)REBUILD_UINT16(buf, &index);
-					ri->mn.genVar[3] = (int16_t)REBUILD_UINT16(buf, &index);
-					ri->mn.genVar[4] = (int16_t)REBUILD_UINT16(buf, &index);
-					ri->mn.genVar[5] = (int16_t)REBUILD_UINT16(buf, &index);
-					ri->mn.genVar[6] = (int16_t)REBUILD_UINT16(buf, &index);
-					ri->mn.genVar[7] = (int16_t)REBUILD_UINT16(buf, &index);
-					ri->mn.genVar[8] = (int16_t)REBUILD_UINT16(buf, &index);
-					ri->mn.genVar[9] = (int16_t)REBUILD_UINT16(buf, &index);
-					//(24 bytes)
-
-					//In some cases genVar contains Strain data:
-					strain1.ch[0].strain_filtered = ri->mn.genVar[0];
-					strain1.ch[1].strain_filtered = ri->mn.genVar[1];
-					strain1.ch[2].strain_filtered = ri->mn.genVar[2];
-					strain1.ch[3].strain_filtered = ri->mn.genVar[3];
-					strain1.ch[4].strain_filtered = ri->mn.genVar[4];
-					strain1.ch[5].strain_filtered = ri->mn.genVar[5];
-					strain1.preDecoded = 1;
-				}
-				else if(offset == 3)
-				{
-					ri->ctrl.timestamp = REBUILD_UINT32(buf, &index);
-					ri->re.vg = REBUILD_UINT16(buf, &index);
-					ri->re.v5 = REBUILD_UINT16(buf, &index);
-					ri->mn.analog[0] = REBUILD_UINT16(buf, &index);
-					ri->mn.analog[1] = REBUILD_UINT16(buf, &index);
-					ri->mn.analog[2] = REBUILD_UINT16(buf, &index);
-					ri->mn.analog[3] = REBUILD_UINT16(buf, &index);
-					//(16 bytes)
-				}
-				else if(offset == 4)	//This is used to tweak and test bilateral controllers
-				{
-					ri->ctrl.timestamp = REBUILD_UINT32(buf, &index);
-					ri->mn.gyro.z = (int16_t) REBUILD_UINT16(buf, &index);
-					*(ri->ex.joint_ang) = (int16_t) REBUILD_UINT16(buf, &index);
-					*(ri->ex.joint_ang_vel) = (int16_t) REBUILD_UINT16(buf, &index);
-					ri->ctrl.contra_hs = (int16_t) REBUILD_UINT16(buf, &index);
-					ri->ctrl.step_energy = (int16_t) REBUILD_UINT16(buf, &index);
-					ri->ctrl.walkingState = (int8_t)buf[index++];
-					ri->ctrl.gaitState = (int8_t)buf[index++];
-
-
-					rigid2.mn.gyro.z = (int16_t) REBUILD_UINT16(buf, &index);
-					*(rigid2.ex.joint_ang) = (int16_t) REBUILD_UINT16(buf, &index);
-					*(rigid2.ex.joint_ang_vel) = (int16_t) REBUILD_UINT16(buf, &index);
-					rigid2.ctrl.contra_hs = (int16_t) REBUILD_UINT16(buf, &index);
-					rigid2.ctrl.step_energy = (int16_t) REBUILD_UINT16(buf, &index);
-					rigid2.ctrl.walkingState = (int8_t)buf[index++];
-					rigid2.ctrl.gaitState = (int8_t)buf[index++];
-
-					//Map to genVar for logging:
-					uint8_t genVindex = 2;
-					rigid1.mn.genVar[genVindex++] = rigid2.mn.gyro.z;
-					rigid1.mn.genVar[genVindex++] = *(rigid2.ex.joint_ang);
-					rigid1.mn.genVar[genVindex++] = *(rigid2.ex.joint_ang_vel);
-					rigid1.mn.genVar[genVindex++] = rigid2.ctrl.contra_hs;
-					rigid1.mn.genVar[genVindex++] = rigid2.ctrl.step_energy;
-					rigid1.mn.genVar[genVindex++] = rigid2.ctrl.walkingState;
-					rigid1.mn.genVar[genVindex++] = rigid2.ctrl.gaitState;
-		}
-		else
 		{
-			//...
+			ri->ctrl.timestamp = REBUILD_UINT32(buf, &index);
+			ri->mn.gyro.x = (int16_t) REBUILD_UINT16(buf, &index);
+			ri->mn.gyro.y = (int16_t) REBUILD_UINT16(buf, &index);
+			ri->mn.gyro.z = (int16_t) REBUILD_UINT16(buf, &index);
+			ri->mn.accel.x = (int16_t) REBUILD_UINT16(buf, &index);
+			ri->mn.accel.y = (int16_t) REBUILD_UINT16(buf, &index);
+			ri->mn.accel.z = (int16_t) REBUILD_UINT16(buf, &index);
+			*(ri->ex.joint_ang) = (int16_t) REBUILD_UINT16(buf, &index);
+			*(ri->ex.joint_ang_vel) = (int16_t) REBUILD_UINT16(buf, &index);
+			*(ri->ex.joint_ang_from_mot) = (int16_t) REBUILD_UINT16(buf, &index);
+			ri->ex.strain = REBUILD_UINT16(buf, &index);
+			ri->ex.ctrl.current.setpoint_val = (int32_t)(((int16_t)REBUILD_UINT16(buf, &index)) << 3);
+			//(26 bytes)
+		}
+		else if(offset == 1)
+		{
+			ri->ctrl.timestamp = REBUILD_UINT32(buf, &index);
+			*(ri->ex.enc_ang) = (int32_t) REBUILD_UINT32(buf, &index);
+			*(ri->ex.enc_ang_vel) = (int32_t) REBUILD_UINT32(buf, &index);
+			ri->ex.mot_acc = (int32_t) REBUILD_UINT32(buf, &index);
+			ri->ex.mot_current = (int32_t)(((int16_t)REBUILD_UINT16(buf, &index)) << 3);
+			ri->ex.mot_volt = (int32_t)(((int16_t)REBUILD_UINT16(buf, &index)) << 3);
+			ri->re.vb = REBUILD_UINT16(buf, &index);
+			ri->re.current = (int16_t)REBUILD_UINT16(buf, &index);
+			ri->re.temp = buf[index++];
+			ri->re.status = REBUILD_UINT16(buf, &index);
+			ri->ctrl.walkingState = (int8_t)buf[index++];
+			ri->ctrl.gaitState = (int8_t)buf[index++];
+			//(29 bytes)
+		}
+		else if(offset == 2)
+		{
+			ri->ctrl.timestamp = REBUILD_UINT32(buf, &index);
+			int32_t jointAngleDegrees = (int32_t) REBUILD_UINT32(buf, &index);
+			ri->mn.genVar[0] = (int16_t)REBUILD_UINT16(buf, &index);
+			ri->mn.genVar[1] = (int16_t)REBUILD_UINT16(buf, &index);
+			ri->mn.genVar[2] = (int16_t)REBUILD_UINT16(buf, &index);
+			ri->mn.genVar[3] = (int16_t)REBUILD_UINT16(buf, &index);
+			ri->mn.genVar[4] = (int16_t)REBUILD_UINT16(buf, &index);
+			ri->mn.genVar[5] = (int16_t)REBUILD_UINT16(buf, &index);
+			ri->mn.genVar[6] = (int16_t)REBUILD_UINT16(buf, &index);
+			ri->mn.genVar[7] = (int16_t)REBUILD_UINT16(buf, &index);
+			ri->mn.genVar[8] = (int16_t)REBUILD_UINT16(buf, &index);
+			ri->mn.genVar[9] = (int16_t)REBUILD_UINT16(buf, &index);
+			//(28 bytes)
+
+			act->jointAngleDegrees = *(float*) &jointAngleDegrees;
+			//rigid1.mn.userVar[0] = actx->jointAngleDegrees;
+
+			//In some cases genVar contains Strain data:
+			strain1.ch[0].strain_filtered = ri->mn.genVar[0];
+			strain1.ch[1].strain_filtered = ri->mn.genVar[1];
+			strain1.ch[2].strain_filtered = ri->mn.genVar[2];
+			strain1.ch[3].strain_filtered = ri->mn.genVar[3];
+			strain1.ch[4].strain_filtered = ri->mn.genVar[4];
+			strain1.ch[5].strain_filtered = ri->mn.genVar[5];
+			strain1.preDecoded = 1;
+		}
+		else if(offset == 3)
+		{
+			ri->ctrl.timestamp = REBUILD_UINT32(buf, &index);
+			ri->re.vg = REBUILD_UINT16(buf, &index);
+			ri->re.v5 = REBUILD_UINT16(buf, &index);
+			ri->mn.analog[0] = REBUILD_UINT16(buf, &index);
+			ri->mn.analog[1] = REBUILD_UINT16(buf, &index);
+			ri->mn.analog[2] = REBUILD_UINT16(buf, &index);
+			ri->mn.analog[3] = REBUILD_UINT16(buf, &index);
+            stateMachine.current_state = REBUILD_UINT16(buf, &index);
+			act->desiredCurrent = (int32_t) REBUILD_UINT32(buf, &index);
+			act->currentOpLimit = (int32_t) REBUILD_UINT32(buf, &index);
+			act->safetyFlag = (int16_t) REBUILD_UINT16(buf, &index);
+            //(28 bytes)
+		}
+		else if(offset == 4)	//This is used to tweak and test bilateral controllers
+		{
+			ri->ctrl.timestamp = REBUILD_UINT32(buf, &index);
+			ri->mn.gyro.z = (int16_t) REBUILD_UINT16(buf, &index);
+			*(ri->ex.joint_ang) = (int16_t) REBUILD_UINT16(buf, &index);
+			*(ri->ex.joint_ang_vel) = (int16_t) REBUILD_UINT16(buf, &index);
+			ri->ctrl.contra_hs = (int16_t) REBUILD_UINT16(buf, &index);
+			ri->ctrl.step_energy = (int16_t) REBUILD_UINT16(buf, &index);
+			ri->ctrl.walkingState = (int8_t)buf[index++];
+			ri->ctrl.gaitState = (int8_t)buf[index++];
+
+
+			rigid2.mn.gyro.z = (int16_t) REBUILD_UINT16(buf, &index);
+			*(rigid2.ex.joint_ang) = (int16_t) REBUILD_UINT16(buf, &index);
+			*(rigid2.ex.joint_ang_vel) = (int16_t) REBUILD_UINT16(buf, &index);
+			rigid2.ctrl.contra_hs = (int16_t) REBUILD_UINT16(buf, &index);
+			rigid2.ctrl.step_energy = (int16_t) REBUILD_UINT16(buf, &index);
+			rigid2.ctrl.walkingState = (int8_t)buf[index++];
+			rigid2.ctrl.gaitState = (int8_t)buf[index++];
+
+			//Map to genVar for logging:
+			uint8_t genVindex = 2;
+			rigid1.mn.genVar[genVindex++] = rigid2.mn.gyro.z;
+			rigid1.mn.genVar[genVindex++] = *(rigid2.ex.joint_ang);
+			rigid1.mn.genVar[genVindex++] = *(rigid2.ex.joint_ang_vel);
+			rigid1.mn.genVar[genVindex++] = rigid2.ctrl.contra_hs;
+			rigid1.mn.genVar[genVindex++] = rigid2.ctrl.step_energy;
+			rigid1.mn.genVar[genVindex++] = rigid2.ctrl.walkingState;
+			rigid1.mn.genVar[genVindex++] = rigid2.ctrl.gaitState;
+		}
+		else if (offset == 5) {
+
+			ri->ctrl.timestamp = REBUILD_UINT32(buf, &index);
+
+			int32_t jointVelDegrees = (int32_t) REBUILD_UINT32(buf, &index);
+			int32_t linkageMomentArm = (int32_t) REBUILD_UINT32(buf, &index);
+			int32_t axialForce = (int32_t) REBUILD_UINT32(buf, &index);
+			int32_t jointTorque = (int32_t) REBUILD_UINT32(buf, &index);
+			int32_t tauMeas = (int32_t) REBUILD_UINT32(buf, &index);
+			int32_t tauDes = (int32_t) REBUILD_UINT32(buf, &index);
+
+			act->jointVelDegrees = *(float*) &jointVelDegrees;
+			act->linkageMomentArm = *(float*) &linkageMomentArm;
+			act->axialForce = *(float*) &axialForce;
+			act->jointTorque = *(float*) &jointTorque;
+			act->tauMeas = *(float*) &tauMeas;
+			act->tauDes = *(float*) &tauDes;
+
+			//(28 bytes)
+
+			//rigid1.mn.userVar[1] = actx->jointVelDegrees;
+			//rigid1.mn.userVar[2] = actx->linkageMomentArm;
+			//rigid1.mn.userVar[3] = actx->axialForce;
+			//rigid1.mn.userVar[4] = actx->jointTorque;
+			//rigid1.mn.userVar[5] = tauMeas;
+			//rigid1.mn.userVar[6] = tauDes; (impedance controller - spring contribution)
 		}
 
 	#endif	//BOARD_TYPE_FLEXSEA_PLAN

@@ -68,7 +68,6 @@ int8_t findPoles(void);
 void   mit_init_current_controller(void);
 
 // Mechanical transformations
-//float*  getJointAngleKinematic(void);
 void   getJointAngleKinematic(float [3]);
 float   getJointAngularVelocity(void);
 float   getAxialForce(void);
@@ -78,16 +77,16 @@ int16_t getMotorTempSensor(void);
 void    updateSensorValues(struct act_s *actx);
 
 //Control outputs
-float biomControlImpedance(float theta_set, float k1, float k2, float b); 	// returns a desired joint torque, then use setMotorTorque() to get the motor to do its magic
+float biomCalcImpedance(float theta_set, float k1, float k2, float b); 	// returns a desired joint torque, then use setMotorTorque() to get the motor to do its magic
 void  setMotorTorque(struct act_s *actx, float tor_d);
-void  setMotorTorqueFF(struct act_s *actx, float tor_d);
 void  packRigidVars(struct act_s *actx);
 
 //Main FSMs
 void openSpeedFSM(void);
 void twoPositionFSM(void);
-void oneTorqueFSM();
-void twoTorqueFSM();
+void oneTorqueFSM(struct act_s *actx);
+void twoTorqueFSM(struct act_s *actx);
+void torqueSweepTest(struct act_s *actx);
 
 
 //****************************************************************************
@@ -143,10 +142,10 @@ void twoTorqueFSM();
 
 
 // Motor Parameters
-#define MOT_KT 			0.09549	// Kt value
+#define MOT_KT 			0.055	// Phase Kt value = linearKt/(3^0.5)
 #define MOT_L			0.068	// mH
-#define MOT_J			0.000322951		//0.000322951	// rotor inertia, [kgm^2]
-#define MOT_B			0		// damping term for motor and screw combined, drag from rolling elements
+#define MOT_J			0 //0.000322951		//0.000322951	// rotor inertia, [kgm^2]
+#define MOT_B			0 //0.000131		// damping term for motor and screw combined, drag from rolling elements
 #define MOT_TRANS		0		// lumped mass inertia todo: consider MotorMass on Spring inertia contribution.
 #define MOT_STIC_POS	1400	// stiction current, 1800
 #define MOT_STIC_NEG	1600	// stiction current, 1800
@@ -155,6 +154,11 @@ void twoTorqueFSM();
 #define ACTRL_I_KP_INIT		15
 #define ACTRL_I_KI_INIT		15
 #define ACTRL_I_KD_INIT		0
+
+// Feed Forward error PID
+#define FF_KP_INIT		0.
+#define FF_KI_INIT		0.
+#define FF_KD_INIT		0.
 
 //Transmission
 #ifdef IS_ANKLE					//UPDATE THIS WITH NEW SCREWs ankle = 0.002
@@ -174,8 +178,8 @@ void twoTorqueFSM();
 
 //Joint software limits [Degrees]
 #ifdef IS_ANKLE
-#define JOINT_MIN_SOFT		-20	* (ANG_UNIT)/360	// [deg] Actuator physical limit min = -30deg dorsiflexion
-#define JOINT_MAX_SOFT		60	* (ANG_UNIT)/360	// [deg] Actuator physical limit  max = 90deg plantarflex
+#define JOINT_MIN_SOFT		-10	* (ANG_UNIT)/360	// [deg] Actuator physical limit min = -30deg dorsiflexion
+#define JOINT_MAX_SOFT		40	* (ANG_UNIT)/360	// [deg] Actuator physical limit  max = 90deg plantarflex
 #endif
 
 #ifdef IS_KNEE
@@ -187,7 +191,7 @@ void twoTorqueFSM();
 #define PCB_TEMP_LIMIT_INIT		70
 #define MOTOR_TEMP_LIMIT_INIT	70
 #define ABS_TORQUE_LIMIT_INIT	20		    // Joint torque [Nm]
-#define CURRENT_LIMIT_INIT		5000		// [mA] useful in this form, 40000 max
+#define CURRENT_LIMIT_INIT		10000		// [mA] useful in this form, 40000 max
 #define CURRENT_SCALAR_INIT		1000
 
 // Motor Temp Sensor
