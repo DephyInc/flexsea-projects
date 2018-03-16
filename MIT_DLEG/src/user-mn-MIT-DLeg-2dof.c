@@ -77,12 +77,6 @@ int16_t currentKp = ACTRL_I_KP_INIT;
 int16_t currentKi = ACTRL_I_KI_INIT;
 int16_t currentKd = ACTRL_I_KD_INIT;
 
-//feed forward error gain values
-//not used at the moment, FF doesn't have gains.
-float ffKp = FF_KP_INIT;
-float ffKi = FF_KI_INIT;
-float ffKd = FF_KD_INIT;
-
 //motor param terms
 float motJ = MOT_J;
 float motB = MOT_B;
@@ -199,15 +193,11 @@ void MIT_DLeg_fsm_1(void)
 //					setMotorTorque(&act1, *ptorqueDes);
 
 					//Testing functions
-			    	torqueKp = user_data_1.w[0]/100.;
-			    	torqueKd = user_data_1.w[1]/100.;
-			    	torqueKi = user_data_1.w[2]/100.;
-//			    	motSticNeg = user_data_1.w[1];
-//			    	motSticPos = user_data_1.w[2];
 
-
+			    	torqueKp = user_data_1.w[0];
+			    	torqueKd = user_data_1.w[1];
 //			    	torqueDes = biomCalcImpedance(user_data_1.w[0], user_data_1.w[1], user_data_1.w[2], user_data_1.w[3]);
-			    	setMotorTorque(&act1, torqueDes);
+			    	torqueSweepTest(&act1);
 			    }
 
 				rigid1.mn.genVar[0] = isSafetyFlag;
@@ -215,10 +205,10 @@ void MIT_DLeg_fsm_1(void)
 				rigid1.mn.genVar[2] = act1.jointTorque*1000;  //mNm
 				rigid1.mn.genVar[3] = act1.linkageMomentArm*1000; //mm
 				rigid1.mn.genVar[4] = (float) lpf_result;
-				rigid1.mn.genVar[5] = act1.motorAcc;
+//				rigid1.mn.genVar[5] = act1.motorAcc;
 //				rigid1.mn.genVar[6] = tau_motor*1000;  //mNm
-				rigid1.mn.genVar[7] = act1.desiredCurrent;
-				rigid1.mn.genVar[9] = (int16_t)lpf_index;
+//				rigid1.mn.genVar[7] = act1.desiredCurrent;
+//				rigid1.mn.genVar[9] = (int16_t)lpf_index;
 
 
 
@@ -532,24 +522,26 @@ void setMotorTorque(struct act_s *actx, float tau_des)
 
 
 	// todo: better fidelity may be had if we modeled N_ETA as a function of torque, long term goal, if necessary
-	tau_meas =  actx->jointTorque / (N) ;	// measured torque reflected to motor [Nm]
-	tau_ff = tau_des / (N*N_ETA) ;					// desired joint torque, reflected to motor [Nm]
+	tau_meas =  actx->jointTorque / N;	// measured torque reflected to motor [Nm]
+	tau_des = tau_des / N;				// scale output torque back to the motor [Nm].
+	tau_ff = tau_des / (N_ETA) ;		// Feed forward term for desired joint torque, reflected to motor [Nm]
 
-	//output genVars for ActPack monitoring
+//	tau_meas =  actx->jointTorque;	// measured torque reflected to motor [Nm]
+//	tau_ff = tau_des / (N * N_ETA) ;		// Feed forward term for desired joint torque, reflected to motor [Nm]
 
-
-
-	tau_err = (tau_des - tau_meas);
+	// Error is done at the motor. todo: could be done at the joint, messes with our gains.
+	tau_err = tau_des - tau_meas;
 	tau_err_dot = (tau_err - tau_err_last);
 	tau_err_int = tau_err_int + tau_err;
 	tau_err_last = tau_err;
 
 	//PID around motor torque
-	// tau_motor = tau_err * ffKp + (tau_err_dot) * ffKd + (tau_err_int) * ffKi;
 	tau_motor = tau_err * torqueKp + (tau_err_dot) * torqueKd + (tau_err_int) * torqueKi;
-
+//	tau_motor = tau_motor / ( N * N_ETA );		// Scale motor PID val to motor level torque.
 
 	I = 1/MOT_KT * ( tau_ff + tau_motor +(motJ + MOT_TRANS)*ddtheta_m + motB*dtheta_m) * currentScalar;
+//	I = 1/MOT_KT * (tau_motor +(motJ + MOT_TRANS)*ddtheta_m + motB*dtheta_m) * currentScalar;
+
 	//account for deadzone current
 //	if (abs(dtheta_m) < 3 && I < 0) {
 //		I -= motSticNeg; //in mA
@@ -576,9 +568,9 @@ void setMotorTorque(struct act_s *actx, float tau_des)
 	setMotorCurrent(actx->desiredCurrent);				// send current command to comm buffer to Execute
 
 	//output genVars for ActPack monitoring
-	rigid1.mn.userVar[5] = tau_meas;
-	rigid1.mn.userVar[6] = tau_ff;
-	rigid1.mn.genVar[8] = tau_err;
+//	rigid1.mn.userVar[5] = tau_meas;
+//	rigid1.mn.userVar[6] = tau_ff;
+
 }
 
 //UNUSED. See state_machine
@@ -799,8 +791,8 @@ void oneTorqueFSM(struct act_s *actx)
 	static int32_t initPos = 0;
 	static int setPt = 0;
 
-	setPt = user_data_1.w[0]; //check this pointer
-	rigid1.mn.genVar[7] = setPt;
+
+
 	switch(fsm1State)
 	{
 		case -1:
@@ -845,8 +837,8 @@ void oneTorqueFSM(struct act_s *actx)
 void torqueSweepTest(struct act_s *actx) {
 		static int32_t timer = 0;
 
-		int32_t torqueAmp = user_data_1.w[2];
-		int32_t frequency = user_data_1.w[3];
+		float torqueAmp = user_data_1.w[2]/10.;
+		float frequency = user_data_1.w[3]/10.;
 
 		timer++;
 
@@ -856,14 +848,24 @@ void torqueSweepTest(struct act_s *actx) {
 
 			//pass back for plotting purposes
 			user_data_1.r[2] = torqueDes;
-			user_data_1.r[3] = frequency;
+
+		} else if (frequency == 0){
+			timer = 0;
+			setMotorTorque(actx, torqueAmp);
+
+			user_data_1.r[2] = torqueAmp;
 		} else {
 			timer = 0;
 			setMotorTorque(actx, 0);
 
 			user_data_1.r[2] = 0;
-			user_data_1.r[3] = 0;
 		}
+
+		user_data_1.r[3] = frequency;
+
+		rigid1.mn.genVar[5] = frequency; //hz
+
+		rigid1.mn.genVar[9] = user_data_1.r[2]*1000; //mNm
 
 }
 

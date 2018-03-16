@@ -136,16 +136,16 @@ void torqueSweepTest(struct act_s *actx);
 #define TORQ_CALIB_B		0.0656	// y=Mx+b, from collected data set, applied load
 
 //Torque Control PID gains
-#define TORQ_KP_INIT			1.
+#define TORQ_KP_INIT			3 //10.
 #define TORQ_KI_INIT			0.
-#define TORQ_KD_INIT			0.
+#define TORQ_KD_INIT			15 //2.
 
 
 // Motor Parameters
 #define MOT_KT 			0.055	// Phase Kt value = linearKt/(3^0.5)
 #define MOT_L			0.068	// mH
-#define MOT_J			0.000120 //0.000322951		//0.000322951	// rotor inertia, [kgm^2]
-#define MOT_B			0.000200 //0.000131		// damping term for motor and screw combined, drag from rolling elements
+#define MOT_J			0//0.000120 //0.000322951		//0.000322951	// rotor inertia, [kgm^2]
+#define MOT_B			0//0.000200 //0.000131		// damping term for motor and screw combined, drag from rolling elements
 #define MOT_TRANS		0		// lumped mass inertia todo: consider MotorMass on Spring inertia contribution.
 #define MOT_STIC_POS	1000 //1400	// stiction current, 1800
 #define MOT_STIC_NEG	1000 //1600	// stiction current, 1800
@@ -154,11 +154,6 @@ void torqueSweepTest(struct act_s *actx);
 #define ACTRL_I_KP_INIT		15
 #define ACTRL_I_KI_INIT		15
 #define ACTRL_I_KD_INIT		0
-
-// Feed Forward error PID
-#define FF_KP_INIT		0.
-#define FF_KI_INIT		0.
-#define FF_KD_INIT		0.
 
 //Transmission
 #ifdef IS_ANKLE					//UPDATE THIS WITH NEW SCREWs ankle = 0.002
@@ -190,8 +185,8 @@ void torqueSweepTest(struct act_s *actx);
 //Safety limits
 #define PCB_TEMP_LIMIT_INIT		70
 #define MOTOR_TEMP_LIMIT_INIT	70
-#define ABS_TORQUE_LIMIT_INIT	20		    // Joint torque [Nm]
-#define CURRENT_LIMIT_INIT		10000		// [mA] useful in this form, 40000 max
+#define ABS_TORQUE_LIMIT_INIT	50		    // Joint torque [Nm]
+#define CURRENT_LIMIT_INIT		40000		// [mA] useful in this form, 40000 max
 #define CURRENT_SCALAR_INIT		1000
 
 // Motor Temp Sensor
