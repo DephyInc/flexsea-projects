@@ -39,10 +39,13 @@
 #include "flexsea_sys_def.h"
 #include "flexsea_system.h"
 #include "flexsea_cmd_calibration.h"
-//#include "filters.h"
 #include "flexsea_user_structs.h"
 #include <flexsea_comm.h>
 #include <math.h>
+
+
+#include "mit_filters.h"
+#include "arm_math.h"
 
 //****************************************************************************
 // Variable(s)
@@ -59,7 +62,7 @@ static int8_t isTorqueLimit = 0;
 static int8_t isTempLimit = 0;
 
 int8_t isEnabledUpdateSensors = 0;
-int16_t fsm1State = -2;
+int8_t fsm1State = -2;
 float currentScalar = CURRENT_SCALAR_INIT;
 int32_t currentOpLimit = CURRENT_LIMIT_INIT; 	//operational limit for current.
 
@@ -72,11 +75,6 @@ float torqueKd = TORQ_KD_INIT;
 int16_t currentKp = ACTRL_I_KP_INIT;
 int16_t currentKi = ACTRL_I_KI_INIT;
 int16_t currentKd = ACTRL_I_KD_INIT;
-
-//feed forward error gain values
-float ffKp = FF_KP_INIT;
-float ffKi = FF_KI_INIT;
-float ffKd = FF_KD_INIT;
 
 //motor param terms
 float motJ = MOT_J;
@@ -154,7 +152,13 @@ void MIT_DLeg_fsm_1(void)
 		case 0:
 			//sensor update happens in mainFSM2(void) in main_fsm.c
 			isEnabledUpdateSensors = 1;
+
 			//reserve for additional initialization
+
+			// to use filter on data use this:
+			// init_LPF();
+			// filter_LPF(rigid1.mn.accel.x);
+			// lpf_result;  // this is the result value. Currently returning values with high offset
 
 			fsm1State = 1;
 			time = 0;
@@ -163,10 +167,10 @@ void MIT_DLeg_fsm_1(void)
 
 		case 1:
 			{
-				float torqueDes;
+				float torqueDes = 0;
 
 				//populate rigid1.mn.genVars to send to Plan
-				packRigidVars(&act1);
+//				packRigidVars(&act1);
 
 				//begin safety check
 			    if (safetyShutoff()) {
@@ -183,19 +187,29 @@ void MIT_DLeg_fsm_1(void)
 			    } else {
 //
 //			    	runFlatGroundFSM(ptorqueDes);
-//					setMotorTorque(&act1, *ptorqueDes);
+//					setMotorTorque(&act1, torqueDes);
 
 					//Testing functions
-			    	torqueDes = user_data_1.w[0]/100.;
-			    	motJ = user_data_1.w[1]/10000.;
-			    	motB = user_data_1.w[2]/10000.;
-//			    	motSticNeg = user_data_1.w[1];
-//			    	motSticPos = user_data_1.w[2];
-			    	ffKp = user_data_1.w[3]/100.;
 
-//			    	torqueDes = biomCalcImpedance(user_data_1.w[0], user_data_1.w[1], user_data_1.w[2], user_data_1.w[3]);
+			    	torqueDes = biomCalcImpedance(user_data_1.w[0], user_data_1.w[1], user_data_1.w[2], user_data_1.w[3]);
+
 			    	setMotorTorque(&act1, torqueDes);
+
+
 			    }
+
+				rigid1.mn.genVar[0] = isSafetyFlag;
+				rigid1.mn.genVar[1] = act1.jointAngleDegrees; //deg
+				rigid1.mn.genVar[2] = act1.jointTorque*1000;  //mNm
+				rigid1.mn.genVar[3] = act1.linkageMomentArm*1000; //mm
+				rigid1.mn.genVar[4] = act1.jointAngle*1000;
+//				rigid1.mn.genVar[5] = act1.motorAcc;
+//				rigid1.mn.genVar[6] = tau_motor*1000;  //mNm
+//				rigid1.mn.genVar[7] = act1.desiredCurrent;
+
+				rigid1.mn.genVar[9] = torqueDes*1000;
+
+
 
 
 
@@ -288,10 +302,8 @@ int8_t safetyShutoff(void) {
  */
 void updateSensorValues(struct act_s *actx)
 {
-//	static float* pjointKinematic;
-//	pjointKinematic = getJointAngleKinematic();
-	static float joint[3];
-	getJointAngleKinematic( joint );
+	float joint[3];
+	getJointAngleKinematic(joint);
 
 	actx->jointAngle = joint[0]; //*(pjointKinematic + 0);
 	actx->jointAngleDegrees = actx->jointAngle * 360/angleUnit;
@@ -322,19 +334,16 @@ void updateSensorValues(struct act_s *actx)
 
 }
 
-//The ADC reads the motor Temp sensor - MCP9700 T0-92. This function converts the result to degrees.
+//The ADC reads the motor Temp sensor - MCP9700 T0-92. This function converts the result to C.
 int16_t getMotorTempSensor(void)
 {
 	static int16_t mot_temp = 0;
-//	mot_temp = ((VSENSE_SLOPE * (rigid1.mn.analog[0] - V25_TICKS) \
-//					/ TICK_TO_V) + 25);
 	mot_temp = (rigid1.mn.analog[0] * (3.3/4096) - 500) / 10; 	//celsius
 	rigid1.mn.mot_temp = mot_temp;
 
 	return mot_temp;
 }
 
-//
 /*
  * Output joint angle, vel, accel in ANG_UNIT, measured from joint zero,
  * Input:	joint[3] empty array reference
@@ -345,13 +354,12 @@ int16_t getMotorTempSensor(void)
  * 		todo: pass a reference to the act_s structure to set flags.
  */
 //float* getJointAngleKinematic( void )
-void getJointAngleKinematic( float joint[] )
+void getJointAngleKinematic(float joint[])
 {
 	static int32_t jointAngleCnts = 0;
 	static float last_jointVel = 0;
 	static int32_t jointAngleCntsAbsolute = 0;
 	static float jointAngleAbsolute = 0;
-//	static float joint[3] = {0, 0, 0};
 
 	//ANGLE
 	//Configuration orientation
@@ -377,7 +385,6 @@ void getJointAngleKinematic( float joint[] )
 	joint[2] = (( joint[1] - last_jointVel )) * (angleUnit)/JOINT_CPR * SECONDS;
 	last_jointVel = joint[1];
 
-//	return joint;
 }
 
 
@@ -386,21 +393,23 @@ float getAxialForce(void)
 {
 	static int8_t tareState = -1;
 	static uint32_t timer = 0;
-	static uint16_t strainReading = 0;
-	static uint16_t tareOffset = 0;
-	static float axialForce = 0;
+	uint16_t strainReading = 0;
+	static float tareOffset = 0;
+	float axialForce = 0;
+	float numSamples = 100.;
 
 	strainReading = (rigid1.ex.strain);
 
 	switch(tareState)
 	{
 		case -1:
-			//Tare the balance the first time this gets called.
+			//Tare the balance using average of numSamples readings
 			timer++;
 
-			if(timer > 250) {
+			if(timer <= numSamples) {
 				strainReading = (rigid1.ex.strain);
-				tareOffset = strainReading;
+				tareOffset += strainReading/numSamples;
+			} else {
 				tareState = 0;
 			}
 
@@ -430,7 +439,7 @@ float getLinkageMomentArm(float theta)
 //	theta_r = ANG_UNIT % 360 ? (theta*M_PI/180) : theta; 	// convert deg to radians if necessary.
 //	theta_r = theta * M_PI / 180;	// convert deg to radians.
 
-    const float t = 47; 		// [mm] tibial offset
+    const float t = 47; 	// [mm] tibial offset
     const float t_k = 140; 	// [mm] offset from knee along tibia
     const float f = 39;  	// [mm] femur offset
     const float f_k = 18;	// [mm] offset from knee along femur
@@ -461,7 +470,7 @@ float getLinkageMomentArm(float theta)
  */
 float getJointTorque(struct act_s *actx)
 {
-	static float torque = 0;
+	float torque = 0;
 
 	torque = actx->linkageMomentArm * actx->axialForce;
 
@@ -486,13 +495,13 @@ float getJointTorque(struct act_s *actx)
  */
 void setMotorTorque(struct act_s *actx, float tau_des)
 {
-	float N = 1;				// moment arm [m]
+	float N = 1;					// moment arm [m]
 	float tau_meas = 0, tau_ff=0;  	//joint torque reflected to motor.
-	static float tau_err = 0, tau_err_last = 0;
-	static float tau_err_dot = 0, tau_err_int = 0;
-	float tau_motor = 0;		// motor torque signal
-	int32_t dtheta_m = 0, ddtheta_m = 0;	//motor vel, accel
-	int32_t I = 0;			// motor current signal
+	float tau_err = 0;
+	static float tau_err_last = 0, tau_err_int = 0;
+	float tau_motor = 0, tau_err_dot = 0;		// motor torque signal
+	int32_t dtheta_m = 0, ddtheta_m = 0;		//motor vel, accel
+	int32_t I = 0;								// motor current signal
 
 	N = actx->linkageMomentArm * nScrew;
 	dtheta_m = actx->motorVel;
@@ -500,28 +509,33 @@ void setMotorTorque(struct act_s *actx, float tau_des)
 
 
 	// todo: better fidelity may be had if we modeled N_ETA as a function of torque, long term goal, if necessary
-	tau_meas =  actx->jointTorque / (N) ;	// measured torque reflected to motor [Nm]
-	tau_ff = tau_des / (N*N_ETA) ;					// desired joint torque, reflected to motor [Nm]
+	tau_meas =  actx->jointTorque / N;	// measured torque reflected to motor [Nm]
+	tau_des = tau_des / N;				// scale output torque back to the motor [Nm].
+	tau_ff = tau_des / (N_ETA) ;		// Feed forward term for desired joint torque, reflected to motor [Nm]
 
-	//output genVars for ActPack monitoring
-	rigid1.mn.genVar[5] = tau_meas*1000; //mNm
-
-
-	tau_err = (tau_des - tau_meas);
+	// Error is done at the motor. todo: could be done at the joint, messes with our gains.
+	tau_err = tau_des - tau_meas;
 	tau_err_dot = (tau_err - tau_err_last);
 	tau_err_int = tau_err_int + tau_err;
 	tau_err_last = tau_err;
 
 	//PID around motor torque
-	tau_motor = tau_err * ffKp + (tau_err_dot) * ffKd + (tau_err_int) * ffKi;
+	tau_motor = tau_err*torqueKp + tau_err_dot*torqueKd + tau_err_int*torqueKi;
 
 	I = 1/MOT_KT * ( tau_ff + tau_motor +(motJ + MOT_TRANS)*ddtheta_m + motB*dtheta_m) * currentScalar;
-	//account for deadzone current
-	if (abs(dtheta_m) < 3 && I < 0) {
-		I -= motSticNeg; //in mA
-	} else if (abs(dtheta_m) < 3 && I > 0) {
-		I += motSticPos;
-	}
+
+	//account for deadzone current (unused due to instability). Unsolved problem according to Russ Tedrake.
+//	if (abs(dtheta_m) < 3 && I < 0) {
+//		I -= motSticNeg; //in mA
+//	} else if (abs(dtheta_m) < 3 && I > 0) {
+//		I += motSticPos;
+//	}
+
+//	if ( I < 0) {
+//		I -= motSticNeg; //in mA
+//	} else if ( I > 0) {
+//		I += motSticPos;
+//	}
 
 	//Saturate I for our current operational limits -- limit can be reduced by safetyShutoff() due to heating
 	if(I > currentOpLimit )
@@ -532,12 +546,9 @@ void setMotorTorque(struct act_s *actx, float tau_des)
 		I = -currentOpLimit;
 	}
 
-	actx->desiredCurrent = (int32_t) I; // demanded mA
-	setMotorCurrent(actx->desiredCurrent);				// send current command to comm buffer to Execute
+	actx->desiredCurrent = (int32_t) I; 	// demanded mA
+	setMotorCurrent(actx->desiredCurrent);	// send current command to comm buffer to Execute
 
-	//output genVars for ActPack monitoring
-	rigid1.mn.userVar[5] = tau_meas;
-	rigid1.mn.userVar[6] = tau_ff;
 }
 
 //UNUSED. See state_machine
@@ -566,7 +577,6 @@ void mit_init_current_controller(void) {
 	writeEx.setpoint = 0;			// wasn't included in setControlMode, could be safe for init
 	setControlGains(currentKp, currentKi, currentKd, 0);
 
-	// there is another example of this may have been an old initialization, copied from user-mn-ActPack
 }
 
 int8_t findPoles(void) {
@@ -598,7 +608,7 @@ int8_t findPoles(void) {
 
 		case 2:
 
-			if(timer >= 45*SECONDS)
+			if(timer >= 50*SECONDS)
 			{
 				//Enable FSM2, position controller
 				enableActPackFSM2();
@@ -713,8 +723,6 @@ void twoTorqueFSM(struct act_s *actx)
 	static int8_t fsm1State = -1;
 	static int32_t initPos = 0;
 
-	rigid1.mn.genVar[9] = fsm1State;
-
 
 	switch(fsm1State)
 	{
@@ -760,8 +768,9 @@ void oneTorqueFSM(struct act_s *actx)
 	static int32_t initPos = 0;
 	static int setPt = 0;
 
-	setPt = user_data_1.w[0]; //check this pointer
-	rigid1.mn.genVar[7] = setPt;
+
+
+
 	switch(fsm1State)
 	{
 		case -1:
@@ -806,8 +815,8 @@ void oneTorqueFSM(struct act_s *actx)
 void torqueSweepTest(struct act_s *actx) {
 		static int32_t timer = 0;
 
-		int32_t torqueAmp = user_data_1.w[2];
-		int32_t frequency = user_data_1.w[3];
+		float torqueAmp = user_data_1.w[2]/10.;
+		float frequency = user_data_1.w[3]/10.;
 
 		timer++;
 
@@ -817,14 +826,24 @@ void torqueSweepTest(struct act_s *actx) {
 
 			//pass back for plotting purposes
 			user_data_1.r[2] = torqueDes;
-			user_data_1.r[3] = frequency;
+
+		} else if (frequency == 0){
+			timer = 0;
+			setMotorTorque(actx, torqueAmp);
+
+			user_data_1.r[2] = torqueAmp;
 		} else {
 			timer = 0;
 			setMotorTorque(actx, 0);
 
 			user_data_1.r[2] = 0;
-			user_data_1.r[3] = 0;
 		}
+
+		user_data_1.r[3] = frequency;
+
+		rigid1.mn.genVar[5] = frequency; //hz
+
+		rigid1.mn.genVar[9] = user_data_1.r[2]*1000; //mNm
 
 }
 

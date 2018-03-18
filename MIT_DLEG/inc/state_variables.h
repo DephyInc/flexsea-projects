@@ -24,7 +24,7 @@ enum {
 };
 
 typedef struct{
-    uint16_t current_state;
+    int8_t current_state;
     uint16_t on_entry_sm_state;
     uint16_t last_sm_state;
 
@@ -63,7 +63,7 @@ typedef struct act_s
     int32_t motCurr;		// motor current
     int32_t desiredCurrent; // desired current from getMotorCurrent()
     int32_t currentOpLimit; // current throttling limit
-    int16_t safetyFlag;		// todo: consider if necessary
+    int8_t safetyFlag;		// todo: consider if necessary
 } Act_s;
 
 
@@ -71,7 +71,7 @@ typedef struct act_s
 //****************************************************************************
 // Shared variable(s)
 //****************************************************************************
-extern int16_t fsm1State;
+extern int8_t fsm1State;
 extern float currentScalar;
 
 

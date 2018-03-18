@@ -217,7 +217,6 @@ void tx_cmd_rigid_w(uint8_t *shBuf, uint8_t *cmd, uint8_t *cmdType, \
 		else if(offset == 2)
 		{
 			SPLIT_32(ri->ctrl.timestamp, shBuf, &index);
-			SPLIT_32( *(uint32_t*) &(ri->mn.userVar[0]), shBuf, &index);
 			SPLIT_16((uint16_t)(ri->mn.genVar[0]), shBuf, &index);
 			SPLIT_16((uint16_t)(ri->mn.genVar[1]), shBuf, &index);
 			SPLIT_16((uint16_t)(ri->mn.genVar[2]), shBuf, &index);
@@ -228,8 +227,7 @@ void tx_cmd_rigid_w(uint8_t *shBuf, uint8_t *cmd, uint8_t *cmdType, \
 			SPLIT_16((uint16_t)(ri->mn.genVar[7]), shBuf, &index);
 			SPLIT_16((uint16_t)(ri->mn.genVar[8]), shBuf, &index);
 			SPLIT_16((uint16_t)(ri->mn.genVar[9]), shBuf, &index);
-			//(28 bytes)
-
+			//(24 bytes)
 		}
 		else if(offset == 3)
 		{
@@ -240,12 +238,7 @@ void tx_cmd_rigid_w(uint8_t *shBuf, uint8_t *cmd, uint8_t *cmdType, \
 			SPLIT_16((ri->mn.analog[1]), shBuf, &index);
 			SPLIT_16((ri->mn.analog[2]), shBuf, &index);
 			SPLIT_16((ri->mn.analog[3]), shBuf, &index);
-			SPLIT_16(stateMachine.current_state, shBuf, &index);
-			SPLIT_32((uint32_t) act1.desiredCurrent, shBuf, &index);
-			SPLIT_32((uint32_t) act1.currentOpLimit, shBuf, &index);
-			SPLIT_16((uint16_t) act1.safetyFlag, shBuf, &index);
-
-            //(28 bytes)
+			//(16 bytes)
 		}
 		else if(offset == 4)	//This is used to tweak and test bilateral controllers
 		{
@@ -286,6 +279,13 @@ void tx_cmd_rigid_w(uint8_t *shBuf, uint8_t *cmd, uint8_t *cmdType, \
 //			rigid1.mn.userVar[4] = actx->jointTorque;
 //			rigid1.mn.userVar[5] = tauMeas;
 //			rigid1.mn.userVar[6] = tauDes; (impedance controller - spring contribution)
+		} else if (offset == 6) {
+			shBuf[index++] = stateMachine.current_state;
+			shBuf[index++] = act1.safetyFlag;
+			SPLIT_32((uint32_t) act1.desiredCurrent, shBuf, &index);
+			SPLIT_32((uint32_t) act1.currentOpLimit, shBuf, &index);
+
+			//(10 bytes)
 		}
 
 	#endif	//BOARD_TYPE_FLEXSEA_MANAGE
@@ -349,6 +349,8 @@ void rx_cmd_rigid_rr(uint8_t *buf, uint8_t *info)
 
 	#ifdef BOARD_TYPE_FLEXSEA_PLAN
 
+		rigidPtrXid(&ri, buf[P_XID]);
+
 		index = P_DATA1;
 		offset = buf[index++];
 
@@ -387,7 +389,6 @@ void rx_cmd_rigid_rr(uint8_t *buf, uint8_t *info)
 		else if(offset == 2)
 		{
 			ri->ctrl.timestamp = REBUILD_UINT32(buf, &index);
-			int32_t jointAngleDegrees = (int32_t) REBUILD_UINT32(buf, &index);
 			ri->mn.genVar[0] = (int16_t)REBUILD_UINT16(buf, &index);
 			ri->mn.genVar[1] = (int16_t)REBUILD_UINT16(buf, &index);
 			ri->mn.genVar[2] = (int16_t)REBUILD_UINT16(buf, &index);
@@ -398,10 +399,7 @@ void rx_cmd_rigid_rr(uint8_t *buf, uint8_t *info)
 			ri->mn.genVar[7] = (int16_t)REBUILD_UINT16(buf, &index);
 			ri->mn.genVar[8] = (int16_t)REBUILD_UINT16(buf, &index);
 			ri->mn.genVar[9] = (int16_t)REBUILD_UINT16(buf, &index);
-			//(28 bytes)
-
-			act->jointAngleDegrees = *(float*) &jointAngleDegrees;
-			//rigid1.mn.userVar[0] = actx->jointAngleDegrees;
+			//(24 bytes)
 
 			//In some cases genVar contains Strain data:
 			strain1.ch[0].strain_filtered = ri->mn.genVar[0];
@@ -421,11 +419,7 @@ void rx_cmd_rigid_rr(uint8_t *buf, uint8_t *info)
 			ri->mn.analog[1] = REBUILD_UINT16(buf, &index);
 			ri->mn.analog[2] = REBUILD_UINT16(buf, &index);
 			ri->mn.analog[3] = REBUILD_UINT16(buf, &index);
-            stateMachine.current_state = REBUILD_UINT16(buf, &index);
-			act->desiredCurrent = (int32_t) REBUILD_UINT32(buf, &index);
-			act->currentOpLimit = (int32_t) REBUILD_UINT32(buf, &index);
-			act->safetyFlag = (int16_t) REBUILD_UINT16(buf, &index);
-            //(28 bytes)
+			//(16 bytes)
 		}
 		else if(offset == 4)	//This is used to tweak and test bilateral controllers
 		{
@@ -483,6 +477,13 @@ void rx_cmd_rigid_rr(uint8_t *buf, uint8_t *info)
 			//rigid1.mn.userVar[4] = actx->jointTorque;
 			//rigid1.mn.userVar[5] = tauMeas;
 			//rigid1.mn.userVar[6] = tauDes; (impedance controller - spring contribution)
+		} else if (offset == 6) {
+			stateMachine.current_state = (int8_t)buf[index++];
+			act->safetyFlag = (int8_t)buf[index++];
+			act->desiredCurrent = (int32_t) REBUILD_UINT32(buf, &index);
+			act->currentOpLimit = (int32_t) REBUILD_UINT32(buf, &index);
+
+			//(10 bytes)
 		}
 
 	#endif	//BOARD_TYPE_FLEXSEA_PLAN
