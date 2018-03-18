@@ -157,7 +157,7 @@ void MIT_DLeg_fsm_1(void)
 			isEnabledUpdateSensors = 1;
 			//reserve for additional initialization
 		
-			 init_LPF();						// initialize low pass filter
+//			 init_LPF();						// initialize low pass filter
 
 			// to use filter on data use this
 			// filter_LPF(rigid1.mn.accel.x);
@@ -173,7 +173,7 @@ void MIT_DLeg_fsm_1(void)
 				float torqueDes = 0;
 
 				//populate rigid1.mn.genVars to send to Plan
-				packRigidVars(&act1);
+//				packRigidVars(&act1);
 
 				//begin safety check
 			    if (safetyShutoff()) {
@@ -194,21 +194,25 @@ void MIT_DLeg_fsm_1(void)
 
 					//Testing functions
 
-			    	torqueKp = user_data_1.w[0];
-			    	torqueKd = user_data_1.w[1];
+			    	torqueKp = user_data_1.w[0]/10.;
+			    	torqueKd = user_data_1.w[1]/10.;
 //			    	torqueDes = biomCalcImpedance(user_data_1.w[0], user_data_1.w[1], user_data_1.w[2], user_data_1.w[3]);
+
 			    	torqueSweepTest(&act1);
+
 			    }
 
 				rigid1.mn.genVar[0] = isSafetyFlag;
 				rigid1.mn.genVar[1] = act1.jointAngleDegrees; //deg
 				rigid1.mn.genVar[2] = act1.jointTorque*1000;  //mNm
 				rigid1.mn.genVar[3] = act1.linkageMomentArm*1000; //mm
-				rigid1.mn.genVar[4] = (float) lpf_result;
+				rigid1.mn.genVar[4] = act1.jointAngle*1000;
 //				rigid1.mn.genVar[5] = act1.motorAcc;
 //				rigid1.mn.genVar[6] = tau_motor*1000;  //mNm
 //				rigid1.mn.genVar[7] = act1.desiredCurrent;
 //				rigid1.mn.genVar[9] = (int16_t)lpf_index;
+
+				rigid1.mn.genVar[9] = torqueDes*1000;
 
 
 
@@ -322,8 +326,8 @@ void updateSensorValues(struct act_s *actx)
 	actx->motorAcc = rigid1.ex.mot_acc;	// rad/s/s
 
 	// Lowpass filter on Acceleration.
-	filter_LPF(actx->motorAcc);
-	actx->motorAcc = lpf_result;  // this is teh result value.
+//	filter_LPF(actx->motorAcc);
+//	actx->motorAcc = lpf_result;  // this is teh result value.
 
 
 	actx->regTemp = rigid1.re.temp;
@@ -536,7 +540,7 @@ void setMotorTorque(struct act_s *actx, float tau_des)
 	tau_err_last = tau_err;
 
 	//PID around motor torque
-	tau_motor = tau_err * torqueKp + (tau_err_dot) * torqueKd + (tau_err_int) * torqueKi;
+	tau_motor = tau_err*torqueKp + tau_err_dot*torqueKd + tau_err_int*torqueKi;
 //	tau_motor = tau_motor / ( N * N_ETA );		// Scale motor PID val to motor level torque.
 
 	I = 1/MOT_KT * ( tau_ff + tau_motor +(motJ + MOT_TRANS)*ddtheta_m + motB*dtheta_m) * currentScalar;
@@ -631,7 +635,7 @@ int8_t findPoles(void) {
 
 		case 2:
 
-			if(timer >= 45*SECONDS)
+			if(timer >= 50*SECONDS)
 			{
 				//Enable FSM2, position controller
 				enableActPackFSM2();

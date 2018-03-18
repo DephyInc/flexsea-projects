@@ -101,8 +101,8 @@ void torqueSweepTest(struct act_s *actx);
 //#define IS_KNEE
 
 //2. Select device
-//#define DEVICE_TF08_A01			// Define specific actuator configuration. Ankle 01
-#define DEVICE_TF08_A02		// Define specific actuator configuration. Ankle 02
+#define DEVICE_TF08_A01			// Define specific actuator configuration. Ankle 01
+//#define DEVICE_TF08_A02		// Define specific actuator configuration. Ankle 02
 //#define DEVICE_TF08_K01		// Define specific actuator configuration. Knee 01
 //#define DEVICE_TF08_K02		// Define specific actuator configuration. Knee 02
 #define ANG_UNIT	2*M_PI 		// Use Radians 2*M_PI
@@ -136,9 +136,9 @@ void torqueSweepTest(struct act_s *actx);
 #define TORQ_CALIB_B		0.0656	// y=Mx+b, from collected data set, applied load
 
 //Torque Control PID gains
-#define TORQ_KP_INIT			3 //10.
+#define TORQ_KP_INIT			1.2 // good for step response, for zero torque 3 is good
 #define TORQ_KI_INIT			0.
-#define TORQ_KD_INIT			15 //2.
+#define TORQ_KD_INIT			12. // good for step response, for zero torque 15 is good
 
 
 // Motor Parameters
@@ -227,7 +227,7 @@ void torqueSweepTest(struct act_s *actx);
 
 //Joint software limits [Degrees]
 #ifdef IS_ANKLE
-#define JOINT_MIN_SOFT		-10	* (ANG_UNIT)/360	// [deg] Actuator physical limit min = -30deg dorsiflexion
+#define JOINT_MIN_SOFT		-20	* (ANG_UNIT)/360	// [deg] Actuator physical limit min = -30deg dorsiflexion
 #define JOINT_MAX_SOFT		40	* (ANG_UNIT)/360	// [deg] Actuator physical limit  max = 90deg plantarflex
 #endif
 

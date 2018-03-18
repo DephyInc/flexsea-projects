@@ -28,13 +28,9 @@ extern "C" {
 #include <stdlib.h>
 #include <flexsea.h>
 #include <flexsea_system.h>
-#include <flexsea_cmd_user.h>
 #include "../inc/cmd-Rigid.h"
 #include "flexsea_user_structs.h"
 #include "user-mn.h"
-#include "cmd-DLeg.h"
-#include "state_machine.h"
-#include "state_variables.h"
 
 #ifdef DEPHY
 #include "dephy-mn.h"
@@ -196,7 +192,7 @@ void tx_cmd_rigid_w(uint8_t *shBuf, uint8_t *cmd, uint8_t *cmdType, \
 			SPLIT_16((uint16_t)*(ri->ctrl.ank_ang_from_mot), shBuf, &index);
 			SPLIT_16((uint16_t)ri->ex.strain, shBuf, &index);
 			SPLIT_16((uint16_t)(ri->ex.ctrl.current.setpoint_val >> 3), shBuf, &index);
-			//(26 bytes)
+			//(28 bytes)
 		}
 		else if(offset == 1)
 		{
@@ -217,7 +213,6 @@ void tx_cmd_rigid_w(uint8_t *shBuf, uint8_t *cmd, uint8_t *cmdType, \
 		else if(offset == 2)
 		{
 			SPLIT_32(ri->ctrl.timestamp, shBuf, &index);
-			SPLIT_32( *(uint32_t*) &(ri->mn.userVar[0]), shBuf, &index);
 			SPLIT_16((uint16_t)(ri->mn.genVar[0]), shBuf, &index);
 			SPLIT_16((uint16_t)(ri->mn.genVar[1]), shBuf, &index);
 			SPLIT_16((uint16_t)(ri->mn.genVar[2]), shBuf, &index);
@@ -228,8 +223,7 @@ void tx_cmd_rigid_w(uint8_t *shBuf, uint8_t *cmd, uint8_t *cmdType, \
 			SPLIT_16((uint16_t)(ri->mn.genVar[7]), shBuf, &index);
 			SPLIT_16((uint16_t)(ri->mn.genVar[8]), shBuf, &index);
 			SPLIT_16((uint16_t)(ri->mn.genVar[9]), shBuf, &index);
-			//(28 bytes)
-
+			//(24 bytes)
 		}
 		else if(offset == 3)
 		{
@@ -240,12 +234,7 @@ void tx_cmd_rigid_w(uint8_t *shBuf, uint8_t *cmd, uint8_t *cmdType, \
 			SPLIT_16((ri->mn.analog[1]), shBuf, &index);
 			SPLIT_16((ri->mn.analog[2]), shBuf, &index);
 			SPLIT_16((ri->mn.analog[3]), shBuf, &index);
-			SPLIT_16(stateMachine.current_state, shBuf, &index);
-			SPLIT_32((uint32_t) act1.desiredCurrent, shBuf, &index);
-			SPLIT_32((uint32_t) act1.currentOpLimit, shBuf, &index);
-			SPLIT_16((uint16_t) act1.safetyFlag, shBuf, &index);
-
-            //(28 bytes)
+			//(16 bytes)
 		}
 		else if(offset == 4)	//This is used to tweak and test bilateral controllers
 		{
@@ -266,26 +255,6 @@ void tx_cmd_rigid_w(uint8_t *shBuf, uint8_t *cmd, uint8_t *cmdType, \
 			shBuf[index++] = (uint8_t)rigid2.ctrl.walkingState;
 			shBuf[index++] = (uint8_t)rigid2.ctrl.gaitState;
 			//(30 bytes)
-		} else if (offset == 5) {
-
-			SPLIT_32(ri->ctrl.timestamp, shBuf, &index);
-			SPLIT_32( *(uint32_t*) &(ri->mn.userVar[1]), shBuf, &index);
-			SPLIT_32( *(uint32_t*) &(ri->mn.userVar[2]), shBuf, &index);
-			SPLIT_32( *(uint32_t*) &(ri->mn.userVar[3]), shBuf, &index);
-			SPLIT_32( *(uint32_t*) &(ri->mn.userVar[4]), shBuf, &index);
-			SPLIT_32( *(uint32_t*) &(ri->mn.userVar[5]), shBuf, &index);
-			SPLIT_32( *(uint32_t*) &(ri->mn.userVar[6]), shBuf, &index);
-
-			//(28 bytes)
-
-//			// set genVars to send back to Plan
-//			rigid1.mn.userVar[0] = actx->jointAngleDegrees;
-//			rigid1.mn.userVar[1] = actx->jointVelDegrees;
-//			rigid1.mn.userVar[2] = actx->linkageMomentArm;
-//			rigid1.mn.userVar[3] = actx->axialForce;
-//			rigid1.mn.userVar[4] = actx->jointTorque;
-//			rigid1.mn.userVar[5] = tauMeas;
-//			rigid1.mn.userVar[6] = tauDes; (impedance controller - spring contribution)
 		}
 
 	#endif	//BOARD_TYPE_FLEXSEA_MANAGE
@@ -318,7 +287,6 @@ void rx_cmd_rigid_rr(uint8_t *buf, uint8_t *info)
 	uint16_t index = 0;
 	uint8_t offset = 0;
 	struct rigid_s *ri = &rigid1;
-	struct act_s *act = &act1;
 	(void)info;
 
 	#ifdef BOARD_TYPE_FLEXSEA_EXECUTE
@@ -368,7 +336,7 @@ void rx_cmd_rigid_rr(uint8_t *buf, uint8_t *info)
 			*(ri->ex.joint_ang_from_mot) = (int16_t) REBUILD_UINT16(buf, &index);
 			ri->ex.strain = REBUILD_UINT16(buf, &index);
 			ri->ex.ctrl.current.setpoint_val = (int32_t)(((int16_t)REBUILD_UINT16(buf, &index)) << 3);
-			//(26 bytes)
+			//(28 bytes)
 		}
 		else if(offset == 1)
 		{
@@ -389,7 +357,6 @@ void rx_cmd_rigid_rr(uint8_t *buf, uint8_t *info)
 		else if(offset == 2)
 		{
 			ri->ctrl.timestamp = REBUILD_UINT32(buf, &index);
-			int32_t jointAngleDegrees = (int32_t) REBUILD_UINT32(buf, &index);
 			ri->mn.genVar[0] = (int16_t)REBUILD_UINT16(buf, &index);
 			ri->mn.genVar[1] = (int16_t)REBUILD_UINT16(buf, &index);
 			ri->mn.genVar[2] = (int16_t)REBUILD_UINT16(buf, &index);
@@ -400,10 +367,7 @@ void rx_cmd_rigid_rr(uint8_t *buf, uint8_t *info)
 			ri->mn.genVar[7] = (int16_t)REBUILD_UINT16(buf, &index);
 			ri->mn.genVar[8] = (int16_t)REBUILD_UINT16(buf, &index);
 			ri->mn.genVar[9] = (int16_t)REBUILD_UINT16(buf, &index);
-			//(28 bytes)
-
-			act->jointAngleDegrees = *(float*) &jointAngleDegrees;
-			//rigid1.mn.userVar[0] = actx->jointAngleDegrees;
+			//(24 bytes)
 
 			//In some cases genVar contains Strain data:
 			strain1.ch[0].strain_filtered = ri->mn.genVar[0];
@@ -423,11 +387,7 @@ void rx_cmd_rigid_rr(uint8_t *buf, uint8_t *info)
 			ri->mn.analog[1] = REBUILD_UINT16(buf, &index);
 			ri->mn.analog[2] = REBUILD_UINT16(buf, &index);
 			ri->mn.analog[3] = REBUILD_UINT16(buf, &index);
-            stateMachine.current_state = REBUILD_UINT16(buf, &index);
-			act->desiredCurrent = (int32_t) REBUILD_UINT32(buf, &index);
-			act->currentOpLimit = (int32_t) REBUILD_UINT32(buf, &index);
-			act->safetyFlag = (int16_t) REBUILD_UINT16(buf, &index);
-            //(28 bytes)
+			//(16 bytes)
 		}
 		else if(offset == 4)	//This is used to tweak and test bilateral controllers
 		{
@@ -459,32 +419,9 @@ void rx_cmd_rigid_rr(uint8_t *buf, uint8_t *info)
 			rigid1.mn.genVar[genVindex++] = rigid2.ctrl.walkingState;
 			rigid1.mn.genVar[genVindex++] = rigid2.ctrl.gaitState;
 		}
-		else if (offset == 5) {
-
-			ri->ctrl.timestamp = REBUILD_UINT32(buf, &index);
-
-			int32_t jointVelDegrees = (int32_t) REBUILD_UINT32(buf, &index);
-			int32_t linkageMomentArm = (int32_t) REBUILD_UINT32(buf, &index);
-			int32_t axialForce = (int32_t) REBUILD_UINT32(buf, &index);
-			int32_t jointTorque = (int32_t) REBUILD_UINT32(buf, &index);
-			int32_t tauMeas = (int32_t) REBUILD_UINT32(buf, &index);
-			int32_t tauDes = (int32_t) REBUILD_UINT32(buf, &index);
-
-			act->jointVelDegrees = *(float*) &jointVelDegrees;
-			act->linkageMomentArm = *(float*) &linkageMomentArm;
-			act->axialForce = *(float*) &axialForce;
-			act->jointTorque = *(float*) &jointTorque;
-			act->tauMeas = *(float*) &tauMeas;
-			act->tauDes = *(float*) &tauDes;
-
-			//(28 bytes)
-
-			//rigid1.mn.userVar[1] = actx->jointVelDegrees;
-			//rigid1.mn.userVar[2] = actx->linkageMomentArm;
-			//rigid1.mn.userVar[3] = actx->axialForce;
-			//rigid1.mn.userVar[4] = actx->jointTorque;
-			//rigid1.mn.userVar[5] = tauMeas;
-			//rigid1.mn.userVar[6] = tauDes; (impedance controller - spring contribution)
+		else
+		{
+			//...
 		}
 
 	#endif	//BOARD_TYPE_FLEXSEA_PLAN
