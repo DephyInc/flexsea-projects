@@ -350,8 +350,6 @@ void rx_cmd_rigid_rr(uint8_t *buf, uint8_t *info)
 
 	#ifdef BOARD_TYPE_FLEXSEA_PLAN
 
-		rigidPtrXid(&ri, buf[P_XID]);
-
 		index = P_DATA1;
 		offset = buf[index++];
 
