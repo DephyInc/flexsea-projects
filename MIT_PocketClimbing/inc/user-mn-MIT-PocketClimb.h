@@ -21,7 +21,7 @@
 	Biomechatronics research group <http://biomech.media.mit.edu/>
 	[Contributors]
 *****************************************************************************
-	[This file] user--mn-MIT-PocketClim: Demo state machine for Pocket 2x DC
+	[This file] user-mn-MIT-PocketClimb: Demo state machine for Pocket 2x DC
 *****************************************************************************
 	[Change log] (Convention: YYYY-MM-DD | author | comment)
 	* 2018-03-02 | jfduval | New release

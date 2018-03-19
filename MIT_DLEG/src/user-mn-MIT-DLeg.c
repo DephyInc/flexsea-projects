@@ -1,7 +1,7 @@
 /****************************************************************************
 	[Project] FlexSEA: Flexible & Scalable Electronics Architecture
-	[Sub-project] 'flexsea-user' User projects
-	Copyright (C) 2016 Dephy, Inc. <http://dephy.com/>
+	[Sub-project] 'flexsea-projects' User projects
+	Copyright (C) 2018 Dephy, Inc. <http://dephy.com/>
 
 	This program is free software: you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -16,16 +16,15 @@
 	You should have received a copy of the GNU General Public License
 	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 *****************************************************************************
-	[Lead developper] Luke Mooney, lmooney at dephy dot com.
+	[Lead developer] Jean-Francois Duval, jfduval at dephy dot com.
 	[Origin] Based on Jean-Francois Duval's work at the MIT Media Lab
 	Biomechatronics research group <http://biomech.media.mit.edu/>
 	[Contributors]
 *****************************************************************************
-	[This file] user-ex-MIT_2DoF_Ankle_v1: User code running on Manage
+	[This file] user-mn-MIT-DLeg: Demo state machine for DLeg
 *****************************************************************************
 	[Change log] (Convention: YYYY-MM-DD | author | comment)
-	* 2016-10-28 | jfduval | New release
-	* 2016-11-16 | jfduval | Cleaned code, improved formatting
+	* 2018-02-24 | jfduval | New release
 ****************************************************************************/
 
 #ifdef INCLUDE_UPROJ_MIT_DLEG

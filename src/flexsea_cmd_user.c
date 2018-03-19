@@ -60,6 +60,7 @@ extern "C" {
 #ifdef TEST_PC
 #include "user-testPC.h"
 #include "../Rigid/inc/cmd-Rigid.h"
+#include "../Rigid/inc/cmd-Pocket.h"
 #else
 	#include "../MIT_2DoF_Ankle_v1/inc/cmd-MIT_2DoF_Ankle_v1.h"
 	#include "../RICNU_Knee_v1/inc/cmd-RICNU_Knee_v1.h"
