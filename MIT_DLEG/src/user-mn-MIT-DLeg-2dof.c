@@ -170,7 +170,7 @@ void MIT_DLeg_fsm_1(void)
 				float torqueDes = 0;
 
 				//populate rigid1.mn.genVars to send to Plan
-//				packRigidVars(&act1);
+				packRigidVars(&act1);
 
 				//begin safety check
 			    if (safetyShutoff()) {
@@ -507,7 +507,6 @@ void setMotorTorque(struct act_s *actx, float tau_des)
 	dtheta_m = actx->motorVel;
 	ddtheta_m = actx->motorAcc;
 
-
 	// todo: better fidelity may be had if we modeled N_ETA as a function of torque, long term goal, if necessary
 	tau_meas =  actx->jointTorque / N;	// measured torque reflected to motor [Nm]
 	tau_des = tau_des / N;				// scale output torque back to the motor [Nm].
@@ -548,6 +547,10 @@ void setMotorTorque(struct act_s *actx, float tau_des)
 
 	actx->desiredCurrent = (int32_t) I; 	// demanded mA
 	setMotorCurrent(actx->desiredCurrent);	// send current command to comm buffer to Execute
+
+	//variables used in cmd-rigid offset 5
+	rigid1.mn.userVar[5] = tau_meas*1000;
+	rigid1.mn.userVar[6] = tau_des*1000;
 
 }
 
@@ -629,11 +632,11 @@ int8_t findPoles(void) {
 void packRigidVars(struct act_s *actx) {
 
 	// set float userVars to send back to Plan
-	rigid1.mn.userVar[0] = actx->jointAngleDegrees;
-	rigid1.mn.userVar[1] = actx->jointVelDegrees;
-	rigid1.mn.userVar[2] = actx->linkageMomentArm;
-	rigid1.mn.userVar[3] = actx->axialForce;
-	rigid1.mn.userVar[4] = actx->jointTorque;
+	rigid1.mn.userVar[0] = actx->jointAngleDegrees*1000;
+	rigid1.mn.userVar[1] = actx->jointVelDegrees*1000;
+	rigid1.mn.userVar[2] = actx->linkageMomentArm*1000;
+	rigid1.mn.userVar[3] = actx->axialForce*1000;
+	rigid1.mn.userVar[4] = actx->jointTorque*1000;
     //userVar[5] = tauMeas
     //userVar[6] = tauDes (impedance controller - spring contribution)
 }
@@ -814,15 +817,59 @@ void oneTorqueFSM(struct act_s *actx)
 //control ankle torque by through user_data_1[2] as amplitude and user_data_1[3] as frequency
 void torqueSweepTest(struct act_s *actx) {
 		static int32_t timer = 0;
+		static int32_t stepTimer = 0;
+		static float currentFrequency = 0;
 
-		float torqueAmp = user_data_1.w[2]/10.;
-		float frequency = user_data_1.w[3]/10.;
+		float torqueAmp = user_data_1.w[0]/10.;
+		float frequency = user_data_1.w[1]/10.;
+		float frequencyEnd = user_data_1.w[2]/10.;
+		float numSteps = user_data_1.w[3];
 
 		timer++;
 
+		// if torqueAmp is ever set to 0, reset sweep test params
+		if (torqueAmp == 0) {
+			stepTimer = 0;
+			currentFrequency = 0;
+		}
+
+		// start check to see what type of sweep desired
 		if (frequency > 0) {
-			float torqueDes = torqueAmp * sin(frequency*timer*2*M_PI/1000);
-			setMotorTorque(actx, torqueDes);
+			float torqueDes = 0;
+
+			//just want to sweep at one frequency
+			if (frequencyEnd == 0 || numSteps == 0) {
+
+				torqueDes = torqueAmp * sin(frequency*timer*2*M_PI/1000);
+				setMotorTorque(actx, torqueDes);
+
+			} else {
+
+				// 2 seconds per intermediate frequency step
+				if (stepTimer <= 2*SECONDS) {
+
+					torqueDes = torqueAmp * sin(currentFrequency*stepTimer*2*M_PI/1000);
+					setMotorTorque(actx, torqueDes);
+
+					stepTimer++;
+					user_data_1.r[0] = 1; //1 if testing
+
+				} else {
+
+					stepTimer = 0;
+					currentFrequency += (frequencyEnd-frequency)/numSteps; //increment frequency step
+					//stop test
+					if (currentFrequency > frequencyEnd) {
+
+						torqueAmp = 0;
+						frequency = 0;
+						frequencyEnd = 0;
+						numSteps = 0;
+						user_data_1.r[0] = 0; //0 if not sweep testing
+
+					}
+				}
+			}
 
 			//pass back for plotting purposes
 			user_data_1.r[2] = torqueDes;
@@ -831,11 +878,15 @@ void torqueSweepTest(struct act_s *actx) {
 			timer = 0;
 			setMotorTorque(actx, torqueAmp);
 
+			stepTimer = 0;
+			currentFrequency = 0;
 			user_data_1.r[2] = torqueAmp;
 		} else {
 			timer = 0;
 			setMotorTorque(actx, 0);
 
+			stepTimer = 0;
+			currentFrequency = 0;
 			user_data_1.r[2] = 0;
 		}
 
