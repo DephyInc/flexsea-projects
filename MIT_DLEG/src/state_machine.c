@@ -21,7 +21,7 @@ GainParams estGains = {1.35, 0.025, 0.118, -5};
 GainParams lstGains = {0, 0, 0, 0}; //currently unused in simple implementation
 GainParams lstPowerGains = {4.5, 0, 0.005, -18};
 GainParams emgStandGains = {0, 0, 0, 0}; //currently unused
-GainParams emgFreeGains = {10, 0, 1, 0};
+GainParams emgFreeGains = {2, 0, 0.005, 0};
 
 #ifndef BOARD_TYPE_FLEXSEA_PLAN
 

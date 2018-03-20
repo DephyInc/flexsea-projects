@@ -51,7 +51,7 @@
 
 
 //VIRTUAL DYNAMIC JOINT PARAMS
-#define VIRTUAL_K				0.85
+#define VIRTUAL_K				1.0
 #define VIRTUAL_B				0.1
 #define VIRTUAL_J				0.0025
 

@@ -64,6 +64,9 @@ float pfdfStiffGain = PFDF_STIFF_GAIN;
 float dpOnThresh = DP_ON_THRESH;
 float cocontractThresh = COCON_THRESH;
 
+int k_lim = 100; //virtual spring constant opposing motion at virtual joint limit.
+int b_lim = 1; //virtual damping constant opposing motion at virtual joint limit.
+
 //VIRTUAL DYNAMIC JOINT PARAMS
 float virtualK = VIRTUAL_K;
 float virtualB = VIRTUAL_B;
@@ -72,6 +75,11 @@ float virtualJ = VIRTUAL_J;
 //physical robot tracking gains
 float robotK = ROBOT_K;
 float robotB = ROBOT_B;
+
+// joint limits
+float max_DFangle = -20; // These need to match the robot. They are hard limits on desired joint angle.
+float max_PFangle = 40; // 5 away from the software defined limits
+float equilibriumAngle = 30; // rads (30 degrees plantarflexion)
 
 //****************************************************************************
 // Private Function Prototype(s):
@@ -114,20 +122,11 @@ void get_EMG(void) //Read the EMG signal, rectify, and integrate. Output an inte
 //updates PFDF_state[] based on EMG activation
 void interpret_EMG (float k, float b, float J)
 {
-	float activationThresh = dpOnThresh * emgInMax;
 	float LGact = 0;
 	float TAact = 0;
 	float TALG_diff = 0;
 	float Torque_PFDF = 0;
-
-	// joint limits
-	float max_DFangle = JOINT_MIN_SOFT + 5; // These need to match the robot. They are hard limits on desired joint angle.
-	float max_PFangle = JOINT_MAX_SOFT - 5; // 5 away from the software defined limits
-	float equilibriumAngle = 0.52; // rads (30 degrees plantarflexion)
-
-	int k_lim = 250; //virtual spring constant opposing motion at virtual joint limit.
-	int b_lim = 1; //virtual damping constant opposing motion at virtual joint limit.
-
+	float activationThresh = dpOnThresh * emgInMax;
 
 	// Calculate LG activation
 	if (EMGavgs[0] > activationThresh)
