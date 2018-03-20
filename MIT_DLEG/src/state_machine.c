@@ -19,7 +19,7 @@ GainParams eswGains = {0.04, 0, 0.004, 23};
 GainParams lswGains = {0.134, 0, 0.002, 2};
 GainParams estGains = {1.35, 0.025, 0.118, -5};
 GainParams lstGains = {0, 0, 0, 0}; //currently unused in simple implementation
-GainParams lstPowerGains = {4.5, 0, 0.005, -18};
+GainParams lstPowerGains = {4.5, 0, 0.005, 18};
 GainParams emgStandGains = {0, 0, 0, 0}; //currently unused
 GainParams emgFreeGains = {2, 0, 0.005, 0};
 
@@ -175,14 +175,14 @@ void runFlatGroundFSM(float* ptorqueDes) {
 */
 static float calcJointTorque(GainParams gainParams) {
 
-    return gainParams.k1 * (act1.jointAngleDegrees - gainParams.thetaDes) \
-         + gainParams.k2 * powf((act1.jointAngleDegrees - gainParams.thetaDes), 3) - gainParams.b * act1.jointVelDegrees;
+    return gainParams.k1 * (gainParams.thetaDes - act1.jointAngleDegrees) \
+         + gainParams.k2 * powf((gainParams.thetaDes - act1.jointAngleDegrees), 3) - gainParams.b * act1.jointVelDegrees;
 }
 
 //reset virtual joint to robot joint state
 static void updatePFDFState(void) {
-	PFDF_state[0] = act1.jointAngle;
-	PFDF_state[1] = act1.jointVel;
+	PFDF_state[0] = act1.jointAngleDegrees;
+	PFDF_state[1] = act1.jointVelDegrees;
 	PFDF_state[2] = 0;
 }
 

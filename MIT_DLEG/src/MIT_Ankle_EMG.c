@@ -42,6 +42,7 @@
 #include "user-mn-MIT-EMG.h"
 #include "user-mn-MIT-DLeg-2dof.h"
 #include "state_variables.h"
+#include "flexsea_user_structs.h"
 
 //****************************************************************************
 // Variable(s)
@@ -79,7 +80,7 @@ float robotB = ROBOT_B;
 // joint limits
 float max_DFangle = -20; // These need to match the robot. They are hard limits on desired joint angle.
 float max_PFangle = 40; // 5 away from the software defined limits
-float equilibriumAngle = 30; // rads (30 degrees plantarflexion)
+float equilibriumAngle = 30; // 30 degrees plantarflexion
 
 //****************************************************************************
 // Private Function Prototype(s):
@@ -111,9 +112,13 @@ void updateVirtualJoint(GainParams* pgains)
 void get_EMG(void) //Read the EMG signal, rectify, and integrate. Output an integrated signal.
 {
     // Read Seong's variables toDo:CHANGE TO ACTUAL
-	uint16_t EMGin_LG = emg_data[0]; //SEONGS BOARD LG_VAR, 0-10000
-	uint16_t EMGin_TA = emg_data[1]; //SEONGS BOARD TA_VAR, 0-10000
+	uint16_t EMGin_LG = emg_data[0]; //SEONGS BOARD LG_VAR gastroc, 0-10000
+	uint16_t EMGin_TA = emg_data[1]; //SEONGS BOARD TA_VAR tibialis anterior, 0-10000
 	
+	//pack for Plan
+	rigid1.mn.genVar[0] = EMGin_LG;
+	rigid1.mn.genVar[1] = EMGin_TA;
+
 	//Apply gains
 	EMGavgs[0] = EMGin_LG * gainLG;
 	EMGavgs[1] = EMGin_TA * gainTA;
@@ -145,6 +150,8 @@ void interpret_EMG (float k, float b, float J)
 	TALG_diff = LGact - TAact;
 	Torque_PFDF = TALG_diff > 0 ? TALG_diff*pfTorqueGain : TALG_diff*dfTorqueGain;
 
+	//pack for Plan
+	rigid1.mn.genVar[2] = TALG_diff*1000;
 
 	// JOINT MODEL
 	//first, we apply extra damping in co-contraction
@@ -154,12 +161,18 @@ void interpret_EMG (float k, float b, float J)
 		b = b * (erff(10.0*(stiffness-0.15-cocontractThresh))+1)*20;
 	}
 
+	//pack for Plan
+	rigid1.mn.genVar[3] = b*1000;
+
 	// scaling restoring force based on loose ankle at 35 degrees plantarflexion (Tony's idea. Test first)
 	if (PFDF_state[0] > equilibriumAngle) {
 		k = k*(PFDF_state[0] - equilibriumAngle)/(max_PFangle - equilibriumAngle);
 	} else {
 		k = -k*(PFDF_state[0] - equilibriumAngle)/(max_DFangle - equilibriumAngle);
 	}
+
+	//pack for Plan
+	rigid1.mn.genVar[4] = k*1000;
 
 	// forward dynamics equation
 	float dtheta = PFDF_state[1];
@@ -175,9 +188,17 @@ void interpret_EMG (float k, float b, float J)
 		domega = domega - k_lim/J * (PFDF_state[0] - max_PFangle) - b_lim/J * PFDF_state[1]; // Hittin the other wall.
 	}
 
+	//pack for Plan
+	rigid1.mn.genVar[5] = dtheta*1000;
+	rigid1.mn.genVar[6] = domega*1000;
+
 	// Integration station.
 	RK4_SIMPLE(dtheta, domega, PFDF_state);
 	PFDF_state[2] = (TAact + LGact)/2.0 * pfdfStiffGain; // stiffness comes from the common signal
+
+	//pack for Plan
+	rigid1.mn.genVar[7] = PFDF_state[0]*1000;
+	rigid1.mn.genVar[8] = PFDF_state[1]*1000;
 }
 
 void RK4_SIMPLE(float d1_dt,float d2_dt, float* cur_state)

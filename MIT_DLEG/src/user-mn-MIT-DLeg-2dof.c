@@ -141,11 +141,11 @@ void MIT_DLeg_fsm_1(void)
 		case -1:
 			stateMachine.current_state = STATE_INIT;
 			//turned off for testing without Motor usage
-			if(findPoles()) {
-				mit_init_current_controller();		//initialize Current Controller with gains
+//			if(findPoles()) {
+//				mit_init_current_controller();		//initialize Current Controller with gains
 				fsm1State = 0;
 				time = 0;
-			}
+//			}
 
 			break;
 
@@ -167,7 +167,7 @@ void MIT_DLeg_fsm_1(void)
 
 		case 1:
 			{
-				float torqueDes = 0;
+				float* ptorqueDes;
 
 				//populate rigid1.mn.genVars to send to Plan
 				packRigidVars(&act1);
@@ -180,34 +180,34 @@ void MIT_DLeg_fsm_1(void)
 //			    	  to allow code to move past this block.
 //			    	  Only update the walking FSM, but don't output torque.
 //			    	*/
-//			    	runFlatGroundFSM(ptorqueDes);
+			    	runFlatGroundFSM(ptorqueDes);
 //
 			    	return;
 //
 			    } else {
-//
-//			    	runFlatGroundFSM(ptorqueDes);
-//					setMotorTorque(&act1, torqueDes);
+			    	stateMachine.current_state = STATE_LSW_EMG; //testing EMG only!!!!!
+			    	runFlatGroundFSM(ptorqueDes);
+					setMotorTorque(&act1, *ptorqueDes);
 
 					//Testing functions
 
-			    	torqueDes = biomCalcImpedance(user_data_1.w[0], user_data_1.w[1], user_data_1.w[2], user_data_1.w[3]);
-
-			    	setMotorTorque(&act1, torqueDes);
+//			    	torqueDes = biomCalcImpedance(user_data_1.w[0], user_data_1.w[1], user_data_1.w[2], user_data_1.w[3]);
+//
+//			    	setMotorTorque(&act1, torqueDes);
 
 
 			    }
 
-				rigid1.mn.genVar[0] = isSafetyFlag;
-				rigid1.mn.genVar[1] = act1.jointAngleDegrees; //deg
-				rigid1.mn.genVar[2] = act1.jointTorque*1000;  //mNm
-				rigid1.mn.genVar[3] = act1.linkageMomentArm*1000; //mm
-				rigid1.mn.genVar[4] = act1.jointAngle*1000;
+//				rigid1.mn.genVar[0] = isSafetyFlag;
+//				rigid1.mn.genVar[1] = act1.jointAngleDegrees; //deg
+//				rigid1.mn.genVar[2] = act1.jointTorque*1000;  //mNm
+//				rigid1.mn.genVar[3] = act1.linkageMomentArm*1000; //mm
+//				rigid1.mn.genVar[4] = act1.jointAngle*1000;
 //				rigid1.mn.genVar[5] = act1.motorAcc;
 //				rigid1.mn.genVar[6] = tau_motor*1000;  //mNm
 //				rigid1.mn.genVar[7] = act1.desiredCurrent;
 
-				rigid1.mn.genVar[9] = torqueDes*1000;
+//				rigid1.mn.genVar[9] = torqueDes*1000;
 
 
 
