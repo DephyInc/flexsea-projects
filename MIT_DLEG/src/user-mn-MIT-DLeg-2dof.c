@@ -197,7 +197,8 @@ void MIT_DLeg_fsm_1(void)
 //			    	b = user_data_1.w[2]/1000.;
 //			    	theta_input = user_data_1.w[3];
 
-			    	if ( time >= 9 )
+			    	//important slowdown to get rid of high frequency noise
+			    	if (time >= 9)
 			    	{
 			    	//K1, K2, B, Theta
 			    	torqueDes = biomCalcImpedance(user_data_1.w[0]/1000. , user_data_1.w[1]/1000., user_data_1.w[2]/1000., user_data_1.w[3]);
@@ -390,7 +391,7 @@ void getJointAngleKinematic(float joint[])
 	}
 
 	//VELOCITY
-	joint[1] = 	windowSmooth(*(rigid1.ex.joint_ang_vel)) * (angleUnit)/JOINT_CPR * SECONDS;
+	joint[1] = 	windowSmoothJoint(*(rigid1.ex.joint_ang_vel)) * (angleUnit)/JOINT_CPR * SECONDS;
 
 	//ACCEL  -- todo: check to see if this works
 	joint[2] = (( joint[1] - last_jointVel )) * (angleUnit)/JOINT_CPR * SECONDS;
@@ -429,6 +430,7 @@ float getAxialForce(void)
 		case 0:
 
 			axialForce =  FORCE_DIR * (strainReading - tareOffset) * forcePerTick;
+			axialForce = windowSmoothAxial(axialForce);
 
 			break;
 
@@ -656,8 +658,23 @@ void packRigidVars(struct act_s *actx) {
     //userVar[6] = tauDes (impedance controller - spring contribution)
 }
 
-float windowSmooth(int16_t val) {
-	const uint8_t windowSize = 3;
+float windowSmoothJoint(int16_t val) {
+	const uint8_t windowSize = 5;
+	static int8_t index = -1;
+	float window[windowSize];
+	float average = 0;
+
+
+	index = (index + 1) % windowSize;
+	average -= window[index]/windowSize;
+	window[index] = (float) val;
+	average += window[index]/windowSize;
+
+	return average;
+}
+
+float windowSmoothAxial(float val) {
+	const uint8_t windowSize = 5;
 	static int8_t index = -1;
 	float window[windowSize];
 	float average = 0;

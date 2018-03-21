@@ -82,7 +82,8 @@ void  setMotorTorque(struct act_s *actx, float tor_d);
 void  packRigidVars(struct act_s *actx);
 
 //Smoothing
-float windowSmooth(int16_t val);
+float windowSmoothJoint(int16_t val);
+float windowSmoothAxial(float val);
 
 //Main FSMs
 void openSpeedFSM(void);
