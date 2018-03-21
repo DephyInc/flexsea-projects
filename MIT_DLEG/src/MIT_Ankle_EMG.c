@@ -73,13 +73,9 @@ float virtualK = VIRTUAL_K;
 float virtualB = VIRTUAL_B;
 float virtualJ = VIRTUAL_J;
 
-//physical robot tracking gains
-float robotK = ROBOT_K;
-float robotB = ROBOT_B;
-
 // joint limits
 float max_DFangle = -20; // These need to match the robot. They are hard limits on desired joint angle.
-float max_PFangle = 40; // 5 away from the software defined limits
+float max_PFangle = 40;
 float equilibriumAngle = 30; // 30 degrees plantarflexion
 
 //****************************************************************************
@@ -198,7 +194,7 @@ void interpret_EMG (float k, float b, float J)
 
 	//pack for Plan
 	rigid1.mn.genVar[7] = PFDF_state[0]*1000;
-	rigid1.mn.genVar[8] = PFDF_state[1]*1000;
+//	rigid1.mn.genVar[8] = PFDF_state[1]*1000;
 }
 
 void RK4_SIMPLE(float d1_dt,float d2_dt, float* cur_state)

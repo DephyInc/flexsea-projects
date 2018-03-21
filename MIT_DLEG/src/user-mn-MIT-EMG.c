@@ -44,8 +44,8 @@ volatile uint16_t emg_error_cnt=0;
 //volatile uint8_t emg_active_flag;
 uint16_t emg_timestamp = 0;
 
-int16_t emg_data[8] = {0,0,0,0,0,0,0,0}; //updated every cycle
-int16_t emg_misc[3] = {0,0,0}; //reserved
+int16_t emg_data[8] = {0,0,0,0,0,0,0,0};
+int16_t emg_misc[3] = {0,0,0};
 extern uint8_t i2c2_dma_tx_buf[24]; //from i2c.c
 extern uint8_t i2c2_dma_rx_buf[24]; //from i2c.c
 extern I2C_HandleTypeDef hi2c2;
@@ -231,7 +231,7 @@ void MIT_EMG_i2c2_fsm(void)
 		emg_timer++;
 }
 
-uint8_t MIT_EMG_getState(void) //read value when only 1 is returned (necessary for guaranteeing fresh data)
+uint8_t MIT_EMG_getState(void) //read value when only 1 is returned
 {
 	if( emg_ready_flag ==1 && emg_state == EMG_STATE_READ && emg_on_flag ==1 )
 	{

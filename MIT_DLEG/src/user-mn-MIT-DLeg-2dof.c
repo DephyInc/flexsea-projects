@@ -173,21 +173,21 @@ void MIT_DLeg_fsm_1(void)
 				packRigidVars(&act1);
 
 				//begin safety check
-			    if (safetyShutoff()) {
+//			    if (safetyShutoff()) {
 //			    	/*motor behavior changes based on failure mode.
 //			    	  Bypasses the switch statement if return true
 //			    	  but sensors check still runs and has a chance
 //			    	  to allow code to move past this block.
 //			    	  Only update the walking FSM, but don't output torque.
 //			    	*/
-			    	runFlatGroundFSM(ptorqueDes);
+//			    	runFlatGroundFSM(ptorqueDes);
 //
-			    	return;
+//			    	return;
 //
-			    } else {
+//			    } else {
 			    	stateMachine.current_state = STATE_LSW_EMG; //testing EMG only!!!!!
-			    	runFlatGroundFSM(ptorqueDes);
-					setMotorTorque(&act1, *ptorqueDes);
+//			    	runFlatGroundFSM(ptorqueDes);
+//					setMotorTorque(&act1, *ptorqueDes);
 
 					//Testing functions
 
@@ -195,9 +195,9 @@ void MIT_DLeg_fsm_1(void)
 //
 //			    	setMotorTorque(&act1, torqueDes);
 
+//			    }
 
-			    }
-
+				rigid1.mn.genVar[9] = act1.jointVelDegrees*1000;
 //				rigid1.mn.genVar[0] = isSafetyFlag;
 //				rigid1.mn.genVar[1] = act1.jointAngleDegrees; //deg
 //				rigid1.mn.genVar[2] = act1.jointTorque*1000;  //mNm
@@ -379,7 +379,7 @@ void getJointAngleKinematic(float joint[])
 	}
 
 	//VELOCITY
-	joint[1] = 	*(rigid1.ex.joint_ang_vel) * (angleUnit)/JOINT_CPR * SECONDS;
+	joint[1] = 	windowSmooth(*(rigid1.ex.joint_ang_vel)) * (angleUnit)/JOINT_CPR * SECONDS;
 
 	//ACCEL  -- todo: check to see if this works
 	joint[2] = (( joint[1] - last_jointVel )) * (angleUnit)/JOINT_CPR * SECONDS;
@@ -640,6 +640,22 @@ void packRigidVars(struct act_s *actx) {
     //userVar[5] = tauMeas
     //userVar[6] = tauDes (impedance controller - spring contribution)
 }
+
+float windowSmooth(int16_t val) {
+	const uint8_t windowSize = 3;
+	static int8_t index = -1;
+	float window[windowSize];
+	float average = 0;
+
+
+	index = (index + 1) % windowSize;
+	average -= window[index]/windowSize;
+	window[index] = (float) val;
+	average += window[index]/windowSize;
+
+	return average;
+}
+
 
 void openSpeedFSM(void)
 {

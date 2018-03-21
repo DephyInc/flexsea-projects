@@ -55,11 +55,6 @@
 #define VIRTUAL_B				0.1
 #define VIRTUAL_J				0.0025
 
-//physical robot impedance gains
-#define ROBOT_K					10 //a guess
-#define ROBOT_B					1  //a guess
-
-
 //****************************************************************************
 // Include(s)
 //****************************************************************************

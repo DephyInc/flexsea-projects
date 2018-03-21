@@ -81,6 +81,9 @@ float biomCalcImpedance(float theta_set, float k1, float k2, float b); 	// retur
 void  setMotorTorque(struct act_s *actx, float tor_d);
 void  packRigidVars(struct act_s *actx);
 
+//Smoothing
+float windowSmooth(int16_t val);
+
 //Main FSMs
 void openSpeedFSM(void);
 void twoPositionFSM(void);
