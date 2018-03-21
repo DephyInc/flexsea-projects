@@ -77,7 +77,7 @@ int16_t getMotorTempSensor(void);
 void    updateSensorValues(struct act_s *actx);
 
 //Control outputs
-float biomCalcImpedance(float theta_set, float k1, float k2, float b); 	// returns a desired joint torque, then use setMotorTorque() to get the motor to do its magic
+float biomCalcImpedance(float k1, float k2, float b, float theta_set); 	// returns a desired joint torque, then use setMotorTorque() to get the motor to do its magic
 void  setMotorTorque(struct act_s *actx, float tor_d);
 void  packRigidVars(struct act_s *actx);
 
@@ -108,12 +108,12 @@ void torqueSweepTest(struct act_s *actx);
 //#define DEVICE_TF08_A02		// Define specific actuator configuration. Ankle 02
 //#define DEVICE_TF08_K01		// Define specific actuator configuration. Knee 01
 //#define DEVICE_TF08_K02		// Define specific actuator configuration. Knee 02
-#define ANG_UNIT	2*M_PI 		// Use Radians 2*M_PI
+
 
 //Begin device specific configurations
 
 //Transmission
-#ifdef IS_ANKLE					//UPDATE THIS WITH NEW SCREWs ankle = 0.002
+#ifdef IS_ANKLE					// Might UPDATE THIS WITH NEW SCREWs ankle = 0.002
 #define N_SCREW			(2*M_PI/0.005)	// Ballscrew ratio
 #define N_ETA			0.9		// Transmission efficiency
 #endif
@@ -151,8 +151,7 @@ void torqueSweepTest(struct act_s *actx);
 //Torque Control PID gains
 #define TORQ_KP_INIT			1.2 // good for step response, for zero torque 3 is good
 #define TORQ_KI_INIT			0.
-#define TORQ_KD_INIT			12. // good for step response, for zero torque 15 is good
-
+#define TORQ_KD_INIT			5. // good for step response, for zero torque 15 is good
 
 // Motor Parameters
 #define MOT_KT 			0.055	// Phase Kt value = linearKt/(3^0.5)
@@ -232,8 +231,8 @@ void torqueSweepTest(struct act_s *actx);
 
 //Joint software limits [Degrees]
 #ifdef IS_ANKLE
-#define JOINT_MIN_SOFT		-25	* (ANG_UNIT)/360	// [deg] Actuator physical limit min = -30deg dorsiflexion
-#define JOINT_MAX_SOFT		85	* (ANG_UNIT)/360	// [deg] Actuator physical limit  max = 90deg plantarflex
+#define JOINT_MIN_SOFT		-20	* (ANG_UNIT)/360	// [deg] Actuator physical limit min = -30deg dorsiflexion
+#define JOINT_MAX_SOFT		60	* (ANG_UNIT)/360	// [deg] Actuator physical limit  max = 90deg plantarflex
 #endif
 
 #ifdef IS_KNEE
@@ -246,7 +245,6 @@ void torqueSweepTest(struct act_s *actx);
 #define MOTOR_TEMP_LIMIT_INIT	70
 #define ABS_TORQUE_LIMIT_INIT	150		    // Joint torque [Nm]
 #define CURRENT_LIMIT_INIT		45000		// [mA] useful in this form, 40000 max
-#define CURRENT_SCALAR_INIT		1000
 
 // Motor Temp Sensor
 #define V25_TICKS		943		//760mV/3.3V * 4096 = 943
@@ -261,7 +259,10 @@ enum {
 	SAFETY_TEMP			=	4,
 };
 
-#define SECONDS			1000
+// System constants
+#define SECONDS					1000		// Scale seconds to ms
+#define CURRENT_SCALAR_INIT		1000		// Scale Amps to mAmps
+#define ANG_UNIT				2*M_PI 		// Use Radians 2*M_PI
 
 #endif	//INC_MIT_DLEG
 

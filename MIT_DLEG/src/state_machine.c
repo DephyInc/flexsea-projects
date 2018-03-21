@@ -82,7 +82,7 @@ void runFlatGroundFSM(float* ptorqueDes) {
             //Early Swing transition vectors
             // VECTOR(1): Early Swing -> Late Swing
             if (time_in_state >= ESW_TO_LSW_DELAY) {
-                stateMachine.current_state = STATE_LATE_SWING;      //Transition occurs even the early swing motion is not finished
+                stateMachine.current_state = STATE_LATE_SWING;      //Transition occurs even if the early swing motion is not finished
             }
 
             //run any exit code here
@@ -96,7 +96,7 @@ void runFlatGroundFSM(float* ptorqueDes) {
             //Late Swing transition vectors
             // VECTOR (1): Late Swing -> Early Stance (hard heel strike)
             //toDo: better transition criterion than this
-            if (act1.jointAngle < 0) {
+            if (act1.jointTorque > HARD_HEELSTRIKE_TORQUE_THRESH) {
                 stateMachine.current_state = STATE_EARLY_STANCE;
             }
 
@@ -122,7 +122,7 @@ void runFlatGroundFSM(float* ptorqueDes) {
 
             //Late Stance Power transition vectors
             // VECTOR (1): Late Stance Power -> Early Swing - Condition 1
-            if (act1.jointTorque > ANKLE_UNLOADED_TORQUE_THRESH) {
+            if (abs(act1.jointTorque) < ANKLE_UNLOADED_TORQUE_THRESH) {
                 stateMachine.current_state = STATE_EARLY_SWING;
 
             }
@@ -133,7 +133,7 @@ void runFlatGroundFSM(float* ptorqueDes) {
             //toDo with EMG
 
             break;
-
+		
         case STATE_LSW_EMG:
         	//upon entering, make sure virtual joint and robot joint match
         	if (isTransitioning) {
