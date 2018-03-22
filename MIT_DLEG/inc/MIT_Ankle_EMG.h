@@ -51,9 +51,10 @@
 
 
 //VIRTUAL DYNAMIC JOINT PARAMS
-#define VIRTUAL_K				1.0
+#define VIRTUAL_K				0.85
 #define VIRTUAL_B				0.1
 #define VIRTUAL_J				0.0025
+
 
 //****************************************************************************
 // Include(s)
@@ -65,6 +66,7 @@
 //****************************************************************************
 extern int32_t EMGavgs[2];
 extern float PFDF_state[3];
+extern float equilibriumAngle;
 
 //****************************************************************************
 // Public Function Prototype(s):

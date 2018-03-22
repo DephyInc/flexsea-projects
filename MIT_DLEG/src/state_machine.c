@@ -21,13 +21,12 @@ GainParams estGains = {1.35, 0.025, 0.118, -5};
 GainParams lstGains = {0, 0, 0, 0}; //currently unused in simple implementation
 GainParams lstPowerGains = {4.5, 0, 0.005, 18};
 GainParams emgStandGains = {0, 0, 0, 0}; //currently unused
-GainParams emgFreeGains = {2, 0, 0.005, 0};
+GainParams emgFreeGains = {0.5, 0, 0.05, 0};
 
 #ifndef BOARD_TYPE_FLEXSEA_PLAN
 
 //Static functions
 static float calcJointTorque(GainParams gainParams);
-static void updatePFDFState(void);
 
 /** Impedance Control Level-ground Walking FSM
 	Based on BiOM ankle and simplified.
@@ -135,21 +134,21 @@ void runFlatGroundFSM(float* ptorqueDes) {
             break;
 		
         case STATE_LSW_EMG:
-        	//upon entering, make sure virtual joint and robot joint match
+        	//upon entering, make sure virtual joint is initialized, otherwise program will fail
         	if (isTransitioning) {
         		updatePFDFState();
         	}
 
         	//check to make sure EMG is active
         	if (MIT_EMG_getState() == 1) {
-				updateVirtualJoint(&emgFreeGains);
+        		updateVirtualJoint(&emgFreeGains);
 				*ptorqueDes = calcJointTorque(emgFreeGains);
         	} else {
-        		//reset and command 0 torque
         		*ptorqueDes = 0;
         		updatePFDFState();
         	}
 
+        	rigid1.mn.genVar[9] = MIT_EMG_getState();
         	//toDo: Late Swing EMG transition vectors to Early Stance HOW?! Perhaps load cell
 
         	break;
@@ -180,9 +179,9 @@ static float calcJointTorque(GainParams gainParams) {
 }
 
 //reset virtual joint to robot joint state
-static void updatePFDFState(void) {
-	PFDF_state[0] = act1.jointAngleDegrees;
-	PFDF_state[1] = act1.jointVelDegrees;
+void updatePFDFState(void) {
+	PFDF_state[0] = equilibriumAngle;
+	PFDF_state[1] = 0;
 	PFDF_state[2] = 0;
 }
 

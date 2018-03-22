@@ -43,6 +43,7 @@ extern Act_s act1;
 //****************************************************************************
 
 void runFlatGroundFSM(float* ptorqueDes);
+void updatePFDFState(void);
 
 #endif //STATE_MACHINE
 #endif //(INCLUDE_UPROJ_MIT_DLEG && BOARD_TYPE_FLEXSEA_MANAGE) || BOARD_TYPE_FLEXSEA_PLAN

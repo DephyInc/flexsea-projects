@@ -148,19 +148,14 @@ void MIT_DLeg_fsm_1(void)
 				fsm1State = 0;
 				time = 0;
 			}
+			//for testing
+//			fsm1State = 0;
 
 			break;
 
 		case 0:
 			//sensor update happens in mainFSM2(void) in main_fsm.c
 			isEnabledUpdateSensors = 1;
-
-			//reserve for additional initialization
-
-			// to use filter on data use this:
-			// init_LPF();
-			// filter_LPF(rigid1.mn.accel.x);
-			// lpf_result;  // this is the result value. Currently returning values with high offset
 
 			fsm1State = 1;
 			time = 0;
@@ -169,13 +164,13 @@ void MIT_DLeg_fsm_1(void)
 
 		case 1:
 			{
-				float torqueDes = 0;
+				float* ptorqueDes = 0;
 
 				//populate rigid1.mn.genVars to send to Plan
 				packRigidVars(&act1);
 
 				//begin safety check
-			    if (safetyShutoff()) {
+//			    if (safetyShutoff()) {
 //			    	/*motor behavior changes based on failure mode.
 //			    	  Bypasses the switch statement if return true
 //			    	  but sensors check still runs and has a chance
@@ -184,12 +179,12 @@ void MIT_DLeg_fsm_1(void)
 //			    	*/
 //			    	runFlatGroundFSM(ptorqueDes);
 //
-			    	return;
+//			    	return;
 //
-			    } else {
-//
-//			    	runFlatGroundFSM(ptorqueDes);
-//					setMotorTorque(&act1, *ptorqueDes);
+//			    } else {
+			    	stateMachine.current_state = STATE_LSW_EMG;
+			    	runFlatGroundFSM(ptorqueDes);
+					setMotorTorque(&act1, *ptorqueDes);
 
 					//Testing functions
 //			    	k1 = user_data_1.w[0]/1000.;
@@ -198,27 +193,27 @@ void MIT_DLeg_fsm_1(void)
 //			    	theta_input = user_data_1.w[3];
 
 			    	//important slowdown to get rid of high frequency noise
-			    	if (time >= 9)
-			    	{
-			    	//K1, K2, B, Theta
-			    	torqueDes = biomCalcImpedance(user_data_1.w[0]/1000. , user_data_1.w[1]/1000., user_data_1.w[2]/1000., user_data_1.w[3]);
+//			    	if (time >= 9)
+//			    	{
+//			    	//K1, K2, B, Theta
+//			    	torqueDes = biomCalcImpedance(user_data_1.w[0]/1000. , user_data_1.w[1]/1000., user_data_1.w[2]/1000., user_data_1.w[3]);
+//
+//			    	setMotorTorque(&act1, torqueDes);
+//			    	time = 0;
+//			    	}
 
-			    	setMotorTorque(&act1, torqueDes);
-			    	time = 0;
-			    	}
+//			    }
 
-			    }
-
-				rigid1.mn.genVar[0] = isSafetyFlag;
-				rigid1.mn.genVar[1] = act1.jointAngleDegrees; //deg
-				rigid1.mn.genVar[2] = act1.jointTorque*1000;  //mNm
-				rigid1.mn.genVar[3] = act1.linkageMomentArm*1000; //mm
-				rigid1.mn.genVar[4] = act1.jointAngle*1000;
-				rigid1.mn.genVar[5] = act1.jointVelDegrees*10; //deg
+//				rigid1.mn.genVar[0] = isSafetyFlag;
+//				rigid1.mn.genVar[1] = act1.jointAngleDegrees; //deg
+//				rigid1.mn.genVar[2] = act1.jointTorque*1000;  //mNm
+//				rigid1.mn.genVar[3] = act1.linkageMomentArm*1000; //mm
+//				rigid1.mn.genVar[4] = act1.jointAngle*1000;
+//				rigid1.mn.genVar[5] = act1.jointVelDegrees*10; //deg
 
 //				rigid1.mn.genVar[7] = act1.desiredCurrent;
 
-				rigid1.mn.genVar[9] = torqueDes*1000;
+//				rigid1.mn.genVar[9] = *ptorqueDes*1000;
 
 
 

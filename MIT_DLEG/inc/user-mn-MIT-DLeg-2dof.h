@@ -105,8 +105,8 @@ void torqueSweepTest(struct act_s *actx);
 //#define IS_KNEE
 
 //2. Select device
-#define DEVICE_TF08_A01			// Define specific actuator configuration. Ankle 01
-//#define DEVICE_TF08_A02		// Define specific actuator configuration. Ankle 02
+//#define DEVICE_TF08_A01			// Define specific actuator configuration. Ankle 01
+#define DEVICE_TF08_A02		// Define specific actuator configuration. Ankle 02
 //#define DEVICE_TF08_K01		// Define specific actuator configuration. Knee 01
 //#define DEVICE_TF08_K02		// Define specific actuator configuration. Knee 02
 
@@ -201,7 +201,7 @@ void torqueSweepTest(struct act_s *actx);
 //Torque Control PID gains
 #define TORQ_KP_INIT			1.2 //10.
 #define TORQ_KI_INIT			0.
-#define TORQ_KD_INIT			12 //2.
+#define TORQ_KD_INIT			5 //2.
 
 
 // Motor Parameters

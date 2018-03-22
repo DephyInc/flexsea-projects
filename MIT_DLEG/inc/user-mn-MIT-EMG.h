@@ -104,6 +104,11 @@ void MIT_EMG_changeState(uint8_t); //activate / deactive the EMG peripheral
 #define EMG_STATE_WAIT 2
 #define EMG_STATE_READ 4
 
+#define EMG_STATE_DEINIT 10
+#define EMG_STATE_RECOVER 11
+
+#define EMG_DEINIT_PERIOD 4 //4ms
+#define EMG_I2C_RESET_PERIOD 1000 //1s
 //****************************************************************************
 // Structure(s):
 //****************************************************************************

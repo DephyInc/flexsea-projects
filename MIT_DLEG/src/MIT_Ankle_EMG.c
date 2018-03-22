@@ -47,6 +47,10 @@
 //****************************************************************************
 // Variable(s)
 //****************************************************************************
+// joint limits
+float max_DFangle = -20 * -JOINT_ANGLE_DIR; // In terms of robot limits. Convention inside here is opposite robot.
+float max_PFangle = 40 * -JOINT_ANGLE_DIR;
+float equilibriumAngle = 30 * -JOINT_ANGLE_DIR; // 30 degrees plantarflexion
 
 int32_t EMGavgs[2] = {0, 0}; // Initialize the EMG signals to 0;
 float PFDF_state[3] = {0, 0, 0};
@@ -65,18 +69,13 @@ float pfdfStiffGain = PFDF_STIFF_GAIN;
 float dpOnThresh = DP_ON_THRESH;
 float cocontractThresh = COCON_THRESH;
 
-int k_lim = 100; //virtual spring constant opposing motion at virtual joint limit.
+int k_lim = 250; //virtual spring constant opposing motion at virtual joint limit.
 int b_lim = 1; //virtual damping constant opposing motion at virtual joint limit.
 
 //VIRTUAL DYNAMIC JOINT PARAMS
 float virtualK = VIRTUAL_K;
 float virtualB = VIRTUAL_B;
 float virtualJ = VIRTUAL_J;
-
-// joint limits
-float max_DFangle = -20; // These need to match the robot. They are hard limits on desired joint angle.
-float max_PFangle = 40;
-float equilibriumAngle = 30; // 30 degrees plantarflexion
 
 //****************************************************************************
 // Private Function Prototype(s):
@@ -98,7 +97,7 @@ void updateVirtualJoint(GainParams* pgains)
 {
 	get_EMG();
 	interpret_EMG(virtualK, virtualB, virtualJ);
-	pgains->thetaDes = PFDF_state[0];
+	pgains->thetaDes = PFDF_state[0] * -JOINT_ANGLE_DIR; //flip the convention
 }
 
 //****************************************************************************
@@ -108,16 +107,16 @@ void updateVirtualJoint(GainParams* pgains)
 void get_EMG(void) //Read the EMG signal, rectify, and integrate. Output an integrated signal.
 {
     // Read Seong's variables toDo:CHANGE TO ACTUAL
-	uint16_t EMGin_LG = emg_data[0]; //SEONGS BOARD LG_VAR gastroc, 0-10000
-	uint16_t EMGin_TA = emg_data[1]; //SEONGS BOARD TA_VAR tibialis anterior, 0-10000
-	
-	//pack for Plan
-	rigid1.mn.genVar[0] = EMGin_LG;
-	rigid1.mn.genVar[1] = EMGin_TA;
+	int16_t EMGin_LG = emg_data[0]; //SEONGS BOARD LG_VAR gastroc, 0-10000
+	int16_t EMGin_TA = emg_data[1]; //SEONGS BOARD TA_VAR tibialis anterior, 0-10000
 
 	//Apply gains
 	EMGavgs[0] = EMGin_LG * gainLG;
 	EMGavgs[1] = EMGin_TA * gainTA;
+	
+	//pack for Plan
+	rigid1.mn.genVar[0] = EMGin_LG;
+	rigid1.mn.genVar[1] = EMGin_TA;
 }
 
 //updates PFDF_state[] based on EMG activation
@@ -132,19 +131,23 @@ void interpret_EMG (float k, float b, float J)
 	// Calculate LG activation
 	if (EMGavgs[0] > activationThresh)
 	{
-		LGact = (EMGavgs[0] - activationThresh) / (emgInMax - activationThresh); //scaled activation 0-1
+		LGact = ((float)EMGavgs[0] - activationThresh) / (emgInMax - activationThresh); //scaled activation 0-1
 	}
 
 	// Calculate TA activation
 
 	if (EMGavgs[1] > activationThresh)
 	{
-		TAact = (EMGavgs[1] - activationThresh) / (emgInMax - activationThresh);
+		TAact = ((float)EMGavgs[1] - activationThresh) / (emgInMax - activationThresh);
 	}
 
 	// PF/DF Calc
-	TALG_diff = LGact - TAact;
-	Torque_PFDF = TALG_diff > 0 ? TALG_diff*pfTorqueGain : TALG_diff*dfTorqueGain;
+	TALG_diff = TAact - LGact;
+	if (TALG_diff < 0) {
+		Torque_PFDF = TALG_diff * pfTorqueGain;
+	} else {
+		Torque_PFDF = TALG_diff * dfTorqueGain;
+	}
 
 	//pack for Plan
 	rigid1.mn.genVar[2] = TALG_diff*1000;
@@ -160,11 +163,11 @@ void interpret_EMG (float k, float b, float J)
 	//pack for Plan
 	rigid1.mn.genVar[3] = b*1000;
 
-	// scaling restoring force based on loose ankle at 35 degrees plantarflexion (Tony's idea. Test first)
+	// scaling restoring force based on loose ankle at 30 degrees plantarflexion (Tony's idea. Test first)
 	if (PFDF_state[0] > equilibriumAngle) {
-		k = k*(PFDF_state[0] - equilibriumAngle)/(max_PFangle - equilibriumAngle);
+		k = k*(PFDF_state[0] - equilibriumAngle)/(max_DFangle - equilibriumAngle);
 	} else {
-		k = -k*(PFDF_state[0] - equilibriumAngle)/(max_DFangle - equilibriumAngle);
+		k = k*(PFDF_state[0] - equilibriumAngle)/(max_PFangle - equilibriumAngle);
 	}
 
 	//pack for Plan
@@ -172,14 +175,14 @@ void interpret_EMG (float k, float b, float J)
 
 	// forward dynamics equation
 	float dtheta = PFDF_state[1];
-	float domega = -k/J * PFDF_state[0] - b/J * PFDF_state[1] + 1/J * Torque_PFDF; //-restoring stiffness - damping + torque
+	float domega = -k/J * (PFDF_state[0] - equilibriumAngle) - b/J * PFDF_state[1] + 1/J * Torque_PFDF; //-restoring stiffness - damping + torque
 
 	// virtual joint physical constraints
-	if (PFDF_state[0] < max_DFangle)
+	if (PFDF_state[0] > max_DFangle) //DF is negative
 	{
 		domega = domega - k_lim/J * (PFDF_state[0] - max_DFangle) - b_lim/J * PFDF_state[1]; // Hittin a wall.
 	}
-	else if (PFDF_state[0] > max_PFangle)
+	else if (PFDF_state[0] < max_PFangle)
 	{
 		domega = domega - k_lim/J * (PFDF_state[0] - max_PFangle) - b_lim/J * PFDF_state[1]; // Hittin the other wall.
 	}
@@ -194,7 +197,7 @@ void interpret_EMG (float k, float b, float J)
 
 	//pack for Plan
 	rigid1.mn.genVar[7] = PFDF_state[0]*1000;
-//	rigid1.mn.genVar[8] = PFDF_state[1]*1000;
+	rigid1.mn.genVar[8] = PFDF_state[1]*1000;
 }
 
 void RK4_SIMPLE(float d1_dt,float d2_dt, float* cur_state)
