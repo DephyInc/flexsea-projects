@@ -136,7 +136,7 @@ void runFlatGroundFSM(float* ptorqueDes) {
         case STATE_LSW_EMG:
         	//upon entering, make sure virtual joint is initialized, otherwise program will fail
         	if (isTransitioning) {
-        		updatePFDFState();
+        		resetPFDFState();
         	}
 
         	//check to make sure EMG is active
@@ -145,7 +145,7 @@ void runFlatGroundFSM(float* ptorqueDes) {
 				*ptorqueDes = calcJointTorque(emgFreeGains);
         	} else {
         		*ptorqueDes = 0;
-        		updatePFDFState();
+        		resetPFDFState();
         	}
 
         	rigid1.mn.genVar[9] = MIT_EMG_getState();
@@ -179,7 +179,7 @@ static float calcJointTorque(GainParams gainParams) {
 }
 
 //reset virtual joint to robot joint state
-void updatePFDFState(void) {
+void resetPFDFState(void) {
 	PFDF_state[0] = equilibriumAngle;
 	PFDF_state[1] = 0;
 	PFDF_state[2] = 0;

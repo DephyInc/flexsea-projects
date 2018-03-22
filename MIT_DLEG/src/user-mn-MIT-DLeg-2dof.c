@@ -40,12 +40,11 @@
 #include "flexsea_system.h"
 #include "flexsea_cmd_calibration.h"
 #include "flexsea_user_structs.h"
+#include "arm_math.h"
+//#include "software_filter.h"
+#include "hardware_filter.h"
 #include <flexsea_comm.h>
 #include <math.h>
-
-
-#include "mit_filters.h"
-#include "arm_math.h"
 
 //****************************************************************************
 // Variable(s)
@@ -156,6 +155,7 @@ void MIT_DLeg_fsm_1(void)
 		case 0:
 			//sensor update happens in mainFSM2(void) in main_fsm.c
 			isEnabledUpdateSensors = 1;
+			init_LPF(); //initialize hardware LPF
 
 			fsm1State = 1;
 			time = 0;
@@ -164,60 +164,45 @@ void MIT_DLeg_fsm_1(void)
 
 		case 1:
 			{
-				float* ptorqueDes = 0;
+				float torqueDes = 0;
 
 				//populate rigid1.mn.genVars to send to Plan
 				packRigidVars(&act1);
 
 				//begin safety check
-//			    if (safetyShutoff()) {
-//			    	/*motor behavior changes based on failure mode.
-//			    	  Bypasses the switch statement if return true
-//			    	  but sensors check still runs and has a chance
-//			    	  to allow code to move past this block.
-//			    	  Only update the walking FSM, but don't output torque.
-//			    	*/
+			    if (safetyShutoff()) {
+			    	/*motor behavior changes based on failure mode.
+			    	  Bypasses the switch statement if return true
+			    	  but sensors check still runs and has a chance
+			    	  to allow code to move past this block.
+			    	  Only update the walking FSM, but don't output torque.
+			    	*/
 //			    	runFlatGroundFSM(ptorqueDes);
-//
-//			    	return;
-//
-//			    } else {
-			    	stateMachine.current_state = STATE_LSW_EMG;
-			    	runFlatGroundFSM(ptorqueDes);
-					setMotorTorque(&act1, *ptorqueDes);
 
-					//Testing functions
-//			    	k1 = user_data_1.w[0]/1000.;
-//			    	k2 = user_data_1.w[1]/1000.;
-//			    	b = user_data_1.w[2]/1000.;
-//			    	theta_input = user_data_1.w[3];
+			    	return;
 
-			    	//important slowdown to get rid of high frequency noise
-//			    	if (time >= 9)
-//			    	{
-//			    	//K1, K2, B, Theta
-//			    	torqueDes = biomCalcImpedance(user_data_1.w[0]/1000. , user_data_1.w[1]/1000., user_data_1.w[2]/1000., user_data_1.w[3]);
-//
-//			    	setMotorTorque(&act1, torqueDes);
-//			    	time = 0;
-//			    	}
+			    } else {
+//			    	stateMachine.current_state = STATE_LSW_EMG;
+//			    	runFlatGroundFSM(ptorqueDes);
+//					setMotorTorque(&act1, *ptorqueDes);
 
-//			    }
+//					rigid1.mn.genVar[9] = filter_LPF((float) *rigid1.ex.joint_ang_vel);
 
-//				rigid1.mn.genVar[0] = isSafetyFlag;
-//				rigid1.mn.genVar[1] = act1.jointAngleDegrees; //deg
-//				rigid1.mn.genVar[2] = act1.jointTorque*1000;  //mNm
-//				rigid1.mn.genVar[3] = act1.linkageMomentArm*1000; //mm
-//				rigid1.mn.genVar[4] = act1.jointAngle*1000;
-//				rigid1.mn.genVar[5] = act1.jointVelDegrees*10; //deg
+			    	//K1, K2, B, Theta
+			    	torqueDes = biomCalcImpedance(user_data_1.w[0]/1000. , user_data_1.w[1]/1000., user_data_1.w[2]/1000., user_data_1.w[3]);
 
-//				rigid1.mn.genVar[7] = act1.desiredCurrent;
+			    	setMotorTorque(&act1, torqueDes);
 
-//				rigid1.mn.genVar[9] = *ptorqueDes*1000;
+			    }
 
+				rigid1.mn.genVar[0] = isSafetyFlag;
+				rigid1.mn.genVar[1] = act1.jointAngleDegrees; //deg
+				rigid1.mn.genVar[2] = act1.jointTorque*1000;  //mNm
+				rigid1.mn.genVar[3] = act1.linkageMomentArm*1000; //mm
+				rigid1.mn.genVar[4] = act1.jointAngle*1000;
+				rigid1.mn.genVar[5] = act1.jointVelDegrees*10; //deg
 
-
-
+				rigid1.mn.genVar[7] = act1.desiredCurrent;
 
 				break;
 			}
@@ -415,7 +400,7 @@ float getAxialForce(void)
 
 			if(timer <= numSamples) {
 				strainReading = (rigid1.ex.strain);
-				tareOffset += strainReading/numSamples;
+				tareOffset += ((float) strainReading)/numSamples;
 			} else {
 				tareState = 0;
 			}
@@ -425,7 +410,9 @@ float getAxialForce(void)
 		case 0:
 
 			axialForce =  FORCE_DIR * (strainReading - tareOffset) * forcePerTick;
+			rigid1.mn.genVar[9] = axialForce;
 			axialForce = windowSmoothAxial(axialForce);
+			rigid1.mn.genVar[8] = axialForce;
 
 			break;
 
@@ -654,31 +641,33 @@ void packRigidVars(struct act_s *actx) {
 }
 
 float windowSmoothJoint(int16_t val) {
-	const uint8_t windowSize = 5;
+	#define JOINT_WINDOW_SIZE 5
+
 	static int8_t index = -1;
-	float window[windowSize];
-	float average = 0;
+	static float window[5];
+	static float average = 0;
 
 
-	index = (index + 1) % windowSize;
-	average -= window[index]/windowSize;
+	index = (index + 1) % JOINT_WINDOW_SIZE;
+	average -= window[index]/JOINT_WINDOW_SIZE;
 	window[index] = (float) val;
-	average += window[index]/windowSize;
+	average += window[index]/JOINT_WINDOW_SIZE;
 
 	return average;
 }
 
 float windowSmoothAxial(float val) {
-	const uint8_t windowSize = 5;
+	#define AXIAL_WINDOW_SIZE 5
+
 	static int8_t index = -1;
-	float window[windowSize];
-	float average = 0;
+	static float window[AXIAL_WINDOW_SIZE];
+	static float average = 0;
 
 
-	index = (index + 1) % windowSize;
-	average -= window[index]/windowSize;
-	window[index] = (float) val;
-	average += window[index]/windowSize;
+	index = (index + 1) % AXIAL_WINDOW_SIZE;
+	average -= window[index]/AXIAL_WINDOW_SIZE;
+	window[index] = val;
+	average += window[index]/AXIAL_WINDOW_SIZE;
 
 	return average;
 }
