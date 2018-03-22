@@ -644,7 +644,7 @@ float windowSmoothJoint(int16_t val) {
 	#define JOINT_WINDOW_SIZE 5
 
 	static int8_t index = -1;
-	static float window[5];
+	static float window[JOINT_WINDOW_SIZE];
 	static float average = 0;
 
 
