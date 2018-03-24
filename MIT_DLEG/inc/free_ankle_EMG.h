@@ -29,8 +29,8 @@
 
 #ifdef BOARD_TYPE_FLEXSEA_MANAGE
 
-#ifndef INC_EMG_FSM_H
-#define INC_EMG_FSM_H
+#ifndef INC_EMG_FREE_H
+#define INC_EMG_FREE_H
 
 //****************************************************************************
 // EASY ACCESS
@@ -42,8 +42,8 @@
 #define EMG_IN_MAX				10000
 
 //Constants for tuning the controller
-#define PF_TORQUE_GAIN			50
-#define DF_TORQUE_GAIN			50
+#define PF_TORQUE_GAIN			40
+#define DF_TORQUE_GAIN			30
 #define PFDF_STIFF_GAIN			100
 #define DP_ON_THRESH			0.1
 
@@ -51,8 +51,8 @@
 
 
 //VIRTUAL DYNAMIC JOINT PARAMS
-#define VIRTUAL_K				0.85
-#define VIRTUAL_B				0.1
+#define VIRTUAL_K				1.0
+#define VIRTUAL_B				0.085
 #define VIRTUAL_J				0.0025
 
 
@@ -76,6 +76,8 @@ void updateVirtualJoint(GainParams* pgains);
 void get_EMG(void);
 void interpret_EMG (float k, float b, float J);
 void RK4_SIMPLE(float dtheta, float domega, float* cur_state);
+int16_t windowSmoothEMG0(int16_t val);
+int16_t windowSmoothEMG1(int16_t val);
 
 //****************************************************************************
 // Definition(s):

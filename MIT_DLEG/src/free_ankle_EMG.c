@@ -38,19 +38,20 @@
 #include <math.h>
 #include "flexsea_sys_def.h"
 #include "flexsea_system.h"
-#include "MIT_Ankle_EMG.h"
+#include <free_ankle_EMG.h>
 #include "user-mn-MIT-EMG.h"
 #include "user-mn-MIT-DLeg-2dof.h"
 #include "state_variables.h"
 #include "flexsea_user_structs.h"
+#include <flexsea_global_structs.h>
 
 //****************************************************************************
 // Variable(s)
 //****************************************************************************
 // joint limits
-float max_DFangle = -20 * -JOINT_ANGLE_DIR; // In terms of robot limits. Convention inside here is opposite robot.
-float max_PFangle = 40 * -JOINT_ANGLE_DIR;
-float equilibriumAngle = 30 * -JOINT_ANGLE_DIR; // 30 degrees plantarflexion
+float max_DFangle = -15 * -JOINT_ANGLE_DIR; // In terms of robot limits. Convention inside here is opposite robot.
+float max_PFangle = 25 * -JOINT_ANGLE_DIR;
+float equilibriumAngle = 10 * -JOINT_ANGLE_DIR; // 30 degrees plantarflexion
 
 int32_t EMGavgs[2] = {0, 0}; // Initialize the EMG signals to 0;
 float PFDF_state[3] = {0, 0, 0};
@@ -106,17 +107,28 @@ void updateVirtualJoint(GainParams* pgains)
 
 void get_EMG(void) //Read the EMG signal, rectify, and integrate. Output an integrated signal.
 {
-    // Read Seong's variables toDo:CHANGE TO ACTUAL
-	int16_t EMGin_LG = emg_data[0]; //SEONGS BOARD LG_VAR gastroc, 0-10000
-	int16_t EMGin_TA = emg_data[1]; //SEONGS BOARD TA_VAR tibialis anterior, 0-10000
+	//limit maximum emg_data in case something goes wrong
+	for (uint8_t i = 0; i < (sizeof(emg_data)/sizeof(emg_data[0])); i++) {
+		if (emg_data[i] > EMG_IN_MAX) {
+			emg_data[i] = emgInMax;
+		}
+	}
+
+	//5ms moving average
+	int16_t EMGin_LG = windowSmoothEMG0(emg_data[0]); //SEONGS BOARD LG_VAR gastroc, 0-10000
+	int16_t EMGin_TA = windowSmoothEMG1(emg_data[1]); //SEONGS BOARD TA_VAR tibialis anterior, 0-10000
+
+	gainLG = user_data_1.w[0]/100.;
+	gainTA = user_data_1.w[1]/100.;
 
 	//Apply gains
 	EMGavgs[0] = EMGin_LG * gainLG;
 	EMGavgs[1] = EMGin_TA * gainTA;
-	
+
 	//pack for Plan
-	rigid1.mn.genVar[0] = EMGin_LG;
-	rigid1.mn.genVar[1] = EMGin_TA;
+	rigid1.mn.genVar[0] = EMGavgs[0];
+	rigid1.mn.genVar[1] = EMGavgs[1];
+
 }
 
 //updates PFDF_state[] based on EMG activation
@@ -128,6 +140,12 @@ void interpret_EMG (float k, float b, float J)
 	float Torque_PFDF = 0;
 	float activationThresh = dpOnThresh * emgInMax;
 
+	//user inputs
+	cocontractThresh = user_data_1.w[2]/100.;
+	pfTorqueGain = user_data_1.w[3];
+	dfTorqueGain = user_data_1.w[4];
+
+
 	// Calculate LG activation
 	if (EMGavgs[0] > activationThresh)
 	{
@@ -135,7 +153,6 @@ void interpret_EMG (float k, float b, float J)
 	}
 
 	// Calculate TA activation
-
 	if (EMGavgs[1] > activationThresh)
 	{
 		TAact = ((float)EMGavgs[1] - activationThresh) / (emgInMax - activationThresh);
@@ -163,11 +180,11 @@ void interpret_EMG (float k, float b, float J)
 	//pack for Plan
 	rigid1.mn.genVar[3] = b*1000;
 
-	// scaling restoring force based on loose ankle at 30 degrees plantarflexion (Tony's idea. Test first)
+//	// scaling restoring force based on loose ankle at 30 degrees plantarflexion (Tony's idea. Test first)
 	if (PFDF_state[0] > equilibriumAngle) {
-		k = k*(PFDF_state[0] - equilibriumAngle)/(max_DFangle - equilibriumAngle);
+		k = 0.8*k*(PFDF_state[0] - equilibriumAngle)/(max_DFangle - equilibriumAngle) + 0.5*k;
 	} else {
-		k = k*(PFDF_state[0] - equilibriumAngle)/(max_PFangle - equilibriumAngle);
+		k = 0.8*k*(PFDF_state[0] - equilibriumAngle)/(max_PFangle - equilibriumAngle) + 0.5*k;
 	}
 
 	//pack for Plan
@@ -196,8 +213,7 @@ void interpret_EMG (float k, float b, float J)
 	PFDF_state[2] = (TAact + LGact)/2.0 * pfdfStiffGain; // stiffness comes from the common signal
 
 	//pack for Plan
-	rigid1.mn.genVar[7] = PFDF_state[0]*1000;
-	rigid1.mn.genVar[8] = PFDF_state[1]*1000;
+	rigid1.mn.genVar[7] = PFDF_state[0]*100;
 }
 
 void RK4_SIMPLE(float d1_dt,float d2_dt, float* cur_state)
@@ -218,6 +234,38 @@ void RK4_SIMPLE(float d1_dt,float d2_dt, float* cur_state)
 
 	cur_state[0] = next_state[0];
 	cur_state[1] = next_state[1];
+}
+
+int16_t windowSmoothEMG0(int16_t val) {
+	#define EMG0_WINDOW_SIZE 3
+
+	static int8_t index = -1;
+	static float window[EMG0_WINDOW_SIZE];
+	static float average = 0;
+
+
+	index = (index + 1) % EMG0_WINDOW_SIZE;
+	average -= window[index]/EMG0_WINDOW_SIZE;
+	window[index] = (float) val;
+	average += window[index]/EMG0_WINDOW_SIZE;
+
+	return (int16_t) average;
+}
+
+int16_t windowSmoothEMG1(int16_t val) {
+	#define EMG1_WINDOW_SIZE 3
+
+	static int8_t index = -1;
+	static float window[EMG1_WINDOW_SIZE];
+	static float average = 0;
+
+
+	index = (index + 1) % EMG1_WINDOW_SIZE;
+	average -= window[index]/EMG1_WINDOW_SIZE;
+	window[index] = (float) val;
+	average += window[index]/EMG1_WINDOW_SIZE;
+
+	return (int16_t) average;
 }
 
 #endif 	//BOARD_TYPE_FLEXSEA_MANAGE

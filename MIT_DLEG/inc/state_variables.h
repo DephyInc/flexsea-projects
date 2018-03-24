@@ -56,6 +56,7 @@ typedef struct act_s
     float jointTorque;
     float tauMeas;          // torque contribution from series spring
     float tauDes;           // FSM des torque - tauMeas
+    float lastJointAngle;
     int32_t motorVel;		// motor velocity [rad/s]
     int32_t motorAcc;		// motor acceleration [rad/s/s]
     int16_t regTemp;		// regulate temperature
@@ -64,6 +65,18 @@ typedef struct act_s
     int32_t desiredCurrent; // desired current from getMotorCurrent()
     int32_t currentOpLimit; // current throttling limit
     int8_t safetyFlag;		// todo: consider if necessary
+
+    //biom early stance value
+    float scaleFactor;
+    
+    //pff values
+    float samplesInLSP;
+    float pff_gain;
+    float pff_exponent;
+    float lsp_entry_tq;
+    float pff_lumped_gain;
+
+
 } Act_s;
 
 

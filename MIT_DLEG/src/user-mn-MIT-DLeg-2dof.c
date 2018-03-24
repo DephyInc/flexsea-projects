@@ -155,7 +155,7 @@ void MIT_DLeg_fsm_1(void)
 		case 0:
 			//sensor update happens in mainFSM2(void) in main_fsm.c
 			isEnabledUpdateSensors = 1;
-			init_LPF(); //initialize hardware LPF
+//			init_LPF(); //initialize hardware LPF
 
 			fsm1State = 1;
 			time = 0;
@@ -177,32 +177,36 @@ void MIT_DLeg_fsm_1(void)
 			    	  to allow code to move past this block.
 			    	  Only update the walking FSM, but don't output torque.
 			    	*/
-//			    	runFlatGroundFSM(ptorqueDes);
+
+			    	stateMachine.current_state = STATE_LSW_EMG; //for testing only
 
 			    	return;
 
 			    } else {
-//			    	stateMachine.current_state = STATE_LSW_EMG;
-//			    	runFlatGroundFSM(ptorqueDes);
-//					setMotorTorque(&act1, *ptorqueDes);
+			    	stateMachine.current_state = STATE_LSW_EMG;
+			    	torqueDes = runFlatGroundFSM();
 
-//					rigid1.mn.genVar[9] = filter_LPF((float) *rigid1.ex.joint_ang_vel);
+			    	if (user_data_1.w[9] > 0) {
+			    		setMotorTorque(&act1, torqueDes);
+			    	}
+
+//					rigid1.mn.genVar[8] = filter_LPF((float) *rigid1.ex.joint_ang_vel);
 
 			    	//K1, K2, B, Theta
-			    	torqueDes = biomCalcImpedance(user_data_1.w[0]/1000. , user_data_1.w[1]/1000., user_data_1.w[2]/1000., user_data_1.w[3]);
+//			    	torqueDes = biomCalcImpedance(user_data_1.w[0]/1000. , user_data_1.w[1]/1000., user_data_1.w[2]/1000., user_data_1.w[3]);
 
-			    	setMotorTorque(&act1, torqueDes);
+//			    	setMotorTorque(&act1, torqueDes);
 
 			    }
 
-				rigid1.mn.genVar[0] = isSafetyFlag;
-				rigid1.mn.genVar[1] = act1.jointAngleDegrees; //deg
-				rigid1.mn.genVar[2] = act1.jointTorque*1000;  //mNm
-				rigid1.mn.genVar[3] = act1.linkageMomentArm*1000; //mm
-				rigid1.mn.genVar[4] = act1.jointAngle*1000;
-				rigid1.mn.genVar[5] = act1.jointVelDegrees*10; //deg
-
-				rigid1.mn.genVar[7] = act1.desiredCurrent;
+//				rigid1.mn.genVar[0] = isSafetyFlag;
+//				rigid1.mn.genVar[1] = act1.jointAngleDegrees; //deg
+//				rigid1.mn.genVar[2] = act1.jointTorque*1000;  //mNm
+//				rigid1.mn.genVar[3] = act1.linkageMomentArm*1000; //mm
+//				rigid1.mn.genVar[4] = act1.jointAngle*1000;
+//				rigid1.mn.genVar[5] = act1.jointVelDegrees; //deg
+//
+//				rigid1.mn.genVar[7] = act1.desiredCurrent;
 
 				break;
 			}
@@ -261,7 +265,7 @@ int8_t safetyShutoff(void) {
 				break;
 			} else {
 				// This could cause trouble, but seems more safe than an immediate drop in torque. Instead, reduce torque.
-				setMotorTorque(&act1, act1.tauDes * 0.75); // reduce desired torque by 25%
+				setMotorTorque(&act1, act1.tauDes * 0.5); // reduce desired torque by 25%
 			}
 
 			return 1;
@@ -294,14 +298,10 @@ int8_t safetyShutoff(void) {
  */
 void updateSensorValues(struct act_s *actx)
 {
-	float joint[3];
-	getJointAngleKinematic(joint);
+	getJointAngleKinematic(actx);
 
-	actx->jointAngle = joint[0]; //*(pjointKinematic + 0);
-	actx->jointAngleDegrees = actx->jointAngle * 360/angleUnit;
-	actx->jointVel = joint[1];
-	actx->jointVelDegrees = actx->jointVel * 360/angleUnit;
-	actx->jointAcc = joint[2]; //*(pjointKinematic + 2);
+	actx->jointAngleDegrees = actx->jointAngle * DEG_PER_RAD;
+	actx->jointVelDegrees = actx->jointVel * DEG_PER_RAD;
 	actx->linkageMomentArm = getLinkageMomentArm(actx->jointAngle);
 	actx->axialForce = getAxialForce();
 	actx->jointTorque = getJointTorque(&act1);
@@ -346,17 +346,17 @@ int16_t getMotorTempSensor(void)
  * 		todo: pass a reference to the act_s structure to set flags.
  */
 //float* getJointAngleKinematic( void )
-void getJointAngleKinematic(float joint[])
+void getJointAngleKinematic(struct act_s *actx)
 {
 	static int32_t jointAngleCnts = 0;
-	static float last_jointVel = 0;
+	static float last_jointAngle = 0, last_jointVel = 0;
 	static int32_t jointAngleCntsAbsolute = 0;
 	static float jointAngleAbsolute = 0;
 
 	//ANGLE
 	//Configuration orientation
 	jointAngleCnts = JOINT_ANGLE_DIR * ( jointZero + JOINT_ENC_DIR * (*(rigid1.ex.joint_ang)) );
-	joint[0] = jointAngleCnts  * (angleUnit)/JOINT_CPR;
+	actx->jointAngle = jointAngleCnts  * (angleUnit)/JOINT_CPR;
 
 	//Absolute orientation to evaluate against soft-limits
 	jointAngleCntsAbsolute = JOINT_ANGLE_DIR * ( jointZeroAbs + JOINT_ENC_DIR * (*(rigid1.ex.joint_ang)) );
@@ -371,11 +371,17 @@ void getJointAngleKinematic(float joint[])
 	}
 
 	//VELOCITY
-	joint[1] = 	windowSmoothJoint(*(rigid1.ex.joint_ang_vel)) * (angleUnit)/JOINT_CPR * SECONDS;
+	actx->jointVel = JOINT_ANGLE_DIR * JOINT_ENC_DIR * windowSmoothJoint(*(rigid1.ex.joint_ang_vel)) * (angleUnit)/JOINT_CPR * SECONDS;
+//	actx->jointVel = 0.8*actx->jointVel + 0.2*(1000.0*(actx->jointAngle - actx->lastJointAngle));
 
 	//ACCEL  -- todo: check to see if this works
-	joint[2] = (( joint[1] - last_jointVel )) * (angleUnit)/JOINT_CPR * SECONDS;
-	last_jointVel = joint[1];
+	actx->jointAcc = (( actx->jointVel - last_jointVel )) * (angleUnit)/JOINT_CPR * SECONDS;
+
+	actx->lastJointAngle = actx->jointAngle;
+	//last_jointAngle = joint[0];
+	//last_jointVel = joint[1];
+
+
 
 }
 
@@ -410,9 +416,7 @@ float getAxialForce(void)
 		case 0:
 
 			axialForce =  FORCE_DIR * (strainReading - tareOffset) * forcePerTick;
-			rigid1.mn.genVar[9] = axialForce;
 			axialForce = windowSmoothAxial(axialForce);
-			rigid1.mn.genVar[8] = axialForce;
 
 			break;
 
@@ -567,7 +571,7 @@ float biomCalcImpedance( float k1, float k2, float b, float theta_set)
 
 	theta = act1.jointAngleDegrees;
 	theta_d = act1.jointVelDegrees;
-	tor_d = k1 * (theta_set - theta ) + k2 * powf((theta_set - theta ), 3) + b*theta_d;
+	tor_d = k1 * (theta_set - theta ) + k2 * powf((theta_set - theta ), 3) - b*theta_d;
 
 	return tor_d;
 

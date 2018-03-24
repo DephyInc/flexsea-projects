@@ -1,3 +1,4 @@
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -7,7 +8,8 @@ extern "C" {
 #include "user-mn-MIT-DLeg-2dof.h"
 #include "user-mn-MIT-EMG.h"
 #include "flexsea_user_structs.h"
-#include "MIT_Ankle_EMG.h"
+#include "free_ankle_EMG.h"
+#include "stand_ankle_EMG.h"
 #include "cmd-DLeg.h"
 #include "flexsea_system.h"
 #include "flexsea.h"
@@ -20,8 +22,8 @@ GainParams lswGains = {0.134, 0, 0.002, 2};
 GainParams estGains = {1.35, 0.025, 0.118, -5};
 GainParams lstGains = {0, 0, 0, 0}; //currently unused in simple implementation
 GainParams lstPowerGains = {4.5, 0, 0.005, 18};
-GainParams emgStandGains = {0, 0, 0, 0}; //currently unused
-GainParams emgFreeGains = {0.5, 0, 0.05, 0};
+GainParams emgStandGains = {2, 0.025, 0.1, 0};
+GainParams emgFreeGains = {0.5, 0, 0.03, 0};
 
 #ifndef BOARD_TYPE_FLEXSEA_PLAN
 
@@ -34,14 +36,14 @@ static float calcJointTorque(GainParams gainParams);
 
 	@param ptorqueDes pointer to float meant to be updated with desired torque
 */
-void runFlatGroundFSM(float* ptorqueDes) {
+float runFlatGroundFSM(void) {
 
     static int8_t isTransitioning = 0;
     static uint32_t time_in_state = 0;
 	
     stateMachine.on_entry_sm_state = stateMachine.current_state; // save the state on entry, assigned to last_current_state on exit
 
-    *ptorqueDes = 0;
+    float torqueDes = 0;
 
     // Check for state change, then set isTransitioning flag
     if (stateMachine.current_state == stateMachine.last_sm_state) {
@@ -76,7 +78,7 @@ void runFlatGroundFSM(float* ptorqueDes) {
 //
 //			}
 
-            *ptorqueDes = calcJointTorque(eswGains);
+        	torqueDes = calcJointTorque(eswGains);
 
             //Early Swing transition vectors
             // VECTOR(1): Early Swing -> Late Swing
@@ -90,7 +92,7 @@ void runFlatGroundFSM(float* ptorqueDes) {
 
         case STATE_LATE_SWING:
 
-            *ptorqueDes = calcJointTorque(lswGains);
+        	torqueDes = calcJointTorque(lswGains);
 
             //Late Swing transition vectors
             // VECTOR (1): Late Swing -> Early Stance (hard heel strike)
@@ -103,7 +105,7 @@ void runFlatGroundFSM(float* ptorqueDes) {
 
         case STATE_EARLY_STANCE:
 
-            *ptorqueDes = calcJointTorque(estGains);
+        	torqueDes = calcJointTorque(estGains);
 
             //Early Stance transition vectors
             // VECTOR (1): Early Stance -> Late Stance POWER!
@@ -117,7 +119,7 @@ void runFlatGroundFSM(float* ptorqueDes) {
 		
         case STATE_LATE_STANCE_POWER:
 
-            *ptorqueDes = calcJointTorque(lstPowerGains);
+        	torqueDes = calcJointTorque(lstPowerGains);
 
             //Late Stance Power transition vectors
             // VECTOR (1): Late Stance Power -> Early Swing - Condition 1
@@ -129,7 +131,17 @@ void runFlatGroundFSM(float* ptorqueDes) {
             break;
 
         case STATE_EMG_STAND_ON_TOE:
-            //toDo with EMG
+        	if (isTransitioning) {
+        	    resetStandState();
+			}
+
+        	if (MIT_EMG_getState() == 1) {
+        		updateStandJoint(&emgStandGains);
+        		torqueDes = calcJointTorque(emgStandGains);
+			} else {
+        		resetStandState();
+        		torqueDes = 0;
+			}
 
             break;
 		
@@ -139,16 +151,19 @@ void runFlatGroundFSM(float* ptorqueDes) {
         		resetPFDFState();
         	}
 
+        	emgFreeGains.k1 = user_data_1.w[5]/100.;
+        	emgFreeGains.b  = user_data_1.w[6]/100.;
+
         	//check to make sure EMG is active
         	if (MIT_EMG_getState() == 1) {
         		updateVirtualJoint(&emgFreeGains);
-				*ptorqueDes = calcJointTorque(emgFreeGains);
+        		torqueDes = calcJointTorque(emgFreeGains);
         	} else {
-        		*ptorqueDes = 0;
         		resetPFDFState();
+        		torqueDes = 0;
         	}
+        	rigid1.mn.genVar[8] = torqueDes;
 
-        	rigid1.mn.genVar[9] = MIT_EMG_getState();
         	//toDo: Late Swing EMG transition vectors to Early Stance HOW?! Perhaps load cell
 
         	break;
@@ -156,7 +171,7 @@ void runFlatGroundFSM(float* ptorqueDes) {
         default:
 
             //turn off control.
-            *ptorqueDes = 0;
+        	torqueDes = 0;
 
             break;
 	
@@ -164,6 +179,8 @@ void runFlatGroundFSM(float* ptorqueDes) {
 
     //update last state in preparation for next loop
     stateMachine.last_sm_state = stateMachine.on_entry_sm_state;
+
+    return torqueDes;
 }
 
 /** Impedance Control Torque
@@ -176,6 +193,12 @@ static float calcJointTorque(GainParams gainParams) {
 
     return gainParams.k1 * (gainParams.thetaDes - act1.jointAngleDegrees) \
          + gainParams.k2 * powf((gainParams.thetaDes - act1.jointAngleDegrees), 3) - gainParams.b * act1.jointVelDegrees;
+}
+
+void resetStandState(void) {
+	stand_state[0] = stand_equilibriumAngle;
+	stand_state[1] = 0;
+	stand_state[2] = 0;
 }
 
 //reset virtual joint to robot joint state
