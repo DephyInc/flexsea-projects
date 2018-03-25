@@ -119,6 +119,7 @@ void get_stand_EMG(void)
 float interpret_stand_EMG(void)
 {
 	float stand_state = act1.jointAngleDegrees;
+	stateMachine.current_state = STATE_EMG_STAND_ON_TOE; //set this by default. If only early stance, will reassign later
 
 	// if desire to plantarflex
 	if (intentAverage <= standEMGThresh && !isComingDown) {

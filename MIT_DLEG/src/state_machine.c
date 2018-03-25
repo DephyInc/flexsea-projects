@@ -105,9 +105,28 @@ float runFlatGroundFSM(void) {
 
         case STATE_EARLY_STANCE:
 
-        	torqueDes = calcJointTorque(estGains);
+        	if (isTransitioning) {
+				reset_EMG_stand(act1.jointAngleDegrees);
+			}
 
-        	//Early Stance transition vectors
+        	if (MIT_EMG_getState() == 1) {
+
+				updateStandJoint(&emgStandGains);
+
+				//if we're still in EMG control even after updating EMG control vars
+				if (stateMachine.current_state == STATE_EMG_STAND_ON_TOE) {
+					torqueDes = calcJointTorque(emgStandGains);
+
+				//actually in early stance (explicitly declared)
+				} else if (stateMachine.current_state == STATE_EARLY_STANCE) {
+					torqueDes = calcJointTorque(estGains);
+				}
+
+			} else {
+				torqueDes = calcJointTorque(estGains); //do early stance control if EMG disconnected
+			}
+
+        	//Early Stance transition vectors (only into lstPower for now)
 
             if (act1.jointTorque > LSTPWR_HS_TORQ_TRIGGER_THRESH) {
                 stateMachine.current_state = STATE_LATE_STANCE_POWER;
