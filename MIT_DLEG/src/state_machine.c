@@ -22,7 +22,7 @@ GainParams lswGains = {0.134, 0, 0.002, 2};
 GainParams estGains = {1.35, 0.025, 0.118, -5};
 GainParams lstGains = {0, 0, 0, 0}; //currently unused in simple implementation
 GainParams lstPowerGains = {4.5, 0, 0.005, 18};
-GainParams emgStandGains = {2, 0.025, 0.1, 0};
+GainParams emgStandGains = {2, 0.025, 0.04, 0};
 GainParams emgFreeGains = {0.5, 0, 0.03, 0};
 
 #ifndef BOARD_TYPE_FLEXSEA_PLAN
@@ -107,16 +107,15 @@ float runFlatGroundFSM(void) {
 
         	torqueDes = calcJointTorque(estGains);
 
-            //Early Stance transition vectors
-            // VECTOR (1): Early Stance -> Late Stance POWER!
-            //toDo counterclockwise is positive?
-            if (act1.jointTorque < LSTPWR_HS_TORQ_TRIGGER_THRESH) {
+        	//Early Stance transition vectors
 
+            if (act1.jointTorque > LSTPWR_HS_TORQ_TRIGGER_THRESH) {
                 stateMachine.current_state = STATE_LATE_STANCE_POWER;
             }
-		
-            break;
-		
+
+        	break;
+
+
         case STATE_LATE_STANCE_POWER:
 
         	torqueDes = calcJointTorque(lstPowerGains);
@@ -132,16 +131,29 @@ float runFlatGroundFSM(void) {
 
         case STATE_EMG_STAND_ON_TOE:
         	if (isTransitioning) {
-        	    resetStandState();
+        		reset_EMG_stand(act1.jointAngleDegrees);
 			}
 
         	if (MIT_EMG_getState() == 1) {
+
         		updateStandJoint(&emgStandGains);
-        		torqueDes = calcJointTorque(emgStandGains);
+
+        		//if we're still in EMG control even after updating EMG control vars
+        		if (stateMachine.current_state == STATE_EMG_STAND_ON_TOE) {
+        			torqueDes = calcJointTorque(emgStandGains);
+
+        		//actually in early stance (explicitly declared)
+        		} else if (stateMachine.current_state == STATE_EARLY_STANCE) {
+        			torqueDes = calcJointTorque(estGains);
+        		}
+
 			} else {
-        		resetStandState();
-        		torqueDes = 0;
+				stateMachine.current_state = STATE_EARLY_STANCE;
+				reset_EMG_stand(act1.jointAngleDegrees);
+        		torqueDes = calcJointTorque(estGains); //do early stance control if EMG disconnected
 			}
+
+        	//transition vectors to lstPower here
 
             break;
 		
@@ -159,8 +171,9 @@ float runFlatGroundFSM(void) {
         		updateVirtualJoint(&emgFreeGains);
         		torqueDes = calcJointTorque(emgFreeGains);
         	} else {
+        		//this shoulde probably by default kick into early stance
         		resetPFDFState();
-        		torqueDes = 0;
+        		torqueDes = calcJointTorque(estGains);
         	}
         	rigid1.mn.genVar[8] = torqueDes;
 
@@ -193,12 +206,6 @@ static float calcJointTorque(GainParams gainParams) {
 
     return gainParams.k1 * (gainParams.thetaDes - act1.jointAngleDegrees) \
          + gainParams.k2 * powf((gainParams.thetaDes - act1.jointAngleDegrees), 3) - gainParams.b * act1.jointVelDegrees;
-}
-
-void resetStandState(void) {
-	stand_state[0] = stand_equilibriumAngle;
-	stand_state[1] = 0;
-	stand_state[2] = 0;
 }
 
 //reset virtual joint to robot joint state

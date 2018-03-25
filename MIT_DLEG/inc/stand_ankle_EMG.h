@@ -36,25 +36,6 @@
 // EASY ACCESS
 //****************************************************************************
 
-//HANDLE EMG FROM SEONG
-#define GAIN_LG_STAND					1.0
-#define GAIN_TA_STAND					1.0
-#define EMG_IN_MAX_STAND				10000
-
-//Constants for tuning the controller
-#define PF_TORQUE_GAIN_STAND			50
-#define DF_TORQUE_GAIN_STAND			50
-#define PFDF_STIFF_GAIN_STAND			100
-#define DP_ON_THRESH_STAND			0.1
-
-#define COCON_THRESH_STAND			0.3 //co-contraction threshold
-
-
-//VIRTUAL DYNAMIC JOINT PARAMS
-#define VIRTUAL_K_STAND				1.0
-#define VIRTUAL_B_STAND				0.1
-#define VIRTUAL_J_STAND				0.0025
-
 
 //****************************************************************************
 // Include(s)
@@ -64,9 +45,7 @@
 //****************************************************************************
 // Shared variable(s)
 //****************************************************************************
-extern int32_t stand_EMGavgs[2];
-extern float stand_state[3];
-extern float stand_equilibriumAngle;
+extern float stand_state;
 
 //****************************************************************************
 // Public Function Prototype(s):
@@ -74,12 +53,19 @@ extern float stand_equilibriumAngle;
 
 void updateStandJoint(GainParams* pgains);
 void get_stand_EMG(void);
-void interpret_stand_EMG (float k, float b, float J);
-void RK4_SIMPLE_STAND(float dtheta, float domega, float* cur_state);
+float interpret_stand_EMG (void);
+void reset_EMG_stand(float resetAngle);
 
 //****************************************************************************
 // Definition(s):
 //****************************************************************************
+
+#define MOVEMENT_TIME    500 //stand time in ms
+#define COMEDOWN_TIME	 300 //come down time in ms
+#define STAND_HOLD_ANGLE 15 //angle to hold when on tiptoes
+#define EMG_STAND_WINDOW_SIZE 500 //consider N ms of svm classification data
+#define USER_OFFSET_ANGLE -5 //user preferred offset from 0 (including foot)
+
 
 
 //****************************************************************************

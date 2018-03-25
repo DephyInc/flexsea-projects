@@ -42,40 +42,31 @@
 #include "user-mn-MIT-EMG.h"
 #include "user-mn-MIT-DLeg-2dof.h"
 #include "state_variables.h"
+#include "state_machine.h"
 #include "flexsea_user_structs.h"
 
 //****************************************************************************
 // Variable(s)
 //****************************************************************************
-// joint limits
-float stand_max_DFangle = -5 * -JOINT_ANGLE_DIR; // In terms of robot limits. Convention inside here is opposite robot.
-float stand_max_PFangle = 40 * -JOINT_ANGLE_DIR;
-float stand_equilibriumAngle = 0 * -JOINT_ANGLE_DIR; // 30 degrees plantarflexion
+// joint and movement params
+float stand_max_PFangle = STAND_HOLD_ANGLE; // 15 degrees plantarflexion
+float movementTime = MOVEMENT_TIME;
+float comedownTime = COMEDOWN_TIME;
+float userOffsetAngle = USER_OFFSET_ANGLE;
 
-int32_t stand_EMGavgs[2] = {0, 0}; // Initialize the EMG signals to 0;
-float stand_state[3] = {0, 0, 0};
+//internal state vars
+float stand_state_init = 0; // current angle to drive toward while on tiptoes
+float down_state_init = 0; // angle to start from when coming down
+float standEMGThresh = -0.8; // plantarflexion threshold under which we activate tiptoe standing
+int8_t isComingDown = 0;
+uint16_t standTimer = 0;
 
-float stand_stepsize = .001; //dt, if running at 1kHz
+//averaging window vars
+int8_t avgWindow[EMG_STAND_WINDOW_SIZE];
+static float intentAverage = 0;
+static int16_t winIndex = -1;
 
-//HANDLE EMG FROM SEONG
-float stand_gainLG = GAIN_LG_STAND;
-float stand_gainTA = GAIN_TA_STAND;
-float stand_emgInMax = EMG_IN_MAX_STAND;
 
-//Constants for tuning the controller
-float stand_pfTorqueGain = PF_TORQUE_GAIN_STAND;
-float stand_dfTorqueGain = DF_TORQUE_GAIN_STAND;
-float stand_pfdfStiffGain = PFDF_STIFF_GAIN_STAND;
-float stand_dpOnThresh = DP_ON_THRESH_STAND;
-float stand_cocontractThresh = COCON_THRESH_STAND;
-
-int stand_k_lim = 250; //virtual spring constant opposing motion at virtual joint limit.
-int stand_b_lim = 1; //virtual damping constant opposing motion at virtual joint limit.
-
-//VIRTUAL DYNAMIC JOINT PARAMS
-float stand_virtualK = VIRTUAL_K_STAND;
-float stand_virtualB = VIRTUAL_B_STAND;
-float stand_virtualJ = VIRTUAL_J_STAND;
 
 //****************************************************************************
 // Private Function Prototype(s):
@@ -86,144 +77,106 @@ float stand_virtualJ = VIRTUAL_J_STAND;
 // Public Function(s)
 //****************************************************************************
 
-//stand_state[0] is position of virtual joint (i.e. desired position of robot)
-//stand_state[1] is velocity of virtual joint (not used in current controller, but must be stored for numerical integration)
-//stand_state[2] is desired stiffness, derived from average muscle activation.
+//stand_state is position of virtual joint (i.e. desired position of robot)
 
-void updateStandJoint(GainParams* pgains)
+void updateStandJoint(GainParams* pgainsEMGStand)
 {
 	get_stand_EMG();
-	interpret_stand_EMG(stand_virtualK, stand_virtualB, stand_virtualJ);
-	pgains->thetaDes = stand_state[0] * -JOINT_ANGLE_DIR; //flip the convention
+	pgainsEMGStand->thetaDes = interpret_stand_EMG();
 }
 
 //****************************************************************************
 // Private Function(s)
 //****************************************************************************
 
-void get_stand_EMG(void) //Read the EMG signal, rectify, and integrate. Output an integrated signal.
+void get_stand_EMG(void)
 {
-	//limit maximum emg_data in case something goes wrong
-	for (uint8_t i = 0; i < (sizeof(emg_data)/sizeof(emg_data[0])); i++) {
-		if (emg_data[i] > stand_emgInMax) {
-			emg_data[i] = stand_emgInMax;
-		}
-	}
+	float currentContribution = 0;
 
     // Read Seong's variables
-	int16_t EMGin_LG = emg_data[0]; //SEONGS BOARD LG_VAR gastroc, 0-10000
-	int16_t EMGin_TA = emg_data[1]; //SEONGS BOARD TA_VAR tibialis anterior, 0-10000
+	int8_t intent = emg_misc[0]; //0 = plantarflexion; 2 = dorsiflexion
+	int8_t motionStart = emg_misc[1]; //motion activation; 1 = start of dorsi; -1 = start of plantar
 
-	//Apply gains
-	stand_EMGavgs[0] = EMGin_LG * stand_gainLG;
-	stand_EMGavgs[1] = EMGin_TA * stand_gainTA;
-	
-	stand_EMGavgs[0] = user_data_1.w[0];
-	stand_EMGavgs[1] = user_data_1.w[1];
+	// increment index and subtract out oldest value
+	winIndex = (winIndex + 1) % EMG_STAND_WINDOW_SIZE;
+	intentAverage -= avgWindow[winIndex]/EMG_STAND_WINDOW_SIZE;
 
-	//pack for Plan
-	rigid1.mn.genVar[0] = stand_EMGavgs[0];
-	rigid1.mn.genVar[1] = stand_EMGavgs[1];
+	// range of intentAverage == +-1 where negative is plantarflexion
+	if (intent == 0) {
+		currentContribution = -1.;
+	} else if (intent == 2) {
+		currentContribution = 1.;
+	}
+
+	// add current contribution to average intent
+	intentAverage += currentContribution/EMG_STAND_WINDOW_SIZE;
+
+	// store current contribution to the avgWindow
+	avgWindow[winIndex] = currentContribution;
 }
 
-//updates stand_state[] based on EMG activation
-void interpret_stand_EMG (float k, float b, float J)
+//updates stand_state based on EMG activation
+float interpret_stand_EMG(void)
 {
-	float LGact = 0;
-	float TAact = 0;
-	float TALG_diff = 0;
-	float Torque_PFDF = 0;
-	float activationThresh = stand_dpOnThresh * stand_emgInMax;
+	float stand_state = act1.jointAngleDegrees;
 
-	// Calculate LG activation
-	if (stand_EMGavgs[0] > activationThresh)
-	{
-		LGact = ((float)stand_EMGavgs[0] - activationThresh) / (stand_emgInMax - activationThresh); //scaled activation 0-1
-	}
+	// if desire to plantarflex
+	if (intentAverage <= standEMGThresh && !isComingDown) {
 
-	// Calculate TA activation
+		standTimer++;
 
-	if (stand_EMGavgs[1] > activationThresh)
-	{
-		TAact = ((float)stand_EMGavgs[1] - activationThresh) / (stand_emgInMax - activationThresh);
-	}
+		// and we haven't reached our target tiptoe position yet
+		if (standTimer < movementTime) {
+			stand_state = stand_state_init + (stand_max_PFangle - stand_state_init) \
+					*(10*powf(standTimer/movementTime,3) - 15*powf(standTimer/movementTime,4) + 6*powf(standTimer/movementTime,5)); //min jerk trajectory (Hogan)
 
-	// PF/DF Calc
-	TALG_diff = TAact - LGact;
-	if (TALG_diff < 0) {
-		Torque_PFDF = TALG_diff * stand_pfTorqueGain;
+		// else we are already at our target position and we want to hold it
+		} else {
+			stand_state = stand_max_PFangle;
+		}
+
+	} else if (intentAverage > standEMGThresh && !isComingDown) {
+		// go to early stance (perhaps combine EMG and early stance together)
+		stateMachine.current_state = STATE_EARLY_STANCE;
+
+	// if plantarflexion threshold not reached, do dorsiflexion back down
+	} else if (isComingDown) {
+
+		standTimer++;
+
+		// if we're still coming down, drive toward the user preferred early stance equilibrium
+		if (standTimer < comedownTime) {
+			stand_state = down_state_init + (userOffsetAngle - down_state_init) \
+					*(10*powf(standTimer/movementTime,3) - 15*powf(standTimer/movementTime,4) + 6*powf(standTimer/movementTime,5)); //min jerk trajectory (Hogan)
+		}
+
+		//if we came down and are close enough to user early stance preferred angle
+		if (abs(act1.jointAngleDegrees - userOffsetAngle) < 3) {
+			reset_EMG_stand(act1.jointAngleDegrees);
+			stand_state = userOffsetAngle;
+		}
+
+	//trigger isComingDown and follow time-based trajectory back to early stance equilibrium
 	} else {
-		Torque_PFDF = TALG_diff * stand_dfTorqueGain;
+		isComingDown = 1;
+		standTimer = 0;
+		down_state_init = act1.jointAngleDegrees;
+		stand_state = act1.jointAngleDegrees;
 	}
 
-	//pack for Plan
-	rigid1.mn.genVar[2] = TALG_diff*1000;
-
-	// JOINT MODEL
-	//The following can break the integration!!!
-	if ((TAact > stand_cocontractThresh) && (LGact > stand_cocontractThresh))
-	{
-		float stiffness = (TAact + LGact)/2.0;
-		b = b * (erff(10.0*(stiffness-0.15-stand_cocontractThresh))+1)*20;
-	}
-
-	//pack for Plan
-	rigid1.mn.genVar[3] = b*1000;
-
-	if (stand_state[0] > stand_equilibriumAngle) {
-		k = 0.5*k*(stand_state[0] - stand_equilibriumAngle)/(stand_max_DFangle - stand_equilibriumAngle) + 0.5*k;
-	} else {
-		k = 0.5*k*(stand_state[0] - stand_equilibriumAngle)/(stand_max_PFangle - stand_equilibriumAngle) + 0.5*k;
-	}
-
-	//pack for Plan
-	rigid1.mn.genVar[4] = k*1000;
-
-	// forward dynamics equation
-	float dtheta = stand_state[1];
-	float domega = -k/J * (stand_state[0] - stand_equilibriumAngle) - b/J * stand_state[1] + 1/J * Torque_PFDF; //-restoring stiffness - damping + torque
-
-	// virtual joint physical constraints
-	if (stand_state[0] > stand_max_DFangle) //DF is negative
-	{
-		domega = domega - stand_k_lim/J * (stand_state[0] - stand_max_DFangle) - stand_b_lim/J * stand_state[1]; // Hittin a wall.
-	}
-	else if (stand_state[0] < stand_max_PFangle)
-	{
-		domega = domega - stand_k_lim/J * (stand_state[0] - stand_max_PFangle) - stand_b_lim/J * stand_state[1]; // Hittin the other wall.
-	}
-
-	//pack for Plan
-	rigid1.mn.genVar[5] = dtheta*1000;
-	rigid1.mn.genVar[6] = domega*1000;
-
-	// Integration station.
-	RK4_SIMPLE_STAND(dtheta, domega, stand_state);
-	stand_state[2] = (TAact + LGact)/2.0 * stand_pfdfStiffGain; // stiffness comes from the common signal
-
-	//pack for Plan
-	rigid1.mn.genVar[7] = stand_state[0]*1000;
-	rigid1.mn.genVar[8] = stand_state[1]*1000;
+	return stand_state;
 }
+void reset_EMG_stand(float resetAngle) {
+	winIndex = -1;
+	standTimer = 0;
+	intentAverage = 0;
+	isComingDown = 0;
 
-void RK4_SIMPLE_STAND(float d1_dt,float d2_dt, float* cur_state)
-{
-	float next_state[2];
+	for (uint16_t i = 0; i < sizeof(avgWindow)/sizeof(avgWindow[0]); i++) {
+		avgWindow[i] = 0;
+	}
 
-	float F1 = d1_dt;
-	float F2 = d1_dt + .5 * stand_stepsize * F1;
-	float F3 = d1_dt + .5 * stand_stepsize * F2;
-	float F4 = d1_dt + stand_stepsize * F3;
-	next_state[0] = cur_state[0] + (stand_stepsize/6) * (F1 + 2*F2 + 2*F3 + F4);
-
-	F1 = d2_dt;
-	F2 = d2_dt + .5 * stand_stepsize * F1;
-	F3 = d2_dt + .5 * stand_stepsize * F2;
-	F4 = d2_dt + stand_stepsize * F3;
-	next_state[1] = cur_state[1] + (stand_stepsize/6) * (F1 + 2*F2 + 2*F3 + F4);
-
-	cur_state[0] = next_state[0];
-	cur_state[1] = next_state[1];
+	stand_state_init = resetAngle;
 }
 
 #endif 	//BOARD_TYPE_FLEXSEA_MANAGE
