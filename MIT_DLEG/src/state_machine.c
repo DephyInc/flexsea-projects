@@ -19,11 +19,11 @@ WalkingStateMachine stateMachine;
 Act_s act1;
 GainParams eswGains = {0.04, 0, 0.004, 23};
 GainParams lswGains = {0.134, 0, 0.002, 2};
-GainParams estGains = {1.35, 0.025, 0.118, -5};
+GainParams estGains = {1.35, 0.025, 0.118, USER_OFFSET_ANGLE};
 GainParams lstGains = {0, 0, 0, 0}; //currently unused in simple implementation
 GainParams lstPowerGains = {4.5, 0, 0.005, 18};
 GainParams emgStandGains = {2, 0.025, 0.04, 0};
-GainParams emgFreeGains = {0.5, 0, 0.03, 0};
+GainParams emgFreeGains = {0.5, 0, 0.02, 0};
 
 #ifndef BOARD_TYPE_FLEXSEA_PLAN
 
@@ -149,9 +149,6 @@ float runFlatGroundFSM(void) {
             break;
 
         case STATE_EMG_STAND_ON_TOE:
-        	if (isTransitioning) {
-        		reset_EMG_stand(act1.jointAngleDegrees);
-			}
 
         	if (MIT_EMG_getState() == 1) {
 
@@ -182,7 +179,6 @@ float runFlatGroundFSM(void) {
         		resetPFDFState();
         	}
 
-        	emgFreeGains.k1 = user_data_1.w[5]/100.;
         	emgFreeGains.b  = user_data_1.w[6]/100.;
 
         	//check to make sure EMG is active
@@ -190,7 +186,7 @@ float runFlatGroundFSM(void) {
         		updateVirtualJoint(&emgFreeGains);
         		torqueDes = calcJointTorque(emgFreeGains);
         	} else {
-        		//this shoulde probably by default kick into early stance
+        		//this should probably by default kick into early stance
         		resetPFDFState();
         		torqueDes = calcJointTorque(estGains);
         	}

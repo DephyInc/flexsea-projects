@@ -233,7 +233,7 @@ void torqueSweepTest(struct act_s *actx);
 //Joint software limits [Degrees]
 #ifdef IS_ANKLE
 #define JOINT_MIN_SOFT		-20	* (ANG_UNIT)/360	// [deg] Actuator physical limit min = -30deg dorsiflexion
-#define JOINT_MAX_SOFT		30	* (ANG_UNIT)/360	// [deg] Actuator physical limit  max = 90deg plantarflex
+#define JOINT_MAX_SOFT		40	* (ANG_UNIT)/360	// [deg] Actuator physical limit  max = 90deg plantarflex
 #endif
 
 #ifdef IS_KNEE
@@ -246,6 +246,7 @@ void torqueSweepTest(struct act_s *actx);
 #define MOTOR_TEMP_LIMIT_INIT	70
 #define ABS_TORQUE_LIMIT_INIT	30	    // Joint torque [Nm]
 #define CURRENT_LIMIT_INIT		10000		// [mA] useful in this form, 40000 max
+#define B_ANGLE_LIMIT			CURRENT_LIMIT_INIT/1000.
 
 // Motor Temp Sensor
 #define V25_TICKS		943		//760mV/3.3V * 4096 = 943

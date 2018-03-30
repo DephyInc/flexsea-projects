@@ -95,18 +95,14 @@ void get_stand_EMG(void)
 
     // Read Seong's variables
 	int8_t intent = emg_misc[0]; //0 = plantarflexion; 2 = dorsiflexion
-	int8_t motionStart = emg_misc[1]; //motion activation; 1 = start of dorsi; -1 = start of plantar
+	int16_t motionStrength = emg_misc[1]; //motion strength; 10000 = max dorsi; -10000 = max plantar
 
 	// increment index and subtract out oldest value
 	winIndex = (winIndex + 1) % EMG_STAND_WINDOW_SIZE;
 	intentAverage -= avgWindow[winIndex]/EMG_STAND_WINDOW_SIZE;
 
-	// range of intentAverage == +-1 where negative is plantarflexion
-	if (intent == 0) {
-		currentContribution = -1.;
-	} else if (intent == 2) {
-		currentContribution = 1.;
-	}
+	// range of normalized motionStrength == +-1. where negative is plantarflexion
+	currentContribution = motionStrength/10000.;
 
 	// add current contribution to average intent
 	intentAverage += currentContribution/EMG_STAND_WINDOW_SIZE;
@@ -134,12 +130,8 @@ float interpret_stand_EMG(void)
 		// else we are already at our target position and we want to hold it
 		} else {
 			stand_state = stand_max_PFangle;
+			standTimer = movementTime;
 		}
-
-	} else if (intentAverage > standEMGThresh && !isComingDown) {
-		// go to early stance (perhaps combine EMG and early stance together)
-		stateMachine.current_state = STATE_EARLY_STANCE;
-
 	// if plantarflexion threshold not reached, do dorsiflexion back down
 	} else if (isComingDown) {
 
@@ -149,20 +141,27 @@ float interpret_stand_EMG(void)
 		if (standTimer < comedownTime) {
 			stand_state = down_state_init + (userOffsetAngle - down_state_init) \
 					*(10*powf(standTimer/movementTime,3) - 15*powf(standTimer/movementTime,4) + 6*powf(standTimer/movementTime,5)); //min jerk trajectory (Hogan)
+		} else {
+			stand_state = userOffsetAngle;
+			standTimer = comedownTime;
 		}
 
 		//if we came down and are close enough to user early stance preferred angle
-		if (abs(act1.jointAngleDegrees - userOffsetAngle) < 3) {
+		if (abs(stand_state - userOffsetAngle) < 3) {
 			reset_EMG_stand(act1.jointAngleDegrees);
 			stand_state = userOffsetAngle;
 		}
 
 	//trigger isComingDown and follow time-based trajectory back to early stance equilibrium
-	} else {
+	} else if (intentAverage > standEMGThresh && abs(stand_state - stand_state_init) > 3 && standTimer > 0) {
 		isComingDown = 1;
 		standTimer = 0;
-		down_state_init = act1.jointAngleDegrees;
+		down_state_init = act1.jointAngleDegrees; //angle when starting descent
 		stand_state = act1.jointAngleDegrees;
+
+	} else {
+		// go to early stance (perhaps combine EMG and early stance together)
+		stateMachine.current_state = STATE_EARLY_STANCE;
 	}
 
 	return stand_state;

@@ -24,6 +24,7 @@ extern "C" {
 #define ANKLE_UNLOADED_TORQUE_THRESH                3            	// Nm          - Foot unloaded threshold                       5->2
 
 #define JNT_ORIENT								-JOINT_ANGLE_DIR	// 				JOINT_ANGLE_DIR is defined in user-mn-MIT-DLeg-2dof
+#define USER_OFFSET_ANGLE						-5
 
 //****************************************************************************
 // Shared Variable(s):

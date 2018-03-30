@@ -61,10 +61,9 @@ void reset_EMG_stand(float resetAngle);
 //****************************************************************************
 
 #define MOVEMENT_TIME    500 //stand time in ms
-#define COMEDOWN_TIME	 300 //come down time in ms
+#define COMEDOWN_TIME	 500 //come down time in ms
 #define STAND_HOLD_ANGLE 15 //angle to hold when on tiptoes
 #define EMG_STAND_WINDOW_SIZE 500 //consider N ms of svm classification data
-#define USER_OFFSET_ANGLE -5 //user preferred offset from 0 (including foot)
 
 
 

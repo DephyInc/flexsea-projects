@@ -97,8 +97,9 @@ static const float nScrew = N_SCREW;
 
 static const float jointMinSoft = JOINT_MIN_SOFT;
 static const float jointMaxSoft = JOINT_MAX_SOFT;
+static const float bLimit		= B_ANGLE_LIMIT;
 
-static float k1 = 0, k2 =0, b= 0, theta_input =0;
+static float k1 = 0, k2 = 0, b = 0, theta_input = 0;
 
 //struct act_s act1;		//actuator sensor structure declared extern in flexsea_user_structs
 				//defined in state_machine.c
@@ -252,10 +253,10 @@ int8_t safetyShutoff(void) {
 				isSafetyFlag = SAFETY_OK;
 				break;
 			} else {
-				setMotorCurrent(0); // turn off motor. might need something better than this.
+				// do nothing. Clamping is handled in setMotorTorque();
 			}
 
-			return 1;
+			return 0; //continue running FSM
 			
 		case SAFETY_TORQUE:
 
@@ -361,14 +362,6 @@ void getJointAngleKinematic(struct act_s *actx)
 	//Absolute orientation to evaluate against soft-limits
 	jointAngleCntsAbsolute = JOINT_ANGLE_DIR * ( jointZeroAbs + JOINT_ENC_DIR * (*(rigid1.ex.joint_ang)) );
 	jointAngleAbsolute = jointAngleCnts  * (angleUnit)/JOINT_CPR;
-
-	//Check angle limits, raise flag for safety check
-	if(jointAngleAbsolute <= jointMinSoft  || jointAngleAbsolute >= jointMaxSoft) {
-		isSafetyFlag = SAFETY_ANGLE;
-		isAngleLimit = 1;		//these are all redundant, choose if we want the struct thing.
-	} else {
-		isAngleLimit = 0;
-	}
 
 	//VELOCITY
 	actx->jointVel = JOINT_ANGLE_DIR * JOINT_ENC_DIR * windowSmoothJoint(*(rigid1.ex.joint_ang_vel)) * (angleUnit)/JOINT_CPR * SECONDS;
@@ -539,8 +532,40 @@ void setMotorTorque(struct act_s *actx, float tau_des)
 //		I += motSticPos;
 //	}
 
+	//Soft angle limits with virtual spring. Raise flag for safety check.
+	if (actx->jointAngleDegrees <= jointMinSoft  || actx->jointAngleDegrees >= jointMaxSoft) {
+
+		isSafetyFlag = SAFETY_ANGLE;
+		isAngleLimit = 1;		//these are all redundant, choose if we want the struct thing.
+
+		float angleDiff = actx->jointAngleDegrees - jointMinSoft;
+
+		//Oppose motion using linear spring with damping
+		if (actx->jointAngleDegrees - jointMinSoft < 0) {
+
+			if (abs(angleDiff) < 5) {
+				I -= currentOpLimit*(angleDiff/5) + bLimit*actx->jointVelDegrees;
+			} else {
+				I -= -currentOpLimit + bLimit*actx->jointVelDegrees;
+			}
+
+		} else if (actx->jointAngleDegrees - jointMaxSoft > 0) {
+
+			if (abs(angleDiff) < 5) {
+				I -= currentOpLimit*(angleDiff/5) + bLimit*actx->jointVelDegrees;
+			} else {
+				I -= currentOpLimit + bLimit*actx->jointVelDegrees;
+			}
+		}
+
+	} else {
+
+		isAngleLimit = 0;
+
+	}
+
 	//Saturate I for our current operational limits -- limit can be reduced by safetyShutoff() due to heating
-	if(I > currentOpLimit )
+	if (I > currentOpLimit)
 	{
 		I = currentOpLimit;
 	} else if (I < -currentOpLimit)
@@ -564,7 +589,7 @@ void setMotorTorque(struct act_s *actx, float tau_des)
  * 			k1,k2,b, impedance parameters
  * return: 	tor_d, desired torque
  */
-float biomCalcImpedance( float k1, float k2, float b, float theta_set)
+float biomCalcImpedance(float k1, float k2, float b, float theta_set)
 {
 	float theta = 0, theta_d = 0;
 	float tor_d = 0;
