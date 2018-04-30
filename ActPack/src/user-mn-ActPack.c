@@ -70,6 +70,7 @@ void init_ActPack(void)
 {
 	//Rigid's pointers:
 	init_rigid();
+	rigid1.ctrl.timestamp = 0;
 }
 
 //Logic Finite State Machine.
@@ -166,6 +167,9 @@ void ActPack_fsm_2(void)
 
 		#endif
 	}
+
+	//Timestamp:
+	rigid1.ctrl.timestamp++;
 }
 
 //This should be static, but exo-angles needs it. (ToDo)
