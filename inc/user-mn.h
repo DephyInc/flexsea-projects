@@ -310,6 +310,7 @@ void user_fsm_2(void);
 		//#define USE_WATCHDOG		//Independent watchdog (IWDG)
 		//#define USE_6CH_AMP		//Requires USE_I2C_2. 6-ch Strain Amp.
 		//#define USE_SPI_PLAN		//Enables the external SPI port
+		#define USE_XB24C			//Radio module on UART2 (Expansion port)
 
 		//Runtime finite state machine (FSM):
 		//#define RUNTIME_FSM1		ENABLED	//Enable only if you DO NOT use Plan
