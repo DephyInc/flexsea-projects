@@ -340,6 +340,11 @@ void rx_cmd_pocket_rw(uint8_t *buf, uint8_t *info)
 										tmpGain[1], tmpGain[2], tmpGain[3], tmpSystem, 0);
 		rx_cmd_actpack_Action1(tmpController2, tmpSetpoint2, tmpSetGains2, tmpGain2[0],
 										tmpGain2[1], tmpGain2[2], tmpGain2[3], tmpSystem, 1);
+		#else
+		(void)tmpController; (void)tmpSetpoint; (void)tmpSetGains; 
+		(void)tmpGain; (void) tmpSystem;
+		(void)tmpController2; (void)tmpSetpoint2; (void)tmpSetGains2; 
+		(void)tmpGain2;
 		#endif
 		#endif
 	}
