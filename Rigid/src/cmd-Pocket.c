@@ -334,7 +334,7 @@ void rx_cmd_pocket_rw(uint8_t *buf, uint8_t *info)
 	if(offset < 100)
 	{
 		#if (defined BOARD_TYPE_FLEXSEA_EXECUTE || defined BOARD_TYPE_FLEXSEA_MANAGE)
-		#if (defined INCLUDE_UPROJ_ACTPACK || defined CO_ENABLE_ACTPACK)
+		#if (defined CO_ENABLE_ACTPACK)
 		//Act on the decoded data:
 		rx_cmd_actpack_Action1(tmpController, tmpSetpoint, tmpSetGains, tmpGain[0],
 										tmpGain[1], tmpGain[2], tmpGain[3], tmpSystem, 0);

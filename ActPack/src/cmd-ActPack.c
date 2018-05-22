@@ -19,8 +19,6 @@
 extern "C" {
 #endif
 
-#ifdef INCLUDE_UPROJ_ACTPACK
-
 //****************************************************************************
 // Include(s)
 //****************************************************************************
@@ -540,5 +538,3 @@ void rx_cmd_actpack_Action1(uint8_t controller, int32_t setpoint, uint8_t setGai
 #ifdef __cplusplus
 }
 #endif
-
-#endif 	//INCLUDE_UPROJ_ACTPACK

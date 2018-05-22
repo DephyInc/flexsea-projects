@@ -15,9 +15,9 @@
 	*
 ****************************************************************************/
 
-#ifdef INCLUDE_UPROJ_ACTPACK
-
 #ifdef BOARD_TYPE_FLEXSEA_EXECUTE
+#include "user-ex-rigid.h"
+#if(ACTIVE_PROJECT == PROJECT_ACTPACK)
 
 //****************************************************************************
 // Include(s)
@@ -25,7 +25,6 @@
  
 #include "main.h"
 #include "user-ex-ActPack.h"
-#include "user-ex-rigid.h"
 #include "flexsea_user_structs.h"
 #include "flexsea_sys_def.h"
 #include "flexsea_board.h"
@@ -67,6 +66,5 @@ void ActPack_refresh_values(void)
 // Private Function(s)
 //****************************************************************************
 
-#endif //BOARD_TYPE_FLEXSEA_EXECUTE
-
-#endif 	//INCLUDE_UPROJ_ACTPACK
+#endif 	//(ACTIVE_PROJECT == PROJECT_ACTPACK)
+#endif 	//BOARD_TYPE_FLEXSEA_EXECUTE
