@@ -15,8 +15,8 @@
 	*
 ****************************************************************************/
 
-#ifdef INCLUDE_UPROJ_ACTPACK
 #ifdef BOARD_TYPE_FLEXSEA_MANAGE
+
 
 #ifndef INC_ACTPACK_MN_H
 #define INC_ACTPACK_MN_H
@@ -56,7 +56,7 @@ void disableActPackFSM2(void);
 
 #define AP_FSM2_POWER_ON_DELAY		1000
 #define CTRL_I_KP					100
-#define CTRL_I_KI					1
+#define CTRL_I_KI					20
 #define CTRL_P_KP					200
 
 #define APC_FSM2_DISABLED			0
@@ -89,4 +89,3 @@ extern writeEx_s writeEx[2];
 #endif	//INC_ACTPACK_MN_H
 
 #endif //BOARD_TYPE_FLEXSEA_EXECUTE
-#endif //INCLUDE_UPROJ_ACTPACK

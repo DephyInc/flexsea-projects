@@ -15,7 +15,6 @@
 	*
 ****************************************************************************/
 
-#ifdef INCLUDE_UPROJ_ACTPACK
 #ifdef BOARD_TYPE_FLEXSEA_MANAGE
 
 #include "user-mn.h"
@@ -277,5 +276,3 @@ void disableActPackFSM2(void){ActPackCoFSM = APC_FSM2_DISABLED;}
 
 #endif	//(ACTIVE_PROJECT == PROJECT_ACTPACK)
 #endif 	//BOARD_TYPE_FLEXSEA_MANAGE
-
-#endif 	//INCLUDE_UPROJ_ACTPACK
