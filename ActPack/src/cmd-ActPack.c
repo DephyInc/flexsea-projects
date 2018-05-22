@@ -44,6 +44,7 @@ extern "C" {
 //Manage boards only:
 #ifdef BOARD_TYPE_FLEXSEA_MANAGE
 #include "user-mn-ActPack.h"
+#include "mn-MotorControl.h"
 #endif	//BOARD_TYPE_FLEXSEA_MANAGE
 
 
@@ -240,7 +241,7 @@ void tx_cmd_actpack_w(uint8_t *shBuf, uint8_t *cmd, uint8_t *cmdType, \
 		}
 
 	#endif	//BOARD_TYPE_FLEXSEA_MANAGE
-	
+
 	//Payload length:
 	(*len) = index;
 }
@@ -249,13 +250,13 @@ void rx_cmd_actpack_rw(uint8_t *buf, uint8_t *info)
 {
 	uint16_t index = 0;
 	(void)info;
-	
+
 	//Temporary variables
 	uint8_t offset = 0;
 	uint8_t tmpController = 0, tmpSetGains = 0, tmpSystem = 0;
 	int32_t tmpSetpoint = 0;
 	int16_t tmpGain[4] = {0,0,0,0};
-	
+
 	//Decode data received:
 	index = P_DATA1;
 	offset = buf[index++];
@@ -428,7 +429,7 @@ void rx_cmd_actpack_Action1(uint8_t controller, int32_t setpoint, uint8_t setGai
 						int16_t g0,	int16_t g1,	int16_t g2, int16_t g3, uint8_t system, uint8_t ch)
 {
 	(void) system;
-	
+
 	//Update controller (if needed):
 	control_strategy(controller, ch);
 

@@ -39,6 +39,7 @@
 #include "cmd-ActPack.h"
 #include "cmd-Rigid.h"
 #include "cmd-Pocket.h"
+#include "mn-MotorControl.h"
 
 //****************************************************************************
 // Variable(s)
@@ -52,9 +53,6 @@ int32_t apSetpoint = 0;
 uint32_t apTimer1 = 0;
 uint8_t apCalibFlag = 0;
 uint8_t apSeriousError = 0;
-
-struct ctrl_s ctrl[2];
-writeEx_s writeEx[2];
 
 //****************************************************************************
 // Private Function Prototype(s):
@@ -71,23 +69,8 @@ void init_ActPack(void)
 	init_rigid();
 	init_pocket();
 
-	writeEx[0].ctrl = CTRL_NONE;
-	writeEx[0].setpoint = 0;
-	writeEx[0].setGains = KEEP;
-	writeEx[0].offset = 0;
-	writeEx[0].g[0] = 0;
-	writeEx[0].g[1] = 0;
-	writeEx[0].g[2] = 0;
-	writeEx[0].g[3] = 0;
-
-	writeEx[1].ctrl = CTRL_NONE;
-	writeEx[1].setpoint = 0;
-	writeEx[1].setGains = KEEP;
-	writeEx[1].offset = 0;
-	writeEx[1].g[0] = 0;
-	writeEx[1].g[1] = 0;
-	writeEx[1].g[2] = 0;
-	writeEx[1].g[3] = 0;
+	initWriteEx(0);
+	initWriteEx(1);
 }
 
 //Logic Finite State Machine.
@@ -174,6 +157,7 @@ void ActPack_fsm_2(void)
 			tx_cmd_actpack_rw(TX_N_DEFAULT, writeEx[0].offset, writeEx[0].ctrl, writeEx[0].setpoint, \
 											writeEx[0].setGains, writeEx[0].g[0], writeEx[0].g[1], \
 											writeEx[0].g[2], writeEx[0].g[3], 0);
+			(void)dualOffs;
 			#else
 			dualOffs ^= 1;	//Toggle between the two channels
 			tx_cmd_pocket_rw(TX_N_DEFAULT, dualOffs, writeEx[0].ctrl, writeEx[0].setpoint, \
@@ -196,70 +180,6 @@ void ActPack_fsm_2(void)
 
 		#endif
 	}
-}
-
-//This should be static, but exo-angles needs it. (ToDo)
-void init_current_controller(uint8_t ch)
-{
-	ctrl[ch].active_ctrl = CTRL_CURRENT;
-	ctrl[ch].current.gain.g0 = CTRL_I_KP;
-	ctrl[ch].current.gain.g1 = CTRL_I_KI;
-	ctrl[ch].current.setpoint_val = 0;
-
-	//Prep for comm:
-	writeEx[ch].ctrl = CTRL_CURRENT;
-	writeEx[ch].g[0] = CTRL_I_KP;
-	writeEx[ch].g[1] = CTRL_I_KI;
-	writeEx[ch].setpoint = 0;
-	writeEx[ch].setGains = CHANGE;
-}
-
-void setMotorVoltage(int32_t v, uint8_t ch)
-{
-	if(writeEx[ch].ctrl == CTRL_OPEN)
-	{
-		writeEx[ch].setpoint = v;
-	}
-}
-
-void setMotorCurrent(int32_t i, uint8_t ch)
-{
-	ctrl[ch].current.setpoint_val =  i;
-
-	//Prep for comm:
-	if(writeEx[ch].ctrl == CTRL_CURRENT)
-	{
-		writeEx[ch].setpoint = i;
-	}
-}
-
-void setMotorPosition(int32_t i, uint8_t ch)
-{
-	if(writeEx[ch].ctrl == CTRL_POSITION)
-	{
-		writeEx[ch].setpoint = i;
-		ctrl[ch].position.setp =  i;
-	}
-	else if(writeEx[ch].ctrl == CTRL_IMPEDANCE)
-	{
-		writeEx[ch].setpoint = i;
-		ctrl[ch].impedance.setpoint_val = i;
-	}
-}
-
-void setControlMode(uint8_t m, uint8_t ch)
-{
-	ctrl[ch].active_ctrl = m;
-	writeEx[ch].ctrl = m;
-}
-
-void setControlGains(int16_t g0, int16_t g1, int16_t g2, int16_t g3, uint8_t ch)
-{
-	writeEx[ch].g[0] = g0;
-	writeEx[ch].g[1] = g1;
-	writeEx[ch].g[2] = g2;
-	writeEx[ch].g[3] = g3;
-	writeEx[ch].setGains = CHANGE;
 }
 
 void enableActPackFSM2(void){ActPackCoFSM = APC_FSM2_ENABLED;}
