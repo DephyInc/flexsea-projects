@@ -70,8 +70,6 @@ void init_ActPack(void)
 	//Rigid's pointers:
 	init_rigid();
 	init_pocket();
-	
-	rigid1.ctrl.timestamp = 0;
 
 	writeEx[0].ctrl = CTRL_NONE;
 	writeEx[0].setpoint = 0;
@@ -198,9 +196,6 @@ void ActPack_fsm_2(void)
 
 		#endif
 	}
-
-	//Timestamp:
-	rigid1.ctrl.timestamp++;
 }
 
 //This should be static, but exo-angles needs it. (ToDo)
