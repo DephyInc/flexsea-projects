@@ -250,6 +250,13 @@ void user_fsm_2(void)
 	#endif	//(RUNTIME_FSM2 == ENABLED)
 }
 
+void reset_user_code(void)
+{
+	#ifdef DEPHY
+	reset_dephy();
+	#endif
+}
+
 //****************************************************************************
 // Private Function(s)
 //****************************************************************************
