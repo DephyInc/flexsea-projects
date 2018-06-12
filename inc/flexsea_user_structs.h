@@ -152,24 +152,6 @@ struct pocket_s
 	uint8_t lastOffsetDecoded;
 };
 
-struct utt_s
-{
-	uint8_t ctrl;
-	uint8_t ctrlOption;
-	uint8_t amplitude;
-	int8_t timing;
-	uint8_t powerOn;
-
-	int8_t torquePoints[6][2];
-};
-
-struct dual_utt_s
-{
-	uint8_t target;
-	struct utt_s leg[2];
-	int16_t val[2][10];
-};
-
 //****************************************************************************
 // Shared variable(s)
 //****************************************************************************
@@ -179,7 +161,7 @@ extern int16_t globvar[10];
 extern struct rigid_s rigid1, rigid2;
 extern struct pocket_s pocket1;
 extern int16_t globvar[10];
-extern struct dual_utt_s utt;
+
 
 //****************************************************************************
 // Prototype(s):
