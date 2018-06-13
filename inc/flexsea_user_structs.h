@@ -118,6 +118,14 @@ struct fx_rigid_ex_s
 	uint16_t status;
 
 	struct ctrl_s ctrl;
+
+	// --- all those pointer members need to be switched to actual members...
+	int32_t _enc_ang_;
+	int32_t _enc_ang_vel_;
+
+	int16_t _joint_ang_;
+	int16_t _joint_ang_vel_;
+	int16_t _joint_ang_from_mot_;
 };
 
 struct fx_rigid_ctrl_s
@@ -129,6 +137,10 @@ struct fx_rigid_ctrl_s
 	int16_t* ank_ang_deg;
 	int16_t* ank_vel;
 	int16_t* ank_ang_from_mot;
+
+	int16_t _ank_ang_deg_;
+	int16_t _ank_vel_;
+	int16_t _ank_ang_from_mot_;
 
 	int16_t contra_hs;
 	int16_t step_energy;
