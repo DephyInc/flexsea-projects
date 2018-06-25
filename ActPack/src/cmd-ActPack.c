@@ -31,6 +31,8 @@ extern "C" {
 #include "flexsea_user_structs.h"
 #include "cmd-ActPack.h"
 
+#include "stddef.h"
+
 //Execute boards only:
 #ifdef BOARD_TYPE_FLEXSEA_EXECUTE
 #include "main.h"
