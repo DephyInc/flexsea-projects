@@ -72,7 +72,7 @@
 //****************************************************************************
 // Shared variable(s)
 //****************************************************************************
-#if(ACTIVE_PROJECT == PROJECT_DEPHY)
+#if(ACTIVE_PROJECT == PROJECT_DEPHY && defined(DEPHY))
 
 	#include "dephy-mn.h"
 
