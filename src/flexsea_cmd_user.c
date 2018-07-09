@@ -108,6 +108,9 @@ void init_flexsea_payload_ptr_user(void)
 	//flexsea_payload_ptr[CMD_ACTPACK][RX_PTYPE_WRITE] = &rx_cmd_actpack_w;
 	flexsea_payload_ptr[CMD_ACTPACK][RX_PTYPE_REPLY] = &rx_cmd_actpack_rr;
 
+	flexsea_multipayload_ptr[CMD_ACTPACK][RX_PTYPE_READ] = &rx_multi_cmd_actpack_rw;
+	flexsea_multipayload_ptr[CMD_ACTPACK][RX_PTYPE_REPLY] = &rx_multi_cmd_actpack_rr;
+
 	//Rigid:
 	flexsea_payload_ptr[CMD_READ_ALL_RIGID][RX_PTYPE_READ] = &rx_cmd_rigid_rw;
 	flexsea_payload_ptr[CMD_READ_ALL_RIGID][RX_PTYPE_REPLY] = &rx_cmd_rigid_rr;
