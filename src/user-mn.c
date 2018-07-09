@@ -64,6 +64,7 @@
 
 #ifdef DEPHY
 #include "dephy-mn.h"
+#include "user-mn-DpEb42.h"
 #endif
 
 //****************************************************************************

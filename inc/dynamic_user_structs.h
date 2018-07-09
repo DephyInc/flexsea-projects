@@ -73,7 +73,7 @@ volatile struct DynamicUserData_s
 	int16_t gen4;
 	int16_t gen5;
 	int16_t gen6;
-} __attribute__((packed));
+} __attribute__((packed));	//Keep this flag
 
 //The following are for the user to define in dynamic_user_structs_common.c
 typedef struct DynamicUserData_s DynamicUserData_t;
