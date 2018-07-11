@@ -64,6 +64,7 @@
 
 #ifdef DEPHY
 #include "dephy-mn.h"
+#include "user-mn-DpEb42.h"
 #endif
 
 //****************************************************************************
@@ -248,6 +249,13 @@ void user_fsm_2(void)
 		#endif
 
 	#endif	//(RUNTIME_FSM2 == ENABLED)
+}
+
+void reset_user_code(void)
+{
+	#ifdef DEPHY
+	reset_dephy();
+	#endif
 }
 
 //****************************************************************************

@@ -42,7 +42,9 @@ void tx_cmd_actpack_w(uint8_t *shBuf, uint8_t *cmd, uint8_t *cmdType, \
 							uint16_t *len, uint8_t offset);
 
 void rx_cmd_actpack_rw(uint8_t *buf, uint8_t *info);
+void rx_multi_cmd_actpack_rw(uint8_t *msgBuf, MultiPacketInfo *mInfo, uint8_t *responseBuf, uint16_t* responseLen);
 void rx_cmd_actpack_rr(uint8_t *buf, uint8_t *info);
+void rx_multi_cmd_actpack_rr(uint8_t *msgBuf, MultiPacketInfo *mInfo, uint8_t *responseBuf, uint16_t* responseLen);
 
 void rx_cmd_actpack_Action1(uint8_t controller, int32_t setpoint, uint8_t setGains,
 						int16_t g0,	int16_t g1,	int16_t g2, int16_t g3, uint8_t system, uint8_t ch);

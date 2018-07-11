@@ -1,7 +1,7 @@
 /****************************************************************************
 	[Project] FlexSEA: Flexible & Scalable Electronics Architecture
-	[Sub-project] 'flexsea-system' System commands & functions
-	Copyright (C) 2016 Dephy, Inc. <http://dephy.com/>
+	[Sub-project] 'flexsea-manage' Mid-level computing, and networking
+	Copyright (C) 2018 Dephy, Inc. <http://dephy.com/>
 
 	This program is free software: you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -21,70 +21,68 @@
 	Biomechatronics research group <http://biomech.media.mit.edu/>
 	[Contributors]
 *****************************************************************************
-	[This file] flexsea_user_structs: contains all the data structures
-	used across the user projects
+	[This file] mn-MotorControl: Wrappers for motor control functions on Mn
+*****************************************************************************
+	[Change log] (Convention: YYYY-MM-DD | author | comment)
+	* 2018-05-22 | jfduval | Initial GPL-3.0 release
+	*
 ****************************************************************************/
+
+#ifdef BOARD_TYPE_FLEXSEA_MANAGE
+
+#ifndef INC_MN_MOTOR_CONTROL_H
+#define INC_MN_MOTOR_CONTROL_H
 
 //****************************************************************************
 // Include(s)
 //****************************************************************************
 
-#include "flexsea_user_structs.h"
-
-#if(defined BOARD_TYPE_FLEXSEA_EXECUTE)
-	#include "mag_encoders.h"
-	#include "ext_input.h"
-	#if(defined BOARD_SUBTYPE_RIGID || defined BOARD_SUBTYPE_POCKET)
-		#include "user-ex-rigid.h"
-	#endif
-#endif
+#include "main.h"
+#include "flexsea_board.h"
+#include "flexsea_sys_def.h"
+#include "flexsea_global_structs.h"
 
 //****************************************************************************
-// Variable(s)
+// Public Function Prototype(s):
 //****************************************************************************
 
-//Data structures:
-struct motortb_s motortb;
-
-int16_t globvar[10] = {0,0,0,0,0,0,0,0,0,0};
-
-struct rigid_s rigid1, rigid2;
-struct pocket_s pocket1;
-
+void initWriteEx(uint8_t ch);
+void init_current_controller(uint8_t ch);
+void init_position_controller(uint8_t ch);
+void setMotorVoltage(int32_t v, uint8_t ch);
+void setMotorCurrent(int32_t i, uint8_t ch);
+void setControlMode(uint8_t m, uint8_t ch);
+void setControlGains(int16_t g0, int16_t g1, int16_t g2, int16_t g3, uint8_t ch);
+void setMotorPosition(int32_t i, uint8_t ch);
 
 //****************************************************************************
-// Function(s)
+// Definition(s):
 //****************************************************************************
 
-void initializeUserStructs(void)
-{
-	#if(defined BOARD_TYPE_FLEXSEA_EXECUTE)
-		#ifdef BOARD_SUBTYPE_RIGID
+//Default:
+#define CTRL_I_KP					100
+#define CTRL_I_KI					20
+#define CTRL_P_KP					200
 
-			#if(ENC_COMMUT == ENC_AS5047)
-			rigid1.ex.enc_ang = &(as5047.signed_ang);
-			rigid1.ex.enc_ang_vel = &(as5047.signed_ang_vel);
-			#endif
+//****************************************************************************
+// Structure(s)
+//****************************************************************************
 
-			#if(ENC_COMMUT == ENC_QUADRATURE)
-			rigid1.ex.enc_ang = &(as5047.signed_ang);
-			rigid1.ex.enc_ang_vel = &(as5047.signed_ang_vel);
-			#endif
+typedef struct {
+	uint8_t ctrl;
+	int32_t setpoint;
+	uint8_t setGains;
+	uint8_t offset;
+	int16_t g[4];
+} writeEx_s;
 
-			rigid1.ex.joint_ang = &(as5048b.filt.ang_clks_16b);
-			rigid1.ex.joint_ang_vel = &(as5048b.filt.vel_cpms_16b);
-		#endif
-		#ifdef BOARD_SUBTYPE_POCKET
-			
-			#if(ENC_COMMUT == ENC_QUADRATURE)
-			pocket1.ex[0].enc_ang = &encoder.count;
-			pocket1.ex[1].enc_ang = &encoder2.count;
-			pocket1.ex[0].enc_ang_vel = &(as5047.signed_ang_vel);
-			pocket1.ex[1].enc_ang_vel = &(as5047.signed_ang_vel);
-			#endif
-			
-			//rigid1.ex.joint_ang = &(as5048b.filt.ang_clks_16b);
-			//rigid1.ex.joint_ang_vel = &(as5048b.filt.vel_cpms_16b);
-		#endif
-	#endif
-}
+//****************************************************************************
+// Shared variable(s)
+//****************************************************************************
+
+extern struct ctrl_s ctrl[];
+extern writeEx_s writeEx[];
+
+#endif	//INC_MN_MOTOR_CONTROL_H
+
+#endif //BOARD_TYPE_FLEXSEA_MANAGE
