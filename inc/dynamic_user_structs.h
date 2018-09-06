@@ -40,7 +40,7 @@
 
 #if((defined BOARD_TYPE_FLEXSEA_EXECUTE) || (defined BOARD_TYPE_FLEXSEA_MANAGE))
 
-volatile struct DynamicUserData_s
+struct DynamicUserData_s
 {
 	int32_t time;
 	int8_t exo_state;
