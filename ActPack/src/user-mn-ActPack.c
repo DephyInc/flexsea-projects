@@ -41,9 +41,6 @@
 #include "cmd-Pocket.h"
 #include "mn-MotorControl.h"
 
-//ToDo remove, debugging only
-#include "main_fsm.h"
-
 //****************************************************************************
 // Variable(s)
 //****************************************************************************
@@ -169,9 +166,6 @@ void ActPack_fsm_2(void)
 														writeEx[1].setpoint, writeEx[1].setGains, writeEx[1].g[0], \
 														writeEx[1].g[1], writeEx[1].g[2], writeEx[1].g[3], 0);
 			#endif
-
-			//ToDo remove, debugging only:
-			if(commCrash){return;}
 
 			packAndSend(P_AND_S_DEFAULT, FLEXSEA_EXECUTE_1, apInfo, SEND_TO_SLAVE);
 
