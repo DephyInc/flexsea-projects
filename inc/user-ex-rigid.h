@@ -90,7 +90,7 @@ void user_fsm(void);
 //Step 1) Select active project (from list):
 //==========================================
 
-#define ACTIVE_PROJECT			PROJECT_DEPHY
+#define ACTIVE_PROJECT			PROJECT_BIO_RIGID
 #define ACTIVE_SUBPROJECT		SUBPROJECT_A //A is Left
 
 //Step 2) Customize the enabled/disabled sub-modules:
@@ -308,7 +308,7 @@ void user_fsm(void);
 	#define MOTOR_ORIENTATION 	CLOCKWISE_ORIENTATION
 
 	//Runtime finite state machine (FSM):
-    #define CO_ENABLE_ACTPACK
+    //#define CO_ENABLE_ACTPACK	//Deprecated
 	//#define FINDPOLES //define if you want to find the poles
 
 	#ifdef FINDPOLES
