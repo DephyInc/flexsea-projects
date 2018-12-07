@@ -81,7 +81,7 @@ void reset_user_code(void);
 //Step 1) Select active project (from list):
 //==========================================
 
-#define ACTIVE_PROJECT			PROJECT_ACTPACK
+#define ACTIVE_PROJECT			PROJECT_DEV
 #define ACTIVE_SUBPROJECT		SUBPROJECT_A
 
 //Step 2) Customize the enabled/disabled sub-modules:
@@ -205,18 +205,34 @@ void reset_user_code(void);
 	#define USE_COMM			//Requires USE_RS485 and/or USE_USB
 	#define USE_I2C_1			//3V3, IMU & Digital pot
 	//#define USE_I2C_2			//3V3, Expansion
+	#define USE_I2C_3			//Onboard, Regulate & Execute
 	#define USE_IMU				//Requires USE_I2C_1
-	//#define USE_BATTBOARD		//Battery Board, requires USE_I2C_1
-	//#define USE_FLASH_MEM		//FLASH memory
+	#define USE_XB24C			//Radio module on UART2 (Expansion port)
 
 	#define MULTI_DOF_N 		0
+	#define BILATERAL
 
 	//Runtime finite state machine (FSM):
 	#define RUNTIME_FSM1		ENABLED
 	#define RUNTIME_FSM2		ENABLED
 
-	//Project specific definitions:
-	//...
+	#if(ACTIVE_SUBPROJECT == RIGHT)
+
+		#define EXO_SIDE	RIGHT
+		#define BILATERAL_MASTER
+		#define USE_UART4			//Bluetooth #2
+
+	#elif(ACTIVE_SUBPROJECT == LEFT)
+
+		#define EXO_SIDE	LEFT
+		#define BILATERAL_SLAVE
+		#define USE_UART3			//Bluetooth #1
+
+	#else
+
+		#error "PROJECT_ACTPACK requires a subproject (use A by default)!"
+
+	#endif
 
 #endif	//PROJECT_DEV
 
