@@ -42,6 +42,7 @@
 #include "flexsea_sys_def.h"
 #include "flexsea_system.h"
 #include "flexsea_cmd_calibration.h"
+#include "flexsea_user_structs.h"
 
 //****************************************************************************
 // Variable(s)
@@ -144,7 +145,11 @@ void MIT_DLeg_fsm_2(void)
 {
 	#if(ACTIVE_PROJECT == PROJECT_MIT_DLEG)
 
-		//Currently unused - we use ActPack's FSM2 for comm
+	//Mostly unused - we use ActPack's FSM2 for comm
+
+	//Sensor mapping:
+	rigid1.mn.genVar[0] = rigid1.ex.status & 0xFF;
+	rigid1.mn.genVar[5] = rigid1.ex.strain;
 
 	#endif	//ACTIVE_PROJECT == PROJECT_MIT_DLEG
 }
