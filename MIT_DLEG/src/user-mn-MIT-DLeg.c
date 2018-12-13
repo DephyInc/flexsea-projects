@@ -53,8 +53,8 @@ uint8_t mitDlegInfo[2] = {PORT_RS485_2, PORT_RS485_2};
 // Private Function Prototype(s):
 //****************************************************************************
 
-static void openSpeedFSM(void);
-static void twoPositionFSM(void);
+//static void openSpeedFSM(void);
+//static void twoPositionFSM(void);
 
 //****************************************************************************
 // Public Function(s)
@@ -153,6 +153,7 @@ void MIT_DLeg_fsm_2(void)
 // Private Function(s)
 //****************************************************************************
 
+/*
 static void openSpeedFSM(void)
 {
 	static uint32_t timer = 0, deltaT = 0;
@@ -231,6 +232,7 @@ static void twoPositionFSM(void)
 			break;
 	}
 }
+*/
 
 #endif 	//BOARD_TYPE_FLEXSEA_MANAGE
 #endif //INCLUDE_UPROJ_MIT_DLEG
