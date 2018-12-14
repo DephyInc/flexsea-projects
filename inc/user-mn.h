@@ -81,7 +81,7 @@ void reset_user_code(void);
 //Step 1) Select active project (from list):
 //==========================================
 
-#define ACTIVE_PROJECT			PROJECT_DEV
+#define ACTIVE_PROJECT			PROJECT_ACTPACK
 #define ACTIVE_SUBPROJECT		SUBPROJECT_A
 
 //Step 2) Customize the enabled/disabled sub-modules:
@@ -322,7 +322,6 @@ void reset_user_code(void);
 		//#define USE_I2C_2			//3V3, Expansion
 		#define USE_I2C_3			//Onboard, Regulate & Execute
 		#define USE_IMU				//Requires USE_I2C_1
-		//#define USE_UART3			//Bluetooth #1
 		#define USE_EEPROM			//Emulated EEPROM, onboard FLASH
 		//#define USE_WATCHDOG		//Independent watchdog (IWDG)
 		//#define USE_6CH_AMP		//Requires USE_I2C_2. 6-ch Strain Amp.
