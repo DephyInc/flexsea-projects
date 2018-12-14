@@ -42,6 +42,7 @@
 #include "flexsea_sys_def.h"
 #include "flexsea_system.h"
 #include "flexsea_cmd_calibration.h"
+#include "flexsea_user_structs.h"
 
 //****************************************************************************
 // Variable(s)
@@ -53,8 +54,8 @@ uint8_t mitDlegInfo[2] = {PORT_RS485_2, PORT_RS485_2};
 // Private Function Prototype(s):
 //****************************************************************************
 
-static void openSpeedFSM(void);
-static void twoPositionFSM(void);
+//static void openSpeedFSM(void);
+//static void twoPositionFSM(void);
 
 //****************************************************************************
 // Public Function(s)
@@ -144,7 +145,11 @@ void MIT_DLeg_fsm_2(void)
 {
 	#if(ACTIVE_PROJECT == PROJECT_MIT_DLEG)
 
-		//Currently unused - we use ActPack's FSM2 for comm
+	//Mostly unused - we use ActPack's FSM2 for comm
+
+	//Sensor mapping:
+	rigid1.mn.genVar[0] = rigid1.ex.status & 0xFF;
+	rigid1.mn.genVar[5] = rigid1.ex.strain;
 
 	#endif	//ACTIVE_PROJECT == PROJECT_MIT_DLEG
 }
@@ -153,6 +158,7 @@ void MIT_DLeg_fsm_2(void)
 // Private Function(s)
 //****************************************************************************
 
+/*
 static void openSpeedFSM(void)
 {
 	static uint32_t timer = 0, deltaT = 0;
@@ -231,6 +237,7 @@ static void twoPositionFSM(void)
 			break;
 	}
 }
+*/
 
 #endif 	//BOARD_TYPE_FLEXSEA_MANAGE
 #endif //INCLUDE_UPROJ_MIT_DLEG
