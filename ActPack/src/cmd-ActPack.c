@@ -337,6 +337,10 @@ void rx_multi_cmd_actpack_rr(uint8_t *msgBuf, MultiPacketInfo *mInfo, uint8_t *r
 	#ifdef BOARD_TYPE_FLEXSEA_MANAGE
 
 		struct rigid_s *ri = &rigid1;
+		if(mInfo->xid == FLEXSEA_MANAGE_2)
+		{
+			ri = &rigid2;
+		}
 		index = 0;
 		offset = msgBuf[index++];
 
