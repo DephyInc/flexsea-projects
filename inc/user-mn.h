@@ -81,8 +81,9 @@ void reset_user_code(void);
 //Step 1) Select active project (from list):
 //==========================================
 
-#define ACTIVE_PROJECT			PROJECT_MIT_DLEG
-#define ACTIVE_SUBPROJECT		SUBPROJECT_A
+//#define ACTIVE_PROJECT			PROJECT_MIT_DLEG
+#define ACTIVE_PROJECT			PROJECT_ACTPACK
+#define ACTIVE_SUBPROJECT		SUBPROJECT_B
 
 //Step 2) Customize the enabled/disabled sub-modules:
 //===================================================
@@ -422,7 +423,7 @@ void reset_user_code(void);
 	#define USE_SPI_PLAN		//Enables the external SPI port
 
 	//Runtime finite state machine (FSM):
-	//#define RUNTIME_FSM1		ENABLED	//Enable only if you DO NOT use Plan
+	#define RUNTIME_FSM1		ENABLED	//Enable only if you DO NOT use Plan
 	#define RUNTIME_FSM2		ENABLED	//Enable at all time, Mn <> Ex comm.
 
 	#define CO_ENABLE_ACTPACK	//Enables the ActPack state machine(s)
