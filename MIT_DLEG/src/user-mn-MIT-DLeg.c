@@ -30,6 +30,12 @@
 #ifdef INCLUDE_UPROJ_MIT_DLEG
 #ifdef BOARD_TYPE_FLEXSEA_MANAGE
 
+/*01/23/2019 Demo code: run this on Mn1 (ActPack 0.2B, not MIT's hardware) to
+ * control a second ActPack that's running default PROJECT_ACTPACK code. It
+ * showcases the MULTI_DOF_N capability.
+ */
+
+
 //****************************************************************************
 // Include(s)
 //****************************************************************************
@@ -42,19 +48,25 @@
 #include "flexsea_sys_def.h"
 #include "flexsea_system.h"
 #include "flexsea_cmd_calibration.h"
+#include "flexsea_user_structs.h"
+#include "mn-MotorControl.h"
+#include "cmd-ActPack.h"
 
 //****************************************************************************
 // Variable(s)
 //****************************************************************************
 
-uint8_t mitDlegInfo[2] = {PORT_RS485_2, PORT_RS485_2};
+uint8_t mitDlegInfo[2] = {PORT_RS485_1, PORT_RS485_1};
+uint8_t enableMITfsm2 = 0, mitFSM2ready = 0, mitCalibrated = 0;
+#define THIS_ACTPACK		0
+#define SLAVE_ACTPACK		1
 
 //****************************************************************************
 // Private Function Prototype(s):
 //****************************************************************************
 
 static void openSpeedFSM(void);
-static void twoPositionFSM(void);
+//static void twoPositionFSM(void);
 
 //****************************************************************************
 // Public Function(s)
@@ -84,48 +96,15 @@ void MIT_DLeg_fsm_1(void)
 			if(time >= AP_FSM2_POWER_ON_DELAY)
 			{
 				state = 1;
+				enableMITfsm2 = 1;
 				time = 0;
 			}
 
 			break;
 
 		case 1:
-			//Disable FSM2:
-			disableActPackFSM2();
-			if(time > 10)
-			{
-				state = 2;
-				time = 0;
-			}
-
-			break;
-
-		case 2:
-			//Send Find Poles command:
-
-			tx_cmd_calibration_mode_rw(TX_N_DEFAULT, CALIBRATION_FIND_POLES);
-			packAndSend(P_AND_S_DEFAULT, FLEXSEA_EXECUTE_1, mitDlegInfo, SEND_TO_SLAVE);
-			state = 3;
-			time = 0;
-
-			break;
-
-		case 3:
-			//Wait 60s... (conservative)
-
-			if(time >= 60000)
-			{
-				//Enable FSM2, position controller
-				enableActPackFSM2();
-				state = 4;
-				time = 0;
-			}
-
-			break;
-
-		case 4:
 			//Pick one of those demos:
-			//openSpeedFSM();
+			openSpeedFSM();
 			//twoPositionFSM();
 			//If nothing is enabled in case 4 the user can control the motor from the GUI
 			break;
@@ -144,7 +123,41 @@ void MIT_DLeg_fsm_2(void)
 {
 	#if(ACTIVE_PROJECT == PROJECT_MIT_DLEG)
 
-		//Currently unused - we use ActPack's FSM2 for comm
+	//Sensor mapping:
+	rigid1.mn.genVar[0] = rigid1.ex.status & 0xFF;
+	rigid1.mn.genVar[5] = rigid1.ex.strain;
+
+	//Modified version of ActPack
+	static uint32_t timer = 0;
+
+	//Wait X seconds before communicating
+	if(timer < AP_FSM2_POWER_ON_DELAY)
+	{
+		mitFSM2ready = 0;
+		timer++;
+		return;
+	}
+
+	mitFSM2ready = 1;
+
+	//External controller can fully disable the comm:
+	//if(ActPackSys == SYS_NORMAL && ActPackCoFSM == APC_FSM2_ENABLED){enableAPfsm2 = 1;}
+	//else {enableAPfsm2 = 0;}
+
+	//FSM1 can disable this one:
+	if(enableMITfsm2)
+	{
+			writeEx[1].offset = 0;
+			tx_cmd_actpack_rw(TX_N_DEFAULT, writeEx[1].offset, writeEx[1].ctrl, writeEx[1].setpoint, \
+											writeEx[1].setGains, writeEx[1].g[0], writeEx[1].g[1], \
+											writeEx[1].g[2], writeEx[1].g[3], 0);
+
+			packAndSend(P_AND_S_DEFAULT, FLEXSEA_MANAGE_2, mitDlegInfo, SEND_TO_SLAVE);
+
+			//Reset KEEP/CHANGE once set:
+			//if(writeEx[0].setGains == CHANGE){writeEx[0].setGains = KEEP;}
+			if(writeEx[1].setGains == CHANGE){writeEx[1].setGains = KEEP;}
+	}
 
 	#endif	//ACTIVE_PROJECT == PROJECT_MIT_DLEG
 }
@@ -155,14 +168,16 @@ void MIT_DLeg_fsm_2(void)
 
 static void openSpeedFSM(void)
 {
-	static uint32_t timer = 0, deltaT = 0;
+	static uint32_t deltaT = 0;
 	static uint8_t fsm1State = 0;
 
 	switch(fsm1State)
 	{
 		case 0:
-			setControlMode(CTRL_OPEN, 0);
-			setMotorVoltage(0, 0);
+			setControlMode(CTRL_OPEN, THIS_ACTPACK);
+			setControlMode(CTRL_OPEN, SLAVE_ACTPACK);
+			setMotorVoltage(0, THIS_ACTPACK);
+			setMotorVoltage(0, SLAVE_ACTPACK);
 			fsm1State = 1;
 			deltaT = 0;
 			break;
@@ -173,7 +188,8 @@ static void openSpeedFSM(void)
 				deltaT = 0;
 				fsm1State = 2;
 			}
-			setMotorVoltage(0, 0);
+			setMotorVoltage(0, THIS_ACTPACK);
+			setMotorVoltage(-1000, SLAVE_ACTPACK);
 			break;
 		case 2:
 			deltaT++;
@@ -182,11 +198,13 @@ static void openSpeedFSM(void)
 				deltaT = 0;
 				fsm1State = 1;
 			}
-			setMotorVoltage(1000, 0);
+			setMotorVoltage(2500, THIS_ACTPACK);
+			setMotorVoltage(0, SLAVE_ACTPACK);
 			break;
 	}
 }
 
+/*
 static void twoPositionFSM(void)
 {
 	static uint32_t timer = 0, deltaT = 0;
@@ -231,6 +249,7 @@ static void twoPositionFSM(void)
 			break;
 	}
 }
+*/
 
 #endif 	//BOARD_TYPE_FLEXSEA_MANAGE
 #endif //INCLUDE_UPROJ_MIT_DLEG

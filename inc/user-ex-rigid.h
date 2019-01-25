@@ -90,7 +90,7 @@ void user_fsm(void);
 //Step 1) Select active project (from list):
 //==========================================
 
-#define ACTIVE_PROJECT			PROJECT_DEPHY
+#define ACTIVE_PROJECT			PROJECT_ACTPACK
 #define ACTIVE_SUBPROJECT		SUBPROJECT_A //A is Left
 
 //Step 2) Customize the enabled/disabled sub-modules:
@@ -256,7 +256,7 @@ void user_fsm(void);
 	//#define USE_TRAPEZ
 	#define USE_I2C_0			//3V3, Onboard (Manage)
 	#define USE_I2C_1			//5V, External (Angle sensor)
-	//#define USE_STRAIN		//Requires USE_I2C_1
+	#define USE_STRAIN			//
 	#define USE_AS5047			//16-bit Position Sensor, SPI
 	#define USE_AS5048B			//Joint angle sensor (I2C)
 	#define USE_EEPROM			//
@@ -308,7 +308,7 @@ void user_fsm(void);
 	#define MOTOR_ORIENTATION 	CLOCKWISE_ORIENTATION
 
 	//Runtime finite state machine (FSM):
-    #define CO_ENABLE_ACTPACK
+    //#define CO_ENABLE_ACTPACK	//Deprecated
 	//#define FINDPOLES //define if you want to find the poles
 
 	#ifdef FINDPOLES
