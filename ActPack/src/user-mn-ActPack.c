@@ -171,7 +171,7 @@ void ActPack_fsm_2(void)
 			#endif
 
 			//ToDo remove, debugging only:
-			if(commCrash){return;}
+			//if(commCrash){return;}
 
 			packAndSend(P_AND_S_DEFAULT, FLEXSEA_EXECUTE_1, apInfo, SEND_TO_SLAVE);
 
