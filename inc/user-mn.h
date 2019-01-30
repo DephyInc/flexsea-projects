@@ -82,7 +82,7 @@ void reset_user_code(void);
 //==========================================
 
 #define ACTIVE_PROJECT			PROJECT_DEPHY
-#define ACTIVE_SUBPROJECT		SUBPROJECT_A
+#define ACTIVE_SUBPROJECT		LEFT
 
 //Step 2) Customize the enabled/disabled sub-modules:
 //===================================================
