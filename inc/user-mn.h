@@ -369,8 +369,8 @@ void reset_user_code(void);
 		//#define USE_I2C_3			//Onboard, Regulate & Execute
 		#define USE_IMU				//Requires USE_I2C_1
 		//#define USE_UART3			//Bluetooth
-		//#define USE_EEPROM		//Emulated EEPROM, onboard FLASH
-		//#define USE_WATCHDOG		//Independent watchdog (IWDG)
+		#define USE_EEPROM			//Emulated EEPROM, onboard FLASH
+		#define USE_WATCHDOG		//Independent watchdog (IWDG)
 		//#define USE_6CH_AMP		//Requires USE_I2C_2. 6-ch Strain Amp.
 		//#define USE_SPI_PLAN		//Enables the external SPI port
 
