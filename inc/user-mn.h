@@ -82,7 +82,7 @@ void reset_user_code(void);
 //==========================================
 
 #define ACTIVE_PROJECT			PROJECT_ACTPACK
-#define ACTIVE_SUBPROJECT		SUBPROJECT_A
+#define ACTIVE_SUBPROJECT		RIGHT
 
 //Step 2) Customize the enabled/disabled sub-modules:
 //===================================================
@@ -311,7 +311,7 @@ void reset_user_code(void);
 		//#define USE_WATCHDOG		//Independent watchdog (IWDG)
 		//#define USE_6CH_AMP		//Requires USE_I2C_2. 6-ch Strain Amp.
 		//#define USE_SPI_PLAN		//Enables the external SPI port
-		//#define USE_XB24C			//Radio module on UART2 (Expansion port)
+		#define USE_XB24C			//Radio module on UART2 (Expansion port)
 
 		//Runtime finite state machine (FSM):
 		//#define RUNTIME_FSM1		ENABLED	//Enable only if you DO NOT use Plan
@@ -352,7 +352,7 @@ void reset_user_code(void);
 		//#define USE_WATCHDOG		//Independent watchdog (IWDG)
 		//#define USE_6CH_AMP		//Requires USE_I2C_2. 6-ch Strain Amp.
 		//#define USE_SPI_PLAN		//Enables the external SPI port
-		//#define USE_XB24C			//Radio module on UART2 (Expansion port)
+		#define USE_XB24C			//Radio module on UART2 (Expansion port)
 
 		//Runtime finite state machine (FSM):
 		//#define RUNTIME_FSM1		ENABLED	//Enable only if you DO NOT use Plan
@@ -363,9 +363,19 @@ void reset_user_code(void);
 
 		#define USE_PARTIAL_PACKETS
 		#define USE_UART3
+		#define USE_UART4
 		#define USE_BT121
 
-		//#define BT121_UPDATE_MODE
+		// TODO: it looks like when we're configuring the xbee or flashing
+		// new firmware onto the BT121 we need the multi packet stuff 
+		// disabled so we just need a good way of setting all the symbols
+		#define WIRELESS_SETUP_MODE
+
+		#ifdef WIRELESS_SETUP_MODE
+			#define BT121_UPDATE_MODE
+			#define XBEE_CONFIGURATION_MODE
+			#define USB_NO_MULTIPACKET
+		#endif
 
 		#if(ACTIVE_SUBPROJECT == RIGHT)
 
