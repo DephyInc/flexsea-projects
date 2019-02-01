@@ -82,7 +82,7 @@ void reset_user_code(void);
 //==========================================
 
 #define ACTIVE_PROJECT			PROJECT_ACTPACK
-#define ACTIVE_SUBPROJECT		SUBPROJECT_A
+#define ACTIVE_SUBPROJECT		SUBPROJECT_B
 
 //Step 2) Customize the enabled/disabled sub-modules:
 //===================================================
@@ -328,8 +328,10 @@ void reset_user_code(void);
 			//#define USE_WATCHDOG		//Independent watchdog (IWDG)
 			//#define USE_6CH_AMP		//Requires USE_I2C_2. 6-ch Strain Amp.
 			//#define USE_SPI_PLAN		//Enables the external SPI port
-			//#define USE_XB24C			//Radio module on UART2 (Expansion port)
+			#define USE_XB24C			//Radio module on UART2 (Expansion port)
 			#define USE_PARTIAL_PACKETS
+			#define USE_UART3			//Bluetooth #1
+			#define USE_UART4			//Bluetooth #2
 
 			//Runtime finite state machine (FSM):
 			//#define RUNTIME_FSM1		ENABLED	//Enable only if you DO NOT use Plan
@@ -342,13 +344,11 @@ void reset_user_code(void);
 
 				#define EXO_SIDE	RIGHT
 				#define BILATERAL_MASTER
-				#define USE_UART4			//Bluetooth #2
 
 			#elif(ACTIVE_SUBPROJECT == LEFT)
 
 				#define EXO_SIDE	LEFT
 				#define BILATERAL_SLAVE
-				#define USE_UART3			//Bluetooth #1
 
 			#else
 
