@@ -256,7 +256,7 @@ void user_fsm(void);
 	//#define USE_TRAPEZ
 	#define USE_I2C_0			//3V3, Onboard (Manage)
 	#define USE_I2C_1			//5V, External (Angle sensor)
-	//#define USE_STRAIN		//Requires USE_I2C_1
+	#define USE_STRAIN			//
 	#define USE_AS5047			//16-bit Position Sensor, SPI
 	#define USE_AS5048B			//Joint angle sensor (I2C)
 	#define USE_EEPROM			//
