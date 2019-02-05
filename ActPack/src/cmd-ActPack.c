@@ -47,6 +47,7 @@ extern "C" {
 #ifdef BOARD_TYPE_FLEXSEA_MANAGE
 #include "user-mn-ActPack.h"
 #include "mn-MotorControl.h"
+#include "user-mn.h"
 #endif	//BOARD_TYPE_FLEXSEA_MANAGE
 
 //****************************************************************************
@@ -346,19 +347,25 @@ void rx_multi_cmd_actpack_rr(uint8_t *msgBuf, MultiPacketInfo *mInfo, uint8_t *r
 			index = 0;
 			offset = msgBuf[index++];
 
-		if(offset == 0)
-		{
-			*(ri->ex.enc_ang) = (int32_t) REBUILD_UINT32(msgBuf, &index);
-			*(ri->ex.enc_ang_vel) = (int32_t) REBUILD_UINT32(msgBuf, &index);
-			*(ri->ex.joint_ang) = (int16_t) REBUILD_UINT16(msgBuf, &index);
-			*(ri->ex.joint_ang_vel) = (int16_t) REBUILD_UINT16(msgBuf, &index);
-			ri->ex.mot_current = (int32_t) REBUILD_UINT32(msgBuf, &index);
-			ri->ex.mot_acc = (int32_t) REBUILD_UINT32(msgBuf, &index);
-//			ri->ex.mot_volt = (int32_t) ((int16_t)REBUILD_UINT16(msgBuf, &index) << 3);
-			ri->ex.mot_volt = (int32_t) REBUILD_UINT32(msgBuf, &index);
-//			ri->ex.ctrl.current.setpoint_val = (int32_t) ((int16_t)REBUILD_UINT16(msgBuf, &index) << 3);
-			ri->ex.strain = REBUILD_UINT16(msgBuf, &index);
-			ri->ex.status = REBUILD_UINT16(msgBuf, &index);
+			if(offset == 0)
+			{
+				*(ri->ex.enc_ang) = (int32_t) REBUILD_UINT32(msgBuf, &index);
+				*(ri->ex.enc_ang_vel) = (int32_t) REBUILD_UINT32(msgBuf, &index);
+				*(ri->ex.joint_ang) = (int16_t) REBUILD_UINT16(msgBuf, &index);
+				*(ri->ex.joint_ang_vel) = (int16_t) REBUILD_UINT16(msgBuf, &index);
+				ri->ex.mot_current = (int32_t) REBUILD_UINT32(msgBuf, &index);
+				ri->ex.mot_acc = (int32_t) REBUILD_UINT32(msgBuf, &index);
+			#ifdef HABSOLUTE_UPSTREAM_TUNING
+				ri->ex.mot_volt = (int32_t) REBUILD_UINT32(msgBuf, &index);
+			#else
+				ri->ex.mot_volt = (int32_t) ((int16_t)REBUILD_UINT16(msgBuf, &index) << 3);
+				ri->ex.ctrl.current.setpoint_val = (int32_t) ((int16_t)REBUILD_UINT16(msgBuf, &index) << 3);
+			#endif
+				ri->ex.strain = REBUILD_UINT16(msgBuf, &index);
+				ri->ex.status = REBUILD_UINT16(msgBuf, &index);
+			}
+
+			processed = 1;
 		}
 
 	#endif

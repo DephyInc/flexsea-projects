@@ -328,7 +328,7 @@ void reset_user_code(void);
 			//#define USE_WATCHDOG		//Independent watchdog (IWDG)
 			//#define USE_6CH_AMP		//Requires USE_I2C_2. 6-ch Strain Amp.
 			//#define USE_SPI_PLAN		//Enables the external SPI port
-			#define USE_XB24C			//Radio module on UART2 (Expansion port)
+			//#define USE_XB24C			//Radio module on UART2 (Expansion port)
 			#define USE_PARTIAL_PACKETS
 			#define USE_UART3			//Bluetooth #1
 			#define USE_UART4			//Bluetooth #2
@@ -339,6 +339,8 @@ void reset_user_code(void);
 
 			#define MULTI_DOF_N 		0
 			#define BILATERAL
+
+			#define HABSOLUTE_UPSTREAM_TUNING
 
 			#if(ACTIVE_SUBPROJECT == RIGHT)
 
