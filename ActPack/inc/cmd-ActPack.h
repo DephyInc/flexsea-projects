@@ -52,6 +52,8 @@ void rx_multi_cmd_actpack_rr(uint8_t *msgBuf, MultiPacketInfo *mInfo, uint8_t *r
 void rx_cmd_actpack_Action1(uint8_t controller, int32_t setpoint, uint8_t setGains,
 						int16_t g0,	int16_t g1,	int16_t g2, int16_t g3, uint8_t system, uint8_t ch);
 
+void actpack_load_habsolute(uint16_t *adc_vals);
+
 //****************************************************************************
 // Prototype(s) - simplified functions (DLL):
 //****************************************************************************

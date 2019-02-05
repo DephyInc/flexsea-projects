@@ -41,6 +41,9 @@ extern "C" {
 #include "safety.h"
 #include "strain.h"
 #include "analog.h"
+
+static uint16_t local_habs_adc_vals[8] = {0};
+
 #endif	//BOARD_TYPE_FLEXSEA_EXECUTE
 
 //Manage boards only:
@@ -146,12 +149,17 @@ void tx_cmd_actpack_r(uint8_t *shBuf, uint8_t *cmd, uint8_t *cmdType, \
 	(*len) = index;
 }
 
+void actpack_load_habsolute(uint16_t *adc_vals)
+{
+	memcpy(local_habs_adc_vals, adc_vals, 16);
+}
+
 //Only used for replies
 void tx_cmd_actpack_w(uint8_t *shBuf, uint8_t *cmd, uint8_t *cmdType, \
 							uint16_t *len, uint8_t offset)
 {
 	uint16_t index = 0;
-
+	uint8_t i;
 	//Formatting:
 	(*cmd) = CMD_ACTPACK;
 	(*cmdType) = CMD_WRITE;
@@ -165,12 +173,16 @@ void tx_cmd_actpack_w(uint8_t *shBuf, uint8_t *cmd, uint8_t *cmdType, \
 
 		SPLIT_32((uint32_t)*(ri->ex.enc_ang), shBuf, &index);
 		SPLIT_32((uint32_t)(*ri->ex.enc_ang_vel), shBuf, &index);
-		SPLIT_16((uint16_t)*(ri->ex.joint_ang), shBuf, &index);
-		SPLIT_16((uint16_t)*(ri->ex.joint_ang_vel), shBuf, &index);
-		SPLIT_32((uint32_t)ri->ex.mot_current, shBuf, &index);
-		SPLIT_32((uint32_t)ri->ex.mot_acc, shBuf, &index);
-		SPLIT_16((uint16_t)(ri->ex.mot_volt >> 3), shBuf, &index);
-		SPLIT_16((uint16_t)(ctrl[0].current.setpoint_val >> 3), shBuf, &index);
+		for(i = 0; i < 8; i++)
+		{
+			SPLIT_16((uint16_t)local_habs_adc_vals[i], shBuf, &index);
+		}
+		// SPLIT_16((uint16_t)*(ri->ex.joint_ang), shBuf, &index);
+		// SPLIT_16((uint16_t)*(ri->ex.joint_ang_vel), shBuf, &index);
+		// SPLIT_32((uint32_t)ri->ex.mot_current, shBuf, &index);
+		// SPLIT_32((uint32_t)ri->ex.mot_acc, shBuf, &index);
+		// SPLIT_16((uint16_t)(ri->ex.mot_volt >> 3), shBuf, &index);
+		// SPLIT_16((uint16_t)(ctrl[0].current.setpoint_val >> 3), shBuf, &index);
 		SPLIT_16((uint16_t)ri->ex.strain, shBuf, &index);
 		SPLIT_16((uint16_t)ri->ex.status, shBuf, &index);
 		//(28 bytes)
