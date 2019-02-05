@@ -82,7 +82,7 @@ void reset_user_code(void);
 //==========================================
 
 #define ACTIVE_PROJECT			PROJECT_ACTPACK
-#define ACTIVE_SUBPROJECT		SUBPROJECT_B
+#define ACTIVE_SUBPROJECT		SUBPROJECT_A
 
 //Step 2) Customize the enabled/disabled sub-modules:
 //===================================================
@@ -398,6 +398,8 @@ void reset_user_code(void);
 			#define XBEE_CONFIGURATION_MODE
 			#define USB_NO_MULTIPACKET
 		#endif
+
+		#define HABSOLUTE_CALIBRATION
 
 		#if(ACTIVE_SUBPROJECT == RIGHT)
 

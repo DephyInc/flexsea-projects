@@ -346,21 +346,19 @@ void rx_multi_cmd_actpack_rr(uint8_t *msgBuf, MultiPacketInfo *mInfo, uint8_t *r
 			index = 0;
 			offset = msgBuf[index++];
 
-			if(offset == 0)
-			{
-				*(ri->ex.enc_ang) = (int32_t) REBUILD_UINT32(msgBuf, &index);
-				*(ri->ex.enc_ang_vel) = (int32_t) REBUILD_UINT32(msgBuf, &index);
-				*(ri->ex.joint_ang) = (int16_t) REBUILD_UINT16(msgBuf, &index);
-				*(ri->ex.joint_ang_vel) = (int16_t) REBUILD_UINT16(msgBuf, &index);
-				ri->ex.mot_current = (int32_t) REBUILD_UINT32(msgBuf, &index);
-				ri->ex.mot_acc = (int32_t) REBUILD_UINT32(msgBuf, &index);
-				ri->ex.mot_volt = (int32_t) ((int16_t)REBUILD_UINT16(msgBuf, &index) << 3);
-				ri->ex.ctrl.current.setpoint_val = (int32_t) ((int16_t)REBUILD_UINT16(msgBuf, &index) << 3);
-				ri->ex.strain = REBUILD_UINT16(msgBuf, &index);
-				ri->ex.status = REBUILD_UINT16(msgBuf, &index);
-			}
-
-			processed = 1;
+		if(offset == 0)
+		{
+			*(ri->ex.enc_ang) = (int32_t) REBUILD_UINT32(msgBuf, &index);
+			*(ri->ex.enc_ang_vel) = (int32_t) REBUILD_UINT32(msgBuf, &index);
+			*(ri->ex.joint_ang) = (int16_t) REBUILD_UINT16(msgBuf, &index);
+			*(ri->ex.joint_ang_vel) = (int16_t) REBUILD_UINT16(msgBuf, &index);
+			ri->ex.mot_current = (int32_t) REBUILD_UINT32(msgBuf, &index);
+			ri->ex.mot_acc = (int32_t) REBUILD_UINT32(msgBuf, &index);
+//			ri->ex.mot_volt = (int32_t) ((int16_t)REBUILD_UINT16(msgBuf, &index) << 3);
+			ri->ex.mot_volt = (int32_t) REBUILD_UINT32(msgBuf, &index);
+//			ri->ex.ctrl.current.setpoint_val = (int32_t) ((int16_t)REBUILD_UINT16(msgBuf, &index) << 3);
+			ri->ex.strain = REBUILD_UINT16(msgBuf, &index);
+			ri->ex.status = REBUILD_UINT16(msgBuf, &index);
 		}
 
 	#endif
