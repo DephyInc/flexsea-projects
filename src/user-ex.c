@@ -40,17 +40,28 @@
 //****************************************************************************
 
 #include "../inc/user-ex.h"
-#include "user-ex-DpEb21.h"
+#include "flexsea_user_structs.h"
+#include "flexsea_sys_def.h"
+#include "filters.h"
+#include "control.h"
+#include "motor.h"
 
 //****************************************************************************
 // Variable(s)
 //****************************************************************************
 
+//struct diffarr_s mot_ang_clks;
+int32_t mot_ang = 0;
+int32_t mot_ang_offset = 0; //initialized offset to match with calibration
+int32_t mot_vel = 0;
+int32_t mot_acc = 0;
+	
 //****************************************************************************
 // Private Function Prototype(s):
 //****************************************************************************
 
-static void init_barebone(void);
+static void refresh_values(void);
+static void init_project(void);
 
 //****************************************************************************
 // Public Function(s)
@@ -59,10 +70,8 @@ static void init_barebone(void);
 //Initialization function - call once in main.c, before while()
 void init_user(void)
 {
-	//Barebone:
-	#if(ACTIVE_PROJECT == PROJECT_BAREBONE)
-	init_barebone();
-	#endif	//PROJECT_BAREBONE
+	//Common setup:
+	init_project();
 
 	//MIT Ankle 2-DoF:
 	#if(ACTIVE_PROJECT == PROJECT_ANKLE_2DOF)
@@ -83,6 +92,9 @@ void init_user(void)
 //Call this function in one of the main while time slots.
 void user_fsm(void)
 {
+	//Refresh sensor values - common across projects:
+	refresh_values();
+	
 	//DpEB2.1:
 	#if(ACTIVE_PROJECT == PROJECT_DPEB21)
 		DpEb21_refresh_values();
@@ -96,12 +108,26 @@ void user_fsm(void)
 // Private Function(s)
 //****************************************************************************
 
-static void init_barebone(void)
+//Common setup
+static void init_project(void)
 {
-	//Barebone:
-	#if(ACTIVE_PROJECT == PROJECT_BAREBONE)
 	setBoardID(SLAVE_ID);
-	#endif	//PROJECT_BAREBONE
+	
+	//Controller setup:
+	ctrl[0].active_ctrl = CTRL_NONE;	//No controller at boot
+	setMotorVoltage(0, 0);				//0% PWM
+}
+
+//Refresh sensor values - common across projects
+static void refresh_values(void)
+{
+	//mot_ang = *rigid1.ex.enc_ang - mot_ang_offset;
+	//mot_vel = *exec1.enc_ang_vel; //cpms
+	
+	//update_diffarr(&mot_ang_clks, mot_ang, 10);
+	
+	//mot_acc = get_accl_1k_5samples_downsampled(&mot_ang_clks)/2609; //rad/s^2
+	//rigid1.ex.mot_acc = mot_acc;
 }
 
 #endif //BOARD_TYPE_FLEXSEA_EXECUTE

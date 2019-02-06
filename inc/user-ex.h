@@ -44,11 +44,7 @@
 
 #include "main.h"
 #include "flexsea_board.h"
-#include "../MIT_2DoF_Ankle_v1/inc/user-ex-MIT_2DoF_Ankle_v1.h"
-#include "../RICNU_Knee_v1/inc/user-ex-RICNU_Knee_v1.h"
-#include "../MotorTestBench/inc/user-ex-MotorTestBench.h"
 #include "flexsea_sys_def.h"
-//#include "user-ex.h"
 //Add your project specific user_x.h file here
 
 //****************************************************************************
@@ -113,8 +109,8 @@ void user_fsm(void);
 //Step 1) Select active project (from list):
 //==========================================
 
-#define ACTIVE_PROJECT			PROJECT_BAREBONE
-#define ACTIVE_SUBPROJECT		SUBPROJECT_B //A is Left
+#define ACTIVE_PROJECT			PROJECT_SIMPLE_MOTOR
+#define ACTIVE_SUBPROJECT		SUBPROJECT_A //A is Left
 
 //Step 2) Customize the enabled/disabled sub-modules:
 //===================================================
