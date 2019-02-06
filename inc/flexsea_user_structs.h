@@ -144,6 +144,8 @@ struct fx_rigid_ctrl_s
 
 	int16_t contra_hs;
 	int16_t step_energy;
+
+	int16_t gbl_shnk_ang;
 };
 
 struct rigid_s
