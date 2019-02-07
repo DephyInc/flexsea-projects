@@ -338,7 +338,26 @@ void reset_user_code(void);
 			#define RUNTIME_FSM2		ENABLED	//Enable at all time, Mn <> Ex comm.
 
 			#define MULTI_DOF_N 		0
+
 			#define BILATERAL
+
+			#define USE_PARTIAL_PACKETS
+			#define USE_UART3
+			#define USE_UART4
+			#define USE_BT121
+
+			// TODO: it looks like when we're configuring the xbee or flashing
+			// new firmware onto the BT121 we need the multi packet stuff
+			// disabled so we just need a good way of setting all the symbols
+			#define WIRELESS_SETUP_MODE
+
+			#ifdef WIRELESS_SETUP_MODE
+				#define BT121_UPDATE_MODE
+				#define XBEE_CONFIGURATION_MODE
+				#define USB_NO_MULTIPACKET
+			#endif
+
+			#define HABSOLUTE_UPSTREAM_TUNING
 
 			#if(ACTIVE_SUBPROJECT == RIGHT)
 
@@ -381,23 +400,6 @@ void reset_user_code(void);
 		//#define RUNTIME_FSM2		ENABLED	//Enable at all time, Mn <> Ex comm.
 
 		#define MULTI_DOF_N 		0
-		#define BILATERAL
-
-		#define USE_PARTIAL_PACKETS
-		#define USE_UART3
-		#define USE_UART4
-		#define USE_BT121
-
-		// TODO: it looks like when we're configuring the xbee or flashing
-		// new firmware onto the BT121 we need the multi packet stuff 
-		// disabled so we just need a good way of setting all the symbols
-		#define WIRELESS_SETUP_MODE
-
-		#ifdef WIRELESS_SETUP_MODE
-			#define BT121_UPDATE_MODE
-			#define XBEE_CONFIGURATION_MODE
-			#define USB_NO_MULTIPACKET
-		#endif
 
 		#if(ACTIVE_SUBPROJECT == RIGHT)
 
