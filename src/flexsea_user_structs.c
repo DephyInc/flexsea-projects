@@ -30,6 +30,7 @@
 //****************************************************************************
 
 #include "flexsea_user_structs.h"
+#include "projectsStackConfig.h"
 
 #if(defined BOARD_TYPE_FLEXSEA_EXECUTE)
 	#include "mag_encoders.h"
@@ -48,9 +49,15 @@ struct motortb_s motortb;
 
 int16_t globvar[10] = {0,0,0,0,0,0,0,0,0,0};
 
-struct rigid_s rigid1, rigid2;
+#ifdef SC_EN_RI1
+struct rigid_s rigid1;
+#endif
+#ifdef SC_EN_RI2
+struct rigid_s rigid1;
+#endif
+#ifdef SC_EN_PCK1
 struct pocket_s pocket1;
-
+#endif
 
 //****************************************************************************
 // Function(s)
