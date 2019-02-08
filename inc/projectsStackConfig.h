@@ -9,15 +9,15 @@ extern "C" {
 
 #ifdef BOARD_TYPE_FLEXSEA_EXECUTE
 
-	#define SC_EN_RI1
+	#define SC_PRJ_EN_RI1
 
 #else
 
 	//Default: everything enabled
 
-	#define SC_EN_RI1
-	#define SC_EN_RI2
-	#define SC_EN_PCK2
+	#define SC_PRJ_EN_RI1
+	#define SC_PRJ_EN_RI2
+	#define SC_PRJ_EN_PCK1
 
 #endif
 

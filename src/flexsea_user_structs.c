@@ -29,8 +29,8 @@
 // Include(s)
 //****************************************************************************
 
-#include "flexsea_user_structs.h"
 #include "projectsStackConfig.h"
+#include "flexsea_user_structs.h"
 
 #if(defined BOARD_TYPE_FLEXSEA_EXECUTE)
 	#include "mag_encoders.h"
@@ -49,13 +49,13 @@ struct motortb_s motortb;
 
 int16_t globvar[10] = {0,0,0,0,0,0,0,0,0,0};
 
-#ifdef SC_EN_RI1
+#ifdef SC_PRJ_EN_RI1
 struct rigid_s rigid1;
 #endif
-#ifdef SC_EN_RI2
-struct rigid_s rigid1;
+#ifdef SC_PRJ_EN_RI2
+struct rigid_s rigid2;
 #endif
-#ifdef SC_EN_PCK1
+#ifdef SC_PRJ_EN_PCK1
 struct pocket_s pocket1;
 #endif
 
@@ -82,14 +82,14 @@ void initializeUserStructs(void)
 			rigid1.ex.joint_ang_vel = &(as5048b.filt.vel_cpms_16b);
 		#endif
 		#ifdef BOARD_SUBTYPE_POCKET
-			
+
 			#if(ENC_COMMUT == ENC_QUADRATURE)
 			pocket1.ex[0].enc_ang = &encoder.count;
 			pocket1.ex[1].enc_ang = &encoder2.count;
 			pocket1.ex[0].enc_ang_vel = &(as5047.signed_ang_vel);
 			pocket1.ex[1].enc_ang_vel = &(as5047.signed_ang_vel);
 			#endif
-			
+
 			//rigid1.ex.joint_ang = &(as5048b.filt.ang_clks_16b);
 			//rigid1.ex.joint_ang_vel = &(as5048b.filt.vel_cpms_16b);
 		#endif
