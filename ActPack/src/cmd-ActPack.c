@@ -492,8 +492,9 @@ void rx_cmd_actpack_Action1(uint8_t controller, int32_t setpoint, uint8_t setGai
 			ctrl[ch].position.gain.g0 = g0;
 			ctrl[ch].position.gain.g1 = g1;
 			ctrl[ch].position.gain.g2 = g2;
-			ctrl[ch].position.error_sum = 0;
+			//ctrl[ch].position.error_sum = 0;
 		}
+		ctrl[ch].position.error_sum = 0;
 	}
 	else if (ctrl[ch].active_ctrl == CTRL_IMPEDANCE)
 	{
