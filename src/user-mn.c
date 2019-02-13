@@ -49,12 +49,19 @@
 //ToDo: switch to their include
 #endif	//PROJECT_UMICH_KNEE
 
+//MIT's DARPA LEG:
 #if(ACTIVE_PROJECT == PROJECT_MIT_DLEG)
 #include "user-mn-MIT-DLeg.h"
 #endif
 
+//MIT's Climbing Leg:
 #if(ACTIVE_PROJECT == PROJECT_POCKET_2XDC)
 #include "user-mn-MIT-PocketClimb.h"
+#endif
+
+//MIT's 2-DoF Ankle:
+#if(ACTIVE_PROJECT == PROJECT_ANKLE_2DOF)
+#include "user-mn-MIT_2DoF_Ankle_v1.h"
 #endif
 
 //Dephy's Actuator Package (ActPack)
