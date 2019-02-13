@@ -109,8 +109,8 @@ void user_fsm(void);
 //Step 1) Select active project (from list):
 //==========================================
 
-#define ACTIVE_PROJECT			PROJECT_SIMPLE_MOTOR
-#define ACTIVE_SUBPROJECT		SUBPROJECT_A //A is Left
+#define ACTIVE_PROJECT			PROJECT_ANKLE_2DOF
+#define ACTIVE_SUBPROJECT		SUBPROJECT_B
 
 //Step 2) Customize the enabled/disabled sub-modules:
 //===================================================
@@ -217,16 +217,15 @@ void user_fsm(void);
 	#define USE_USB
 	#define USE_COMM			//Requires USE_RS485 and/or USE_USB
 	//#define USE_QEI
-	#define USE_TRAPEZ
+	//#define USE_TRAPEZ
 	#define USE_I2C_0			//3V3, IMU & Expansion.
 	#define USE_I2C_1			//5V, Safety-CoP & strain gauge pot.
 	#define USE_IMU				//Requires USE_I2C_0
-	//#define USE_STRAIN		//Requires USE_I2C_1
+	#define USE_STRAIN			//Requires USE_I2C_1
 	#define USE_AS5047			//16-bit Position Sensor, SPI
-	//#define USE_SPI_COMMUT	//
 	#define USE_EEPROM			//
 	#define USE_FLASH			//
-	#define USE_BLUETOOTH		//
+	//#define USE_BLUETOOTH		//
 	#define USE_I2T_LIMIT		//I2t current limit
 
 	//Motor type and commutation:
@@ -235,19 +234,7 @@ void user_fsm(void);
 
 	//Runtime finite state machine (FSM):
 
-	//#define FINDPOLES //define if you want to find the poles
-
-	#ifdef FINDPOLES
-		#define RUNTIME_FSM	 DISABLED
-	#else
-		#ifdef USE_TRAPEZ
-			#define RUNTIME_FSM	 DISABLED
-		#else
-			//#define RUNTIME_FSM	 ENABLED
-		#endif
-	#endif
-
-	#define CURRENT_ZERO		((int32)2065)
+	#define CURRENT_ZERO		((int32)2048)
 
 	//Encoders:
 	#define ENC_CONTROL			ENC_AS5047
@@ -258,10 +245,9 @@ void user_fsm(void);
 	#if(ACTIVE_SUBPROJECT == SUBPROJECT_A)
 
 		//Control encoder function:
-
-		#define PWM_SIGN			1
-		#define CTRL_ENC_FCT(x) 	(x)
-		#define CTRL_ENC_VEL_FCT(x) (x)
+		#define MOTOR_ORIENTATION 	CLOCKWISE_ORIENTATION
+		//#define CTRL_ENC_FCT(x) 	(x)
+		//#define CTRL_ENC_VEL_FCT(x) (x)
 		//...
 
 		//Slave ID:
@@ -273,9 +259,9 @@ void user_fsm(void);
 	#if(ACTIVE_SUBPROJECT == SUBPROJECT_B)
 
 		//Control encoder function:
-		#define PWM_SIGN		 -1
-		#define CTRL_ENC_FCT(x) (x)
-		#define CTRL_ENC_VEL_FCT(x) (x)
+		#define MOTOR_ORIENTATION 	COUNTER_CLOCKWISE_ORIENTATION
+		//#define CTRL_ENC_FCT(x) (x)
+		//#define CTRL_ENC_VEL_FCT(x) (x)
 		//...
 
 		//Slave ID:
