@@ -81,7 +81,7 @@ void reset_user_code(void);
 //Step 1) Select active project (from list):
 //==========================================
 
-#define ACTIVE_PROJECT			PROJECT_ACTPACK
+#define ACTIVE_PROJECT			PROJECT_DEV
 #define ACTIVE_SUBPROJECT		SUBPROJECT_A
 
 //Step 2) Customize the enabled/disabled sub-modules:
@@ -197,40 +197,38 @@ void reset_user_code(void);
 #endif	//PROJECT_ANKLE_2DOF
 
 //Experimental/Dev/Use only if you know what you are doing
+//Current experiment: preliminary MIT Ankle 2-DoF
 #if(ACTIVE_PROJECT == PROJECT_DEV)
 
 	//Enable/Disable sub-modules:
-	#define USE_RS485
 	#define USE_USB
 	#define USE_COMM			//Requires USE_RS485 and/or USE_USB
+	#define USE_RS485
 	#define USE_I2C_1			//3V3, IMU & Digital pot
 	//#define USE_I2C_2			//3V3, Expansion
-	#define USE_I2C_3			//Onboard, Regulate & Execute
+	//#define USE_I2C_3			//Onboard, Regulate & Execute
 	#define USE_IMU				//Requires USE_I2C_1
-	#define USE_XB24C			//Radio module on UART2 (Expansion port)
+	//#define USE_UART3			//Bluetooth
+	#define USE_EEPROM			//Emulated EEPROM, onboard FLASH
+	#define USE_WATCHDOG		//Independent watchdog (IWDG)
+	//#define USE_6CH_AMP		//Requires USE_I2C_2. 6-ch Strain Amp.
+	//#define USE_SPI_PLAN		//Enables the external SPI port
 
-	#define MULTI_DOF_N 		0
-	#define BILATERAL
+	#define CO_ENABLE_ACTPACK
 
 	//Runtime finite state machine (FSM):
-	#define RUNTIME_FSM1		ENABLED
-	#define RUNTIME_FSM2		ENABLED
+	//#define RUNTIME_FSM1		ENABLED	//Enable only if you DO NOT use Plan
+	#define RUNTIME_FSM2		ENABLED	//Enable at all time, Mn <> Ex comm.
 
-	#if(ACTIVE_SUBPROJECT == RIGHT)
+	#if(ACTIVE_SUBPROJECT == SUBPROJECT_A)
 
-		#define EXO_SIDE	RIGHT
-		#define BILATERAL_MASTER
-		#define USE_UART4			//Bluetooth #2
+	#define MULTI_DOF_N			0
 
-	#elif(ACTIVE_SUBPROJECT == LEFT)
+	#endif
 
-		#define EXO_SIDE	LEFT
-		#define BILATERAL_SLAVE
-		#define USE_UART3			//Bluetooth #1
+	#if(ACTIVE_SUBPROJECT == SUBPROJECT_B)
 
-	#else
-
-		#error "PROJECT_ACTPACK requires a subproject (use A by default)!"
+	#define MULTI_DOF_N			1
 
 	#endif
 
@@ -364,6 +362,7 @@ void reset_user_code(void);
 		//Enable/Disable sub-modules:
 		#define USE_USB
 		#define USE_COMM			//Requires USE_RS485 and/or USE_USB
+		#define USE_RS485
 		#define USE_I2C_1			//3V3, IMU & Digital pot
 		//#define USE_I2C_2			//3V3, Expansion
 		//#define USE_I2C_3			//Onboard, Regulate & Execute
