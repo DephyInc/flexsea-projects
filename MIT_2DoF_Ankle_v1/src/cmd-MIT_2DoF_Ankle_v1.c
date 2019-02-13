@@ -54,6 +54,7 @@ extern "C" {
 #include "analog.h"
 #include "motor.h"
 #include "control.h"
+#include "user-ex.h"
 #endif	//BOARD_TYPE_FLEXSEA_EXECUTE
 
 //****************************************************************************
@@ -115,12 +116,12 @@ void tx_cmd_ankle2dof_w(uint8_t *shBuf, uint8_t *cmd, uint8_t *cmdType, \
 	#ifdef BOARD_TYPE_FLEXSEA_EXECUTE
 
 		#ifdef USE_IMU
-			SPLIT_16((uint16_t)imu.gyro.x, shBuf, &index);
-			SPLIT_16((uint16_t)imu.gyro.y, shBuf, &index);
-			SPLIT_16((uint16_t)imu.gyro.z, shBuf, &index);
-			SPLIT_16((uint16_t)imu.accel.x, shBuf, &index);
-			SPLIT_16((uint16_t)imu.accel.y, shBuf, &index);
-			SPLIT_16((uint16_t)imu.accel.z, shBuf, &index);
+			SPLIT_16((uint16_t)exec1.gyro.x, shBuf, &index);
+			SPLIT_16((uint16_t)exec1.gyro.y, shBuf, &index);
+			SPLIT_16((uint16_t)exec1.gyro.z, shBuf, &index);
+			SPLIT_16((uint16_t)exec1.accel.x, shBuf, &index);
+			SPLIT_16((uint16_t)exec1.accel.y, shBuf, &index);
+			SPLIT_16((uint16_t)exec1.accel.z, shBuf, &index);
 		#else
 			SPLIT_16((uint16_t)0, shBuf, &index);
 			SPLIT_16((uint16_t)0, shBuf, &index);
@@ -130,18 +131,26 @@ void tx_cmd_ankle2dof_w(uint8_t *shBuf, uint8_t *cmd, uint8_t *cmdType, \
 			SPLIT_16((uint16_t)0, shBuf, &index);
 		#endif
 
-		SPLIT_16(strain_read(), shBuf, &index);
-		SPLIT_16(read_analog(0), shBuf, &index);
-		SPLIT_16(read_analog(1), shBuf, &index);
+		SPLIT_16(exec1.strain, shBuf, &index);
+		SPLIT_16(exec1.analog[0], shBuf, &index);
+		SPLIT_16(exec1.analog[1], shBuf, &index);
 
 		SPLIT_32((uint32_t)(*exec1.enc_ang), shBuf, &index);
-		SPLIT_16((uint16_t)ctrl.current.actual_val, shBuf, &index);
+		SPLIT_16((uint16_t)exec1.current, shBuf, &index);
 
-		shBuf[index++] = safety_cop.v_vb;
-		shBuf[index++] = safety_cop.v_vg;
-		shBuf[index++] = safety_cop.temperature;
-		shBuf[index++] = safety_cop.status1;
-		shBuf[index++] = safety_cop.status2;
+		#if(!defined BOARD_SUBTYPE_RIGID && !defined BOARD_SUBTYPE_POCKET)
+			shBuf[index++] = exec1.volt_batt;
+			shBuf[index++] = exec1.volt_int;
+			shBuf[index++] = exec1.temp;
+			shBuf[index++] = exec1.status1;
+			shBuf[index++] = exec1.status2;
+		#else
+			shBuf[index++] = 0;
+			shBuf[index++] = 0;
+			shBuf[index++] = 0;
+			shBuf[index++] = 0;
+			shBuf[index++] = 0;
+		#endif //BOARD_SUBTYPE_RIGID
 
 	#endif	//BOARD_TYPE_FLEXSEA_EXECUTE
 
@@ -172,26 +181,28 @@ void rx_cmd_ankle2dof_rw(uint8_t *buf, uint8_t *info)
 {
 	#ifdef BOARD_TYPE_FLEXSEA_EXECUTE
 
+		uint8_t ch = 0;
 		int16_t tmp_wanted_current = 0, tmp_open_spd = 0;
 		uint8_t slave = 0;
 		uint16_t index = P_DATA1;
 		slave = buf[index++];
 
 		//Update controller:
-		control_strategy(buf[index++]);
+		control_strategy(buf[index++], ch);
 
 		//Only change the setpoint if we are in current control mode:
-		if(ctrl.active_ctrl == CTRL_CURRENT)
+		if(ctrl[ch].active_ctrl == CTRL_CURRENT)
 		{
 			index = P_DATA1+2;
 			tmp_wanted_current = (int16_t) REBUILD_UINT16(buf, &index);
-			ctrl.current.setpoint_val = tmp_wanted_current;
+			ctrl[ch].current.setpoint_val = tmp_wanted_current;
 		}
-		else if(ctrl.active_ctrl == CTRL_OPEN)
+		else if(ctrl[ch].active_ctrl == CTRL_OPEN)
 		{
 			index = P_DATA1+4;
-			tmp_open_spd = (int16_t) REBUILD_UINT16(buf, &index);;
-			motor_open_speed_1(tmp_open_spd);
+			tmp_open_spd = (int16_t) REBUILD_UINT16(buf, &index);
+			setMotorVoltage(tmp_open_spd, 0);
+			//motor_open_speed_1(tmp_open_spd);
 		}
 
 	#endif	//BOARD_TYPE_FLEXSEA_EXECUTE
