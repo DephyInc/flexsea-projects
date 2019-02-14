@@ -370,10 +370,12 @@ void rx_multi_cmd_actpack_rr(uint8_t *msgBuf, MultiPacketInfo *mInfo, uint8_t *r
 
 		if(!processed)
 		{
+			#ifdef SC_PRJ_EN_RI2
 			if(mInfo->xid == FLEXSEA_MANAGE_2)
 			{
 				ri = &rigid2;
 			}
+			#endif
 			index = 0;
 			offset = msgBuf[index++];
 

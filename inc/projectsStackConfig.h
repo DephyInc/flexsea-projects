@@ -7,7 +7,13 @@
 extern "C" {
 #endif
 
+//Note: Rigid and Pocket have to be enabled/disabled here, and in systemStackConfig.h
+
 #ifdef BOARD_TYPE_FLEXSEA_EXECUTE
+
+	#define SC_PRJ_EN_RI1
+
+#elif(defined BOARD_TYPE_FLEXSEA_MANAGE && defined BOARD_SUBTYPE_HABSOLUTE)
 
 	#define SC_PRJ_EN_RI1
 
@@ -18,6 +24,9 @@ extern "C" {
 	#define SC_PRJ_EN_RI1
 	#define SC_PRJ_EN_RI2
 	#define SC_PRJ_EN_PCK1
+
+	#define PRJ_ENABLE_CMD_BILATERAL
+	#define PRJ_ENABLE_CMD_POCKET
 
 #endif
 

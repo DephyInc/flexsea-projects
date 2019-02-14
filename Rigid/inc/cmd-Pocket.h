@@ -27,6 +27,9 @@ extern "C" {
 
 #include <stdint.h>
 #include "flexsea_user_structs.h"
+#include "projectsStackConfig.h"
+
+#ifdef PRJ_ENABLE_CMD_POCKET
 
 //****************************************************************************
 // RX/TX Prototype(s):
@@ -74,6 +77,8 @@ void init_pocket(void);
 //****************************************************************************
 // Shared variable(s)
 //****************************************************************************
+
+#endif	//PRJ_ENABLE_CMD_POCKET
 
 #ifdef __cplusplus
 }

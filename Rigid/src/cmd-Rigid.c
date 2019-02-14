@@ -32,6 +32,7 @@ extern "C" {
 #include "flexsea_user_structs.h"
 #include "flexsea_cmd_user.h"
 #include "user-mn.h"
+#include "projectsStackConfig.h"
 
 #ifdef DEPHY
 #include "dephy-mn.h"
@@ -106,8 +107,12 @@ void initializeRigidPointers(struct rigid_s *r)
 //Initialize pointers
 void init_rigid(void)
 {
+	#ifdef SC_PRJ_EN_RI1
 	initializeRigidPointers(&rigid1);
+	#endif
+	#ifdef SC_PRJ_EN_RI2
 	initializeRigidPointers(&rigid2);
+	#endif
 }
 
 //****************************************************************************
@@ -252,6 +257,7 @@ void tx_cmd_rigid_w(uint8_t *shBuf, uint8_t *cmd, uint8_t *cmdType, \
 			shBuf[index++] = (uint8_t)ri->ctrl.walkingState;
 			shBuf[index++] = (uint8_t)ri->ctrl.gaitState;
 
+			#ifdef SC_PRJ_EN_RI2
 			SPLIT_16((uint16_t)rigid2.mn.gyro.z, shBuf, &index);
 			SPLIT_16((uint16_t)*(rigid2.ctrl.ank_ang_deg), shBuf, &index);
 			SPLIT_16((uint16_t)*(rigid2.ctrl.ank_ang_from_mot), shBuf, &index);
@@ -259,6 +265,15 @@ void tx_cmd_rigid_w(uint8_t *shBuf, uint8_t *cmd, uint8_t *cmdType, \
 			SPLIT_16((uint16_t)(rigid2.ctrl.step_energy), shBuf, &index);
 			shBuf[index++] = (uint8_t)rigid2.ctrl.walkingState;
 			shBuf[index++] = (uint8_t)rigid2.ctrl.gaitState;
+			#else
+			SPLIT_16((uint16_t)0, shBuf, &index);
+			SPLIT_16((uint16_t)(0), shBuf, &index);
+			SPLIT_16((uint16_t)(0), shBuf, &index);
+			SPLIT_16((uint16_t)(0), shBuf, &index);
+			SPLIT_16((uint16_t)(0), shBuf, &index);
+			shBuf[index++] = (uint8_t)0;
+			shBuf[index++] = (uint8_t)0;
+			#endif
 			//(30 bytes)
 		}
 
