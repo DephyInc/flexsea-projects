@@ -131,7 +131,7 @@ void tx_cmd_actpack_r(uint8_t *shBuf, uint8_t *cmd, uint8_t *cmdType, \
 
 	//Data:
 	shBuf[index++] = 100 + offset;
-	//An offset >= 100 means a pure Read, with no writing (not a RW)
+	//An offset >= 100 means a pure Read, with no writing (not aF RW)
 	//Fill the other fields with zeros to avoid problems:
 	shBuf[index++] = 0;
 	SPLIT_32(0, shBuf, &index);
@@ -468,7 +468,9 @@ void rx_cmd_actpack_Action1(uint8_t controller, int32_t setpoint, uint8_t setGai
 
 	//Update controller (if needed):
 	control_strategy(controller, ch);
-
+	rigid1.mn.genVar[0] = ctrl[0].current.gain.g0;
+	rigid1.mn.genVar[1] = ctrl[0].current.gain.g1;
+	rigid1.mn.genVar[2] = ctrl[0].active_ctrl;
 	//Only change the setpoint if we are in current control mode:
 	if(ctrl[ch].active_ctrl == CTRL_CURRENT)
 	{
