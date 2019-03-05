@@ -7,10 +7,10 @@
 extern "C" {
 #endif
 
-#ifdef BOARD_TYPE_FLEXSEA_EXECUTE
+#if (defined BOARD_TYPE_FLEXSEA_EXECUTE && !defined BOARD_SUBTYPE_RIGID)
 
 	#define SC_PRJ_EN_RI1
-
+	
 #else
 
 	//Default: everything enabled
