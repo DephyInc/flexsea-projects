@@ -9,11 +9,8 @@ extern "C" {
 
 //Note: Rigid and Pocket have to be enabled/disabled here, and in systemStackConfig.h
 
-#ifdef BOARD_TYPE_FLEXSEA_EXECUTE
-
-	#define SC_PRJ_EN_RI1
-
-#elif(defined BOARD_TYPE_FLEXSEA_MANAGE && defined BOARD_SUBTYPE_HABSOLUTE)
+#if ((defined BOARD_TYPE_FLEXSEA_EXECUTE && !defined BOARD_SUBTYPE_RIGID) \
+	|| (defined BOARD_TYPE_FLEXSEA_MANAGE && defined BOARD_SUBTYPE_HABSOLUTE))
 
 	#define SC_PRJ_EN_RI1
 
