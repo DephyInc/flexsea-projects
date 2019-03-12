@@ -71,7 +71,9 @@
 
 #ifdef DEPHY
 #include "dephy-mn.h"
+#ifdef INCLUDE_UPROJ_DPEB42
 #include "user-mn-DpEb42.h"
+#endif
 #endif
 
 //****************************************************************************
@@ -261,7 +263,9 @@ void user_fsm_2(void)
 void reset_user_code(void)
 {
 	#ifdef DEPHY
+	#if(ACTIVE_DEPHY_PROJECT == PRJ_DEPHY_DPEB42)
 	reset_dephy();
+	#endif
 	#endif
 }
 
