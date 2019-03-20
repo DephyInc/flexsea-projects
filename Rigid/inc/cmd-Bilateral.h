@@ -27,6 +27,9 @@ extern "C" {
 
 #include <stdint.h>
 #include "flexsea_user_structs.h"
+#include "projectsStackConfig.h"
+
+#ifdef PRJ_ENABLE_CMD_BILATERAL
 
 //****************************************************************************
 // RX/TX Prototype(s):
@@ -51,6 +54,8 @@ void tx_cmd_bilateral_w(uint8_t *shBuf, uint8_t *cmd, uint8_t *cmdType, \
 //****************************************************************************
 // Shared variable(s)
 //****************************************************************************
+
+#endif	//PRJ_ENABLE_CMD_BILATERAL
 
 #ifdef __cplusplus
 }

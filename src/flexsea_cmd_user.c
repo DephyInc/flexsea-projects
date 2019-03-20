@@ -41,6 +41,7 @@ extern "C" {
 #include <flexsea_cmd_user.h>
 #include <dynamic_user_structs.h>
 #include "cmd-ActPack.h"
+#include "projectsStackConfig.h"
 
 #ifdef BOARD_TYPE_FLEXSEA_EXECUTE
 	#if(!defined BOARD_SUBTYPE_RIGID && !defined BOARD_SUBTYPE_POCKET)
@@ -117,8 +118,10 @@ void init_flexsea_payload_ptr_user(void)
 	flexsea_payload_ptr[CMD_READ_ALL_RIGID][RX_PTYPE_REPLY] = &rx_cmd_rigid_rr;
 
 	//Pocket:
+	#ifdef PRJ_ENABLE_CMD_POCKET
 	flexsea_payload_ptr[CMD_READ_ALL_POCKET][RX_PTYPE_READ] = &rx_cmd_pocket_rw;
 	flexsea_payload_ptr[CMD_READ_ALL_POCKET][RX_PTYPE_REPLY] = &rx_cmd_pocket_rr;
+	#endif
 	#endif	//BOARD_SUBTYPE_RIGID
 	
 	#ifndef TEST_PC
