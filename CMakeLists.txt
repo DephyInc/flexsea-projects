@@ -9,5 +9,26 @@ set(SRCS
 	${CMAKE_CURRENT_SOURCE_DIR}/Rigid/src/cmd-Rigid.c 
 	${CMAKE_CURRENT_SOURCE_DIR}/Rigid/src/cmd-Pocket.c 
 	${CMAKE_CURRENT_SOURCE_DIR}/ActPack/src/cmd-ActPack.c
-	PARENT_SCOPE	
+	
+	${CMAKE_CURRENT_SOURCE_DIR}/src/dynamic_user_structs_exec.c
+	${CMAKE_CURRENT_SOURCE_DIR}/src/dynamic_user_structs_manage.c
+	${CMAKE_CURRENT_SOURCE_DIR}/src/dynamic_user_structs_plan.c
+	${CMAKE_CURRENT_SOURCE_DIR}/src/mn-MotorControl.c
+	${CMAKE_CURRENT_SOURCE_DIR}/src/user-ex-rigid.c
+	${CMAKE_CURRENT_SOURCE_DIR}/Rigid/src/cmd-Bilateral.c
+	${CMAKE_CURRENT_SOURCE_DIR}/Rigid/src/user-mn-Rigid.c
+	${CMAKE_CURRENT_SOURCE_DIR}/ActPack/src/user-ex-ActPack.c
+	${CMAKE_CURRENT_SOURCE_DIR}/ActPack/src/user-mn-ActPack.c
+
+	${CMAKE_CURRENT_SOURCE_DIR}/MIT_2DoF_Ankle_v1/src/cmd-MIT_2DoF_Ankle_v1.c
+	${CMAKE_CURRENT_SOURCE_DIR}/MIT_2DoF_Ankle_v1/src/user-ex-MIT_2DoF_Ankle_v1.c
+	${CMAKE_CURRENT_SOURCE_DIR}/MIT_2DoF_Ankle_v1/src/user-mn-MIT_2DoF_Ankle_v1.c
+	${CMAKE_CURRENT_SOURCE_DIR}/MIT_DLEG/src/user-mn-MIT-DLeg.c
+	${CMAKE_CURRENT_SOURCE_DIR}/MIT_PocketClimbing/src/user-mn-MIT-PocketClimb.c
+	${CMAKE_CURRENT_SOURCE_DIR}/RICNU_Knee_v1/src/cmd-RICNU_Knee_v1.c
+	${CMAKE_CURRENT_SOURCE_DIR}/RICNU_Knee_v1/src/user-ex-RICNU_Knee_v1.c
+	${CMAKE_CURRENT_SOURCE_DIR}/RICNU_Knee_v1/src/user-mn-RICNU_Knee_v1.c
+	${CMAKE_CURRENT_SOURCE_DIR}/Rigid/src/cmd-Bilateral.c
+	${CMAKE_CURRENT_SOURCE_DIR}/Rigid/src/user-mn-Rigid.c
+	PARENT_SCOPE
 )
