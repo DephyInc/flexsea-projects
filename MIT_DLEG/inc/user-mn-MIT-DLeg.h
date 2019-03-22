@@ -33,6 +33,15 @@
 
 #ifdef BOARD_TYPE_FLEXSEA_MANAGE
 
+typedef enum fsm1State
+{
+	CT_BOOT = 0,
+	CT_GOHOME,
+	CT_WALK,
+	CT_WALK2,
+	CT_ERROR
+} FSMSTATE;
+
 #ifndef INC_MIT_DLEG_H
 #define INC_MIT_DLEG_H
 
