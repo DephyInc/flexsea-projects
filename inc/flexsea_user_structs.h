@@ -71,10 +71,10 @@ struct filtvar_s
 
 struct fx_rigid_re_s
 {
-	uint16_t vb;
+	uint32_t vb;
 	uint16_t vg;
 	uint16_t v5;
-	int16_t current;
+	int32_t current;
 	int8_t temp;
 	uint8_t button;
 	uint8_t state;
