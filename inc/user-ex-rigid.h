@@ -259,7 +259,7 @@ void user_fsm(void);
 	#define USE_I2C_1			//5V, External (Angle sensor)
 	#define USE_STRAIN			//
 	#define USE_AS5047			//16-bit Position Sensor, SPI
-	//#define USE_AS5048B		//Joint angle sensor (I2C)
+	#define USE_AS5048B			//Joint angle sensor (I2C)
 	#define USE_EEPROM			//
 	#define USE_I2T_LIMIT		//I2t current limit
 
