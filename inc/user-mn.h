@@ -86,12 +86,11 @@ void reset_user_code(void);
 // this allows for this file to remain unmodified while compiling for
 // different projects
 #ifndef ACTIVE_PROJECT
-	#warning "ACTIVE_PROJECT not set, current default is PROJECT_DEPHY!"
 	#define ACTIVE_PROJECT			PROJECT_DEPHY
 #endif
 
 #ifndef ACTIVE_SUBPROJECT
-	#define ACTIVE_SUBPROJECT		SUBPROJECT_A
+	#define ACTIVE_SUBPROJECT		SUBPROJECT_A // usually right side
 #endif
 
 //Step 2) Customize the enabled/disabled sub-modules:
@@ -298,7 +297,7 @@ void reset_user_code(void);
 
 	#ifdef BOARD_SUBTYPE_RIGID
 
-		#if (HW_VER < 10)
+		#if (HW_VER < 10)	// RIGID 0.1 and 0.2
 
 			//Enable/Disable sub-modules:
 			#define USE_USB
@@ -329,7 +328,48 @@ void reset_user_code(void);
 
 			#endif
 
-		#else
+		#elif (HW_VER < 20) 	//RIGID 1.0
+
+			//This is for the standalone Manage board:
+
+			//Enable/Disable sub-modules:
+			#define USE_USB
+			#define USE_COMM			//Requires USE_RS485 and/or USE_USB
+			#define USE_RS485
+			#define USE_I2C_1			//3V3, IMU & Digital pot
+			//#define USE_I2C_2			//3V3, Expansion
+			//#define USE_I2C_3			//Onboard, Regulate & Execute
+			#define USE_IMU				//Requires USE_I2C_1
+			//#define USE_UART3			//Bluetooth
+			#define USE_EEPROM			//Emulated EEPROM, onboard FLASH
+			#define USE_WATCHDOG		//Independent watchdog (IWDG)
+			//#define USE_6CH_AMP		//Requires USE_I2C_2. 6-ch Strain Amp.
+			//#define USE_SPI_PLAN		//Enables the external SPI port
+			#define USE_XB24C			//Radio module on UART2 (Expansion port)
+
+			//Runtime finite state machine (FSM):
+			//#define RUNTIME_FSM1		ENABLED	//Enable only if you DO NOT use Plan
+			//#define RUNTIME_FSM2		ENABLED	//Enable at all time, Mn <> Ex comm.
+
+			#define MULTI_DOF_N 		0
+
+			#if(ACTIVE_SUBPROJECT == RIGHT)
+
+				#define EXO_SIDE	RIGHT
+				#define BILATERAL_MASTER
+
+			#elif(ACTIVE_SUBPROJECT == LEFT)
+
+				#define EXO_SIDE	LEFT
+				#define BILATERAL_SLAVE
+
+			#else
+
+				#error "PROJECT_ACTPACK requires a subproject (use A by default)!"
+
+			#endif
+
+		#else 	//RIGID 2.0
 
 			//Enable/Disable sub-modules:
 			#define USE_USB
@@ -371,7 +411,7 @@ void reset_user_code(void);
 				#define USB_NO_MULTIPACKET
 			#endif
 
-			#define HABSOLUTE_UPSTREAM_TUNING
+			//#define HABSOLUTE_UPSTREAM_TUNING
 
 			#if(ACTIVE_SUBPROJECT == RIGHT)
 
@@ -389,48 +429,7 @@ void reset_user_code(void);
 
 			#endif
 
-		#endif
-
-	#elif (HW_VER < 20) 	        //RIGID 1.0
-
-		//This is for the standalone Manage board:
-
-		//Enable/Disable sub-modules:
-		#define USE_USB
-		#define USE_COMM			//Requires USE_RS485 and/or USE_USB
-		#define USE_RS485
-		#define USE_I2C_1			//3V3, IMU & Digital pot
-		//#define USE_I2C_2			//3V3, Expansion
-		//#define USE_I2C_3			//Onboard, Regulate & Execute
-		#define USE_IMU				//Requires USE_I2C_1
-		//#define USE_UART3			//Bluetooth
-		#define USE_EEPROM			//Emulated EEPROM, onboard FLASH
-		#define USE_WATCHDOG		//Independent watchdog (IWDG)
-		//#define USE_6CH_AMP		//Requires USE_I2C_2. 6-ch Strain Amp.
-		//#define USE_SPI_PLAN		//Enables the external SPI port
-		#define USE_XB24C			//Radio module on UART2 (Expansion port)
-
-		//Runtime finite state machine (FSM):
-		//#define RUNTIME_FSM1		ENABLED	//Enable only if you DO NOT use Plan
-		//#define RUNTIME_FSM2		ENABLED	//Enable at all time, Mn <> Ex comm.
-
-		#define MULTI_DOF_N 		0
-
-		#if(ACTIVE_SUBPROJECT == RIGHT)
-
-			#define EXO_SIDE	RIGHT
-			#define BILATERAL_MASTER
-
-		#elif(ACTIVE_SUBPROJECT == LEFT)
-
-			#define EXO_SIDE	LEFT
-			#define BILATERAL_SLAVE
-
-		#else
-
-			#error "PROJECT_ACTPACK requires a subproject (use A by default)!"
-
-		#endif
+		#endif	//RIGID 2.0
 
 	#endif	//BOARD_SUBTYPE_RIGID
 
