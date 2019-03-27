@@ -90,8 +90,8 @@ void user_fsm(void);
 //Step 1) Select active project (from list):
 //==========================================
 
-#define ACTIVE_PROJECT			PROJECT_DEPHY
-#define ACTIVE_SUBPROJECT		SUBPROJECT_A //A is Left
+#define ACTIVE_PROJECT			PROJECT_ACTPACK
+//#define ACTIVE_SUBPROJECT		SUBPROJECT_A	//Unused at this time
 
 //Step 2) Customize the enabled/disabled sub-modules:
 //===================================================
@@ -251,6 +251,7 @@ void user_fsm(void);
 	//Enable/Disable sub-modules:
 	#define USE_RS485
 	//#define USE_USB
+	//#define USE_BLUETOOTH
 	#define USE_COMM			//Requires USE_RS485 and/or USE_USB
 	//#define USE_QEI
 	//#define USE_TRAPEZ
@@ -258,7 +259,7 @@ void user_fsm(void);
 	#define USE_I2C_1			//5V, External (Angle sensor)
 	#define USE_STRAIN			//
 	#define USE_AS5047			//16-bit Position Sensor, SPI
-	#define USE_AS5048B			//Joint angle sensor (I2C)
+	//#define USE_AS5048B		//Joint angle sensor (I2C)
 	#define USE_EEPROM			//
 	#define USE_I2T_LIMIT		//I2t current limit
 
