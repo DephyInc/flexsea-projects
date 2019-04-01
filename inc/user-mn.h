@@ -87,7 +87,7 @@ void reset_user_code(void);
 // different projects
 #ifndef ACTIVE_PROJECT
 	#warning "ACTIVE_PROJECT not set, current default is PROJECT_DEPHY!"
-	#define ACTIVE_PROJECT			PROJECT_ACTPACK
+	#define ACTIVE_PROJECT			PROJECT_DEPHY
 #endif
 
 #ifndef ACTIVE_SUBPROJECT
@@ -356,14 +356,12 @@ void reset_user_code(void);
 			#define BILATERAL
 
 			#define USE_PARTIAL_PACKETS
-			#define USE_UART3
-			#define USE_UART4
 			#define USE_BT121
 
 			// TODO: it looks like when we're configuring the xbee or flashing
 			// new firmware onto the BT121 we need the multi packet stuff
 			// disabled so we just need a good way of setting all the symbols
-			#define WIRELESS_SETUP_MODE
+			//#define WIRELESS_SETUP_MODE
 
 			#ifdef WIRELESS_SETUP_MODE
 				#define BT121_UPDATE_MODE
@@ -371,7 +369,7 @@ void reset_user_code(void);
 				#define USB_NO_MULTIPACKET
 			#endif
 
-			#define HABSOLUTE_UPSTREAM_TUNING
+			//#define HABSOLUTE_UPSTREAM_TUNING
 
 			#if(ACTIVE_SUBPROJECT == RIGHT)
 
