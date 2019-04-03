@@ -403,11 +403,9 @@ void reset_user_code(void);
 			// TODO: it looks like when we're configuring the xbee or flashing
 			// new firmware onto the BT121 we need the multi packet stuff
 			// disabled so we just need a good way of setting all the symbols
-			//#define WIRELESS_SETUP_MODE
 
-			#ifdef WIRELESS_SETUP_MODE
-				#define BT121_UPDATE_MODE
-				#define XBEE_CONFIGURATION_MODE
+			#ifdef BT121_UPDATE_MODE
+				#define TEST_BED_ENABLED
 				#define USB_NO_MULTIPACKET
 			#endif
 
