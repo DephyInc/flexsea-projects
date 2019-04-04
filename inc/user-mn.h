@@ -87,7 +87,7 @@ void reset_user_code(void);
 // different projects
 #ifndef ACTIVE_PROJECT
 	#warning "ACTIVE_PROJECT not set, current default is PROJECT_DEPHY!"
-	#define ACTIVE_PROJECT			PROJECT_ACTPACK
+	#define ACTIVE_PROJECT			PROJECT_DEPHY
 #endif
 
 #ifndef ACTIVE_SUBPROJECT
