@@ -16,7 +16,7 @@
 	You should have received a copy of the GNU General Public License
 	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 *****************************************************************************
-	[Lead developper] Luke Mooney, lmooney at dephy dot com.
+	[Lead developer] Luke Mooney, lmooney at dephy dot com.
 	[Origin] Based on Jean-Francois Duval's work at the MIT Media Lab
 	Biomechatronics research group <http://biomech.media.mit.edu/>
 	[Contributors]
@@ -26,10 +26,15 @@
 	[Change log] (Convention: YYYY-MM-DD | author | comment)
 	* 2016-10-28 | jfduval | New release
 	* 2016-11-16 | jfduval | Cleaned code, improved formatting
+	* 2019-02-13 | jfduval | Made it work with new stack, new demo
 ****************************************************************************/
 
 #ifdef INCLUDE_UPROJ_MIT_A2DOF
 #ifdef BOARD_TYPE_FLEXSEA_MANAGE
+
+//To test your code without a walking controller enable the following:
+#define A2DOF_INDEPENDENT_DEMO
+//This code assumes that the two motors are free to spin - use with care!
 
 //****************************************************************************
 // Include(s)
@@ -72,12 +77,12 @@ int16_t glob_var_1;
 int16_t glob_var_2;
 int16_t glob_var_3;
 
-
 //****************************************************************************
 // Private Function Prototype(s):
 //****************************************************************************
 
 static void ankle_2dof_refresh_values(void);
+static void ankle_2dof_independent_demo(void);
 
 //****************************************************************************
 // Public Function(s)
@@ -97,19 +102,26 @@ void ankle_2dof_fsm_1(void)
 	#if(ACTIVE_PROJECT == PROJECT_ANKLE_2DOF)
 
 	uint8_t info[2] = {PORT_RS485_1, PORT_RS485_1};
-    static uint32_t time = 0, state_t = 0;
+	static uint32_t time = 0, state_t = 0;
 
-    //Increment time (1 tick = 1ms)
-    time++;
-    state_t++;
+	//Increment time (1 tick = 1ms)
+	time++;
+	state_t++;
 
 	//Before going to a state we refresh values:
-    ankle_2dof_refresh_values();
+	ankle_2dof_refresh_values();
 
-	//Nothing programmed yet...
+	//Demo mode - no walking controller when enabled:
+	#ifdef A2DOF_INDEPENDENT_DEMO
+
+		ankle_2dof_independent_demo();
+		return;
+
+	#endif
+
+	//State machine:
 	switch(state)
 	{
-
 		case -5://Wait for 10 seconds to let everything load
 
 			my_control = CTRL_OPEN;
@@ -164,7 +176,7 @@ void ankle_2dof_fsm_1(void)
 				angle_zero_2 = (*exec2.enc_ang);
 			}
 
-            break;
+			break;
 
 		case -1: //move the motor to 20 degrees from maximum dorsiflexion and stop
 
@@ -210,58 +222,58 @@ void ankle_2dof_fsm_1(void)
 				user_data_1.w[1] = 100;
 			}
 
-            break;
+			break;
 
-        case 0: //behave like a spring both in PF-DF direction and EV-INV direction until 5 degrees of DF is achieved
+		case 0: //behave like a spring both in PF-DF direction and EV-INV direction until 5 degrees of DF is achieved
 
-        	my_control = CTRL_CURRENT;
-        	my_pwm[0] = 0;
-        	my_pwm[1] = 0;
+			my_control = CTRL_CURRENT;
+			my_pwm[0] = 0;
+			my_pwm[1] = 0;
 
-        	dp_stiffness = 100;
-        	ei_stiffness = 100; 	// originally 100
+			dp_stiffness = 100;
+			ei_stiffness = 100; 	// originally 100
 
-        	DP_torque = (2000-ank_angs_t[0])*dp_stiffness;
-        	EI_torque_1 = -(ank_angs_t[0]-ank_angs_1[0])*ei_stiffness;
-        	EI_torque_2 = -(ank_angs_t[0]-ank_angs_2[0])*ei_stiffness;
+			DP_torque = (2000-ank_angs_t[0])*dp_stiffness;
+			EI_torque_1 = -(ank_angs_t[0]-ank_angs_1[0])*ei_stiffness;
+			EI_torque_2 = -(ank_angs_t[0]-ank_angs_2[0])*ei_stiffness;
 
-        	//DP_torque= 0;
-        	set_ankle_torque_1(-DP_torque+EI_torque_1);
-        	set_ankle_torque_2(-DP_torque+EI_torque_2);
+			//DP_torque= 0;
+			set_ankle_torque_1(-DP_torque+EI_torque_1);
+			set_ankle_torque_2(-DP_torque+EI_torque_2);
 
 
-        	if (ank_angs_t[0]<1500)
-        	{
-        		state_t = -1;
-        		state = 1;
-        	}
+			if (ank_angs_t[0]<1500)
+			{
+				state_t = -1;
+				state = 1;
+			}
 
-            break;
+			break;
 
-        case 1://still behave like a spring, but try to apply max torque in the PF-DF direction until ankle reached 20 degrees of PF
+		case 1://still behave like a spring, but try to apply max torque in the PF-DF direction until ankle reached 20 degrees of PF
 
-        	DP_torque = (2000-ank_angs_t[0])*dp_stiffness;
-        	if (DP_torque >last_DP_torque)
-        	{
-        		last_DP_torque = DP_torque;
-        	}
+			DP_torque = (2000-ank_angs_t[0])*dp_stiffness;
+			if (DP_torque >last_DP_torque)
+			{
+				last_DP_torque = DP_torque;
+			}
 
-        	EI_torque_1 = -(ank_angs_t[0]-ank_angs_1[0])*ei_stiffness;
-        	EI_torque_2 = -(ank_angs_t[0]-ank_angs_2[0])*ei_stiffness;
+			EI_torque_1 = -(ank_angs_t[0]-ank_angs_1[0])*ei_stiffness;
+			EI_torque_2 = -(ank_angs_t[0]-ank_angs_2[0])*ei_stiffness;
 
-        	set_ankle_torque_1(-last_DP_torque+EI_torque_1); //pos
-        	set_ankle_torque_2(-last_DP_torque+EI_torque_2); //neg
+			set_ankle_torque_1(-last_DP_torque+EI_torque_1); //pos
+			set_ankle_torque_2(-last_DP_torque+EI_torque_2); //neg
 
-        	if (ank_angs_t[0]>=2000)
+			if (ank_angs_t[0]>=2000)
 			{
 				state_t = -1;
 				state = 0;
 				last_DP_torque = 0;
 			}
 
-        	break;
+			break;
 
-        default:
+		default:
 			//Handle exceptions here
 			break;
 	}
@@ -304,8 +316,6 @@ void ankle_2dof_fsm_2(void)
 			tx_cmd_ankle2dof_r(TX_N_DEFAULT, 0, my_control, my_cur[0], my_pwm[0]);
 			packAndSend(P_AND_S_DEFAULT, FLEXSEA_EXECUTE_1, info, SEND_TO_SLAVE);
 
-			//slaves_485_1.xmit.willListenSoon = 1;	//New version
-			//slaveComm[0].transceiverState = TRANS_STATE_TX_THEN_RX;
 			ex_refresh_fsm_state++;
 
 			break;
@@ -323,8 +333,6 @@ void ankle_2dof_fsm_2(void)
 			tx_cmd_ankle2dof_r(TX_N_DEFAULT, 1, my_control, my_cur[1], my_pwm[1]);
 			packAndSend(P_AND_S_DEFAULT, FLEXSEA_EXECUTE_2, info, SEND_TO_SLAVE);
 
-			//slaves_485_2.xmit.willListenSoon = 1;	//New version
-			//slaveComm[1].transceiverState = TRANS_STATE_TX_THEN_RX;
 			ex_refresh_fsm_state++;
 
 			break;
@@ -409,16 +417,14 @@ static void ankle_2dof_refresh_values(void)
 
 	user_data_1.r[0] = ank_angs_1[0];
 	user_data_1.r[1] = ank_angs_2[0];
-
 }
-//That function can be called from the FSM.
 
 //returns the ankle angle [deg x 100]
 //0 at maximum dorsiflexion
 int16_t get_ankle_ang(double ma) //mot_ang [deg] where mot_ang = 0 is at maximum plantarflexion
 {
-    (ma < 0) ? ma = 0 : ma;
-    return (int16_t)(A0+A1*cos(ma*W)+B1*sin(ma*W)+A2*cos(ma*W*2.0)+B2*sin(ma*W*2.0));
+	(ma < 0) ? ma = 0 : ma;
+	return (int16_t)(A0+A1*cos(ma*W)+B1*sin(ma*W)+A2*cos(ma*W*2.0)+B2*sin(ma*W*2.0));
 }
 
 //return 10x the transmission ratio
@@ -449,18 +455,97 @@ int16_t get_ankle_trans(double ma) //mot_ang [deg] where mot_ang = 0 is at maxim
 
 void set_ankle_torque_1(int32_t des_torque) //des_torque in mNm
 {
-    int32_t motor_torque = des_torque/(ankle_trans_1/10); 	//[mNm] at the motor
-    int32_t des_motor_current = motor_torque*10; 			//[mA] at the motor
-    my_cur[0] = des_motor_current; 							//[current IU]
-    user_data_1.r[2] = des_motor_current; 					//[current IU]
+	int32_t motor_torque = des_torque/(ankle_trans_1/10); 	//[mNm] at the motor
+	int32_t des_motor_current = motor_torque*10; 			//[mA] at the motor
+	my_cur[0] = des_motor_current; 							//[current IU]
+	user_data_1.r[2] = des_motor_current; 					//[current IU]
 }
 
 void set_ankle_torque_2(int32_t des_torque) //des_torque in mNm
 {
-    int32_t motor_torque = des_torque/(ankle_trans_2/10); 	//[mNm] at the motor
-    int32_t des_motor_current = motor_torque*10; 			//[mA] at the motor
-    my_cur[1] = des_motor_current; 							//[current IU]
-    user_data_1.r[3] = des_motor_current; 					//[current IU]
+	int32_t motor_torque = des_torque/(ankle_trans_2/10); 	//[mNm] at the motor
+	int32_t des_motor_current = motor_torque*10; 			//[mA] at the motor
+	my_cur[1] = des_motor_current; 							//[current IU]
+	user_data_1.r[3] = des_motor_current; 					//[current IU]
+}
+
+//Demo code to test hardware and software. This is not a walking controller.
+void ankle_2dof_independent_demo(void)
+{
+	static uint8_t spinCycles = 5;
+	static uint32_t time = 0, state_t = 0;
+
+	//Increment time (1 tick = 1ms)
+	time++;
+	state_t++;
+
+	//State machine:
+	switch(state)
+	{
+		case -5:	//Wait for 10 seconds to let everything load
+
+			my_control = CTRL_OPEN;
+			my_pwm[0] = 0;
+			my_pwm[1] = 0;
+			init_angle = (*exec1.enc_ang);
+			if (state_t > 10000)
+			{
+				state_t = -1;
+				state = -4;
+			}
+
+			break;
+
+		case -4:	//Spin one motor CW...
+
+			my_control = CTRL_OPEN;
+			my_pwm[0] = 1500;
+			my_pwm[1] = 1500;
+
+			if (state_t > 1000)
+			{
+				state_t = -1;
+				state = -3;
+			}
+
+			break;
+
+		case -3:	//Then CCW...
+
+			my_control = CTRL_OPEN;
+			my_pwm[0] = -1500;
+			my_pwm[1] = -1500;
+
+			if (state_t > 1000)
+			{
+				spinCycles--;
+				if(!spinCycles)
+				{
+					state_t = -1;
+					state = -2;
+				}
+				else
+				{
+					state_t = -1;
+					state = -4;
+				}
+			}
+
+			break;
+
+		case -2:	//Demo is over, we set everything to 0
+
+			my_control = CTRL_OPEN;
+			my_pwm[0] = 0;
+			my_pwm[1] = 0;
+			//No exit
+
+			break;
+
+		default:
+			//Handle exceptions here
+			break;
+	}
 }
 
 #endif 	//BOARD_TYPE_FLEXSEA_MANAGE

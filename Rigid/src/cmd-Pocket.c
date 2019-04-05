@@ -31,6 +31,9 @@ extern "C" {
 #include "user-mn.h"
 #include "cmd-ActPack.h"
 #include "flexsea_cmd_user.h"
+#include "projectsStackConfig.h"
+
+#ifdef PRJ_ENABLE_CMD_POCKET
 
 #ifdef DEPHY
 #include "dephy-mn.h"
@@ -476,6 +479,8 @@ void rx_cmd_pocket_w(uint8_t *buf, uint8_t *info)
 	(void)info;
 	flexsea_error(SE_CMD_NOT_PROGRAMMED);
 }
+
+#endif	//PRJ_ENABLE_CMD_POCKET
 
 #ifdef __cplusplus
 }

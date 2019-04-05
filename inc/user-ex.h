@@ -109,8 +109,8 @@ void user_fsm(void);
 //Step 1) Select active project (from list):
 //==========================================
 
-#define ACTIVE_PROJECT			PROJECT_BAREBONE
-#define ACTIVE_SUBPROJECT		SUBPROJECT_B //A is Left
+#define ACTIVE_PROJECT			PROJECT_ANKLE_2DOF
+#define ACTIVE_SUBPROJECT		SUBPROJECT_B
 
 //Step 2) Customize the enabled/disabled sub-modules:
 //===================================================
@@ -169,6 +169,7 @@ void user_fsm(void);
 	//#define USE_TRAPEZ
 	#define USE_I2C_0			//3V3, IMU & Expansion.
 	#define USE_I2C_1			//5V, Safety-CoP & strain gauge pot.
+	#define USE_IMU
 	#define USE_STRAIN			//Requires USE_I2C_1
 	#define USE_AS5047			//16-bit Position Sensor, SPI
 	#define USE_EEPROM			//

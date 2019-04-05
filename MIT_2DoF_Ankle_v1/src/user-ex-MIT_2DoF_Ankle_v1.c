@@ -60,33 +60,22 @@ static void ankle_refresh_values(void);
 //Call this function once in main.c, just before the while()
 void init_ankle_2dof(void)
 {
-	setBoardID(SLAVE_ID);
-
-    //Controller setup:
-    ctrl.active_ctrl = CTRL_OPEN;   //Position controller
-    motor_open_speed_1(0);              //0% PWM
-	#if(MOTOR_COMMUT == COMMUT_BLOCK)
-    Coast_Brake_Write(1);               //Brake (regen)
-	#endif
-
-    //Position PID gains - initially 0
-    ctrl.position.gain.P_KP = 0;
-    ctrl.position.gain.P_KI = 0;
+	//All done in the common init_project
 }
 
 //Knee Finite State Machine.
 //Call this function in one of the main while time slots.
 void ankle_fsm(void)
 {
-    static int state = 0;
+	static int state = 0;
 
-    ankle_refresh_values();
+	ankle_refresh_values();
 
-    switch (state)
-    {
-        case 0:
+	switch (state)
+	{
+		case 0:
 			//...
-            break;
+			break;
 	}
 
 	//Code does nothing, everything is happening on Manage

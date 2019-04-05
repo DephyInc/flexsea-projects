@@ -37,6 +37,9 @@ extern "C" {
 #include "flexsea_user_structs.h"
 #include "flexsea_cmd_user.h"
 #include "user-mn.h"
+#include "projectsStackConfig.h"
+
+#ifdef PRJ_ENABLE_CMD_BILATERAL
 
 #if(ACTIVE_PROJECT == PROJECT_DPEB31)
 #ifdef BOARD_TYPE_FLEXSEA_MANAGE
@@ -276,6 +279,8 @@ void rx_cmd_bilateral_rr(uint8_t *buf, uint8_t *info)
 
 	#endif //BOARD_TYPE_FLEXSEA_MANAGE
 }
+
+#endif	//PRJ_ENABLE_CMD_BILATERAL
 
 #ifdef __cplusplus
 }
