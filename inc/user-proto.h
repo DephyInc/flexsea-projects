@@ -92,7 +92,7 @@ void user_fsm(void);
 	#define RUNTIME_FSM	 		DISABLED
 	
 	//Slave ID:
-	#define SLAVE_ID			FLEXSEA_EXECUTE_1
+	#define SLAVE_ID			FLEXSEA_PROTO_1
 
 	//Project specific definitions:
 	//...
