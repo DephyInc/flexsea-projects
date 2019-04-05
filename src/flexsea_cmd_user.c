@@ -39,8 +39,12 @@ extern "C" {
 
 #include <flexsea.h>
 #include <flexsea_cmd_user.h>
+#if((defined BOARD_TYPE_FLEXSEA_EXECUTE) || (defined BOARD_TYPE_FLEXSEA_MANAGE) || \
+	(defined BOARD_TYPE_FLEXSEA_PLAN))
 #include <dynamic_user_structs.h>
+#endif
 #include "cmd-ActPack.h"
+#include "projectsStackConfig.h"
 
 #ifdef BOARD_TYPE_FLEXSEA_EXECUTE
 	#if(!defined BOARD_SUBTYPE_RIGID && !defined BOARD_SUBTYPE_POCKET)
@@ -111,18 +115,24 @@ void init_flexsea_payload_ptr_user(void)
 	flexsea_multipayload_ptr[CMD_ACTPACK][RX_PTYPE_READ] = &rx_multi_cmd_actpack_rw;
 	flexsea_multipayload_ptr[CMD_ACTPACK][RX_PTYPE_REPLY] = &rx_multi_cmd_actpack_rr;
 
+	#ifdef BOARD_SUBTYPE_RIGID
 	//Rigid:
 	flexsea_payload_ptr[CMD_READ_ALL_RIGID][RX_PTYPE_READ] = &rx_cmd_rigid_rw;
 	flexsea_payload_ptr[CMD_READ_ALL_RIGID][RX_PTYPE_REPLY] = &rx_cmd_rigid_rr;
 
 	//Pocket:
+	#ifdef PRJ_ENABLE_CMD_POCKET
 	flexsea_payload_ptr[CMD_READ_ALL_POCKET][RX_PTYPE_READ] = &rx_cmd_pocket_rw;
 	flexsea_payload_ptr[CMD_READ_ALL_POCKET][RX_PTYPE_REPLY] = &rx_cmd_pocket_rr;
-
+	#endif
+	#endif	//BOARD_SUBTYPE_RIGID
+	
 	#ifndef TEST_PC
 
 	//Dynamic & Gait:
+	#if((defined BOARD_TYPE_FLEXSEA_EXECUTE) || (defined BOARD_TYPE_FLEXSEA_MANAGE))
 	init_flexsea_payload_ptr_dynamic();
+	#endif
 
 	#endif //TEST_PC
 

@@ -370,10 +370,12 @@ void rx_multi_cmd_actpack_rr(uint8_t *msgBuf, MultiPacketInfo *mInfo, uint8_t *r
 
 		if(!processed)
 		{
+			#ifdef SC_PRJ_EN_RI2
 			if(mInfo->xid == FLEXSEA_MANAGE_2)
 			{
 				ri = &rigid2;
 			}
+			#endif
 			index = 0;
 			offset = msgBuf[index++];
 
@@ -450,7 +452,11 @@ void rx_multi_cmd_actpack_rr(uint8_t *msgBuf, MultiPacketInfo *mInfo, uint8_t *r
 	#endif	//BOARD_TYPE_FLEXSEA_PLAN
 
 	newActPackRRpacketAvailableFlag = 1;
+	
+	#if(defined BOARD_TYPE_FLEXSEA_PLAN || defined BOARD_TYPE_FLEXSEA_MANAGE || \
+		defined BOARD_TYPE_FLEXSEA_EXECUTE)
 	ri->lastOffsetDecoded = offset;
+	#endif
 }
 
 
@@ -492,8 +498,9 @@ void rx_cmd_actpack_Action1(uint8_t controller, int32_t setpoint, uint8_t setGai
 			ctrl[ch].position.gain.g0 = g0;
 			ctrl[ch].position.gain.g1 = g1;
 			ctrl[ch].position.gain.g2 = g2;
-			ctrl[ch].position.error_sum = 0;
+			//ctrl[ch].position.error_sum = 0;
 		}
+		ctrl[ch].position.error_sum = 0;
 	}
 	else if (ctrl[ch].active_ctrl == CTRL_IMPEDANCE)
 	{

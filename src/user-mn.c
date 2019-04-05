@@ -49,12 +49,19 @@
 //ToDo: switch to their include
 #endif	//PROJECT_UMICH_KNEE
 
+//MIT's DARPA LEG:
 #if(ACTIVE_PROJECT == PROJECT_MIT_DLEG)
 #include "user-mn-MIT-DLeg.h"
 #endif
 
+//MIT's Climbing Leg:
 #if(ACTIVE_PROJECT == PROJECT_POCKET_2XDC)
 #include "user-mn-MIT-PocketClimb.h"
+#endif
+
+//MIT's 2-DoF Ankle:
+#if(ACTIVE_PROJECT == PROJECT_ANKLE_2DOF)
+#include "user-mn-MIT_2DoF_Ankle_v1.h"
 #endif
 
 //Dephy's Actuator Package (ActPack)
@@ -64,7 +71,9 @@
 
 #ifdef DEPHY
 #include "dephy-mn.h"
+#ifdef INCLUDE_UPROJ_DPEB42
 #include "user-mn-DpEb42.h"
+#endif
 #endif
 
 //****************************************************************************
@@ -254,7 +263,9 @@ void user_fsm_2(void)
 void reset_user_code(void)
 {
 	#ifdef DEPHY
+	#if(ACTIVE_DEPHY_PROJECT == PRJ_DEPHY_DPEB42)
 	reset_dephy();
+	#endif
 	#endif
 }
 

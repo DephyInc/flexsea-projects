@@ -42,6 +42,7 @@ extern "C" {
 
 #include <stdint.h>
 #include <flexsea_global_structs.h>
+#include "projectsStackConfig.h"
 
 //****************************************************************************
 // Definition(s):
@@ -172,10 +173,18 @@ struct pocket_s
 
 extern struct motortb_s motortb;
 extern int16_t globvar[10];
-extern struct rigid_s rigid1, rigid2;
-extern struct pocket_s pocket1;
-extern int16_t globvar[10];
 
+#ifdef SC_PRJ_EN_RI1
+extern struct rigid_s rigid1;
+#endif
+#ifdef SC_PRJ_EN_RI2
+extern struct rigid_s rigid2;
+#endif
+#ifdef SC_PRJ_EN_PCK1
+extern struct pocket_s pocket1;
+#endif
+
+extern int16_t globvar[10];
 
 //****************************************************************************
 // Prototype(s):
