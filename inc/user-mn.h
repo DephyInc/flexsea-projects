@@ -82,8 +82,17 @@ void reset_user_code(void);
 //Step 1) Select active project (from list):
 //==========================================
 
-#define ACTIVE_PROJECT			PROJECT_HABSOLUTE
-#define ACTIVE_SUBPROJECT		SUBPROJECT_A
+// adding ability to pass in active project from build script
+// this allows for this file to remain unmodified while compiling for
+// different projects
+#ifndef ACTIVE_PROJECT
+	#warning "ACTIVE_PROJECT not set, current default is PROJECT_DEPHY!"
+	#define ACTIVE_PROJECT			PROJECT_ACTPACK
+#endif
+
+#ifndef ACTIVE_SUBPROJECT
+	#define ACTIVE_SUBPROJECT		SUBPROJECT_A
+#endif
 
 //Step 2) Customize the enabled/disabled sub-modules:
 //===================================================
@@ -333,26 +342,46 @@ void reset_user_code(void);
 			//#define USE_WATCHDOG		//Independent watchdog (IWDG)
 			//#define USE_6CH_AMP		//Requires USE_I2C_2. 6-ch Strain Amp.
 			//#define USE_SPI_PLAN		//Enables the external SPI port
-			//#define USE_XB24C			//Radio module on UART2 (Expansion port)
+			#define USE_XB24C			//Radio module on UART2 (Expansion port)
+			#define USE_PARTIAL_PACKETS
+			#define USE_UART3			//Bluetooth #1
+			#define USE_UART4			//Bluetooth #2
 
 			//Runtime finite state machine (FSM):
 			//#define RUNTIME_FSM1		ENABLED	//Enable only if you DO NOT use Plan
 			#define RUNTIME_FSM2		ENABLED	//Enable at all time, Mn <> Ex comm.
 
 			#define MULTI_DOF_N 		0
+
 			#define BILATERAL
+
+			#define USE_PARTIAL_PACKETS
+			#define USE_UART3
+			#define USE_UART4
+			#define USE_BT121
+
+			// TODO: it looks like when we're configuring the xbee or flashing
+			// new firmware onto the BT121 we need the multi packet stuff
+			// disabled so we just need a good way of setting all the symbols
+			#define WIRELESS_SETUP_MODE
+
+			#ifdef WIRELESS_SETUP_MODE
+				#define BT121_UPDATE_MODE
+				#define XBEE_CONFIGURATION_MODE
+				#define USB_NO_MULTIPACKET
+			#endif
+
+			#define HABSOLUTE_UPSTREAM_TUNING
 
 			#if(ACTIVE_SUBPROJECT == RIGHT)
 
 				#define EXO_SIDE	RIGHT
 				#define BILATERAL_MASTER
-				#define USE_UART4			//Bluetooth #2
 
 			#elif(ACTIVE_SUBPROJECT == LEFT)
 
 				#define EXO_SIDE	LEFT
 				#define BILATERAL_SLAVE
-				#define USE_UART3			//Bluetooth #1
 
 			#else
 
@@ -362,7 +391,7 @@ void reset_user_code(void);
 
 		#endif
 
-	#else
+	#elif (HW_VER < 20) 	        //RIGID 1.0
 
 		//This is for the standalone Manage board:
 
@@ -379,20 +408,27 @@ void reset_user_code(void);
 		#define USE_WATCHDOG		//Independent watchdog (IWDG)
 		//#define USE_6CH_AMP		//Requires USE_I2C_2. 6-ch Strain Amp.
 		//#define USE_SPI_PLAN		//Enables the external SPI port
+		#define USE_XB24C			//Radio module on UART2 (Expansion port)
 
 		//Runtime finite state machine (FSM):
 		//#define RUNTIME_FSM1		ENABLED	//Enable only if you DO NOT use Plan
 		//#define RUNTIME_FSM2		ENABLED	//Enable at all time, Mn <> Ex comm.
 
-		#if(ACTIVE_SUBPROJECT == SUBPROJECT_A)
+		#define MULTI_DOF_N 		0
 
-		#define MULTI_DOF_N			0
+		#if(ACTIVE_SUBPROJECT == RIGHT)
 
-		#endif
+			#define EXO_SIDE	RIGHT
+			#define BILATERAL_MASTER
 
-		#if(ACTIVE_SUBPROJECT == SUBPROJECT_B)
+		#elif(ACTIVE_SUBPROJECT == LEFT)
 
-		#define MULTI_DOF_N			1
+			#define EXO_SIDE	LEFT
+			#define BILATERAL_SLAVE
+
+		#else
+
+			#error "PROJECT_ACTPACK requires a subproject (use A by default)!"
 
 		#endif
 

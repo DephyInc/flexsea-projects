@@ -452,7 +452,11 @@ void rx_multi_cmd_actpack_rr(uint8_t *msgBuf, MultiPacketInfo *mInfo, uint8_t *r
 	#endif	//BOARD_TYPE_FLEXSEA_PLAN
 
 	newActPackRRpacketAvailableFlag = 1;
+	
+	#if(defined BOARD_TYPE_FLEXSEA_PLAN || defined BOARD_TYPE_FLEXSEA_MANAGE || \
+		defined BOARD_TYPE_FLEXSEA_EXECUTE)
 	ri->lastOffsetDecoded = offset;
+	#endif
 }
 
 

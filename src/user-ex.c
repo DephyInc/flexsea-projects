@@ -121,13 +121,6 @@ static void init_project(void)
 //Refresh sensor values - common across projects
 static void refresh_values(void)
 {
-	//mot_ang = *rigid1.ex.enc_ang - mot_ang_offset;
-	//mot_vel = *exec1.enc_ang_vel; //cpms
-	
-	//update_diffarr(&mot_ang_clks, mot_ang, 10);
-	
-	//mot_acc = get_accl_1k_5samples_downsampled(&mot_ang_clks)/2609; //rad/s^2
-	//rigid1.ex.mot_acc = mot_acc;
 }
 
 #endif //BOARD_TYPE_FLEXSEA_EXECUTE

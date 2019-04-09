@@ -93,6 +93,8 @@ void initializeRigidPointers(struct rigid_s *r)
 	r->ctrl._ank_vel_ = 0;
 	r->ctrl._ank_ang_from_mot_ = 0;
 
+	r->ctrl.gbl_shnk_ang = 0;
+
 	r->ex.enc_ang = &r->ex._enc_ang_;
 	r->ex.enc_ang_vel = &r->ex._enc_ang_vel_;
 	r->ex.joint_ang = &r->ex._joint_ang_;
