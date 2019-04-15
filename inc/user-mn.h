@@ -409,6 +409,11 @@ void reset_user_code(void);
 				#define USB_NO_MULTIPACKET
 			#endif
 
+			#ifdef XBEE_CONFIGURATION_MODE
+				#define TEST_BED_ENABLED
+				#define USB_NO_MULTIPACKET
+			#endif
+
 			//#define HABSOLUTE_UPSTREAM_TUNING
 
 			#if(ACTIVE_SUBPROJECT == RIGHT)
