@@ -1,5 +1,5 @@
 file(GLOB_RECURSE FLEX_PROJECTS_SRCS 
-	${ACTIVE_PROJECT_DIRECTORY}/*.c
+	ActPack/*.c
 	Rigid/*.c
 	src/*.c
 )
