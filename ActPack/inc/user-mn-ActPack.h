@@ -59,11 +59,11 @@ void disableActPackFSM2(void);
 // Shared variable(s)
 //****************************************************************************
 
-extern struct rigid_s dpRigid;
-extern int32_t dp_ank_ang_zero;
-extern int32_t dp_mot_ang_zero;
-extern int32_t mot_ang_offset;
-extern int32_t ank_ang_offset;
+//extern struct rigid_s dpRigid;
+//extern int32_t dp_ank_ang_zero;
+//extern int32_t dp_mot_ang_zero;
+//extern int32_t mot_ang_offset;
+//extern int32_t ank_ang_offset;
 
 #endif	//INC_ACTPACK_MN_H
 

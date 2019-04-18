@@ -81,12 +81,14 @@ void reset_user_code(void);
 
 //Step 1) Select active project (from list):
 //==========================================
+#define ACTIVE_PROJECT			PROJECT_DEPHY
 
 // adding ability to pass in active project from build script
 // this allows for this file to remain unmodified while compiling for
 // different projects
 #ifndef ACTIVE_PROJECT
-	#define ACTIVE_PROJECT			PROJECT_DEPHY
+	#warning "ACTIVE_PROJECT not set, current default is PROJECT_DEPHY!"
+	#define ACTIVE_PROJECT			PROJECT_ACTPACK
 #endif
 
 #ifndef ACTIVE_SUBPROJECT

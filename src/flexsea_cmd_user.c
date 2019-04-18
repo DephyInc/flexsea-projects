@@ -39,7 +39,10 @@ extern "C" {
 
 #include <flexsea.h>
 #include <flexsea_cmd_user.h>
+#if((defined BOARD_TYPE_FLEXSEA_EXECUTE) || (defined BOARD_TYPE_FLEXSEA_MANAGE) || \
+	(defined BOARD_TYPE_FLEXSEA_PLAN))
 #include <dynamic_user_structs.h>
+#endif
 #include "cmd-ActPack.h"
 #include "projectsStackConfig.h"
 
@@ -127,7 +130,9 @@ void init_flexsea_payload_ptr_user(void)
 	#ifndef TEST_PC
 
 	//Dynamic & Gait:
+	#if((defined BOARD_TYPE_FLEXSEA_EXECUTE) || (defined BOARD_TYPE_FLEXSEA_MANAGE))
 	init_flexsea_payload_ptr_dynamic();
+	#endif
 
 	#endif //TEST_PC
 
