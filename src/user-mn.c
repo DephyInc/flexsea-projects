@@ -97,7 +97,6 @@ struct ankle2dof_s ankle2dof_left, ankle2dof_right;
 //****************************************************************************
 
 static void init_user_common(void);
-inline static void user_fsm2_common(void);
 
 //****************************************************************************
 // Public Function(s)
@@ -212,8 +211,6 @@ void user_fsm_1(void)
 //Call this function in one of the main while time slots.
 void user_fsm_2(void)
 {
-	//Common:
-	user_fsm2_common();
 
 	#if(RUNTIME_FSM2 == ENABLED)
 
@@ -276,11 +273,6 @@ void reset_user_code(void)
 static void init_user_common(void)
 {
 	rigid1.ctrl.timestamp = 0;
-}
-
-inline static void user_fsm2_common(void)
-{
-	rigid1.ctrl.timestamp++;
 }
 
 #endif 	//BOARD_TYPE_FLEXSEA_MANAGE
