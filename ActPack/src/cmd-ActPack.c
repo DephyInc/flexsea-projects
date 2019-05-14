@@ -470,6 +470,8 @@ void rx_multi_cmd_actpack_rr(uint8_t *msgBuf, MultiPacketInfo *mInfo, uint8_t *r
 void rx_cmd_actpack_Action1(uint8_t controller, int32_t setpoint, uint8_t setGains,
 						int16_t g0,	int16_t g1,	int16_t g2, int16_t g3, uint8_t system, uint8_t ch)
 {
+	if controller  < CMD_CTRL_MODE || controller > CMD_STREAM || setGains > 1 || g0 > CTRL_P_KP || g1 > CTRL_I_KP || g2 > CTRL_P_KP || g3 > CTRL_I_KP
+		return;
 	(void) system;
 
 	//Update controller (if needed):
@@ -523,9 +525,10 @@ void rx_cmd_actpack_Action1(uint8_t controller, int32_t setpoint, uint8_t setGai
 void rx_cmd_actpack_Action1(uint8_t controller, int32_t setpoint, uint8_t setGains,
 						int16_t g0,	int16_t g1,	int16_t g2, int16_t g3, uint8_t system, uint8_t ch)
 {
-	//Update controller (if needed):
+	//Check for invalid or dangerously high gains
+	if(controller > CTRL_MEASRES || setGains > CHANGE || g0 > CTRL_P_KP || g1 > CTRL_I_KP || g2 > CTRL_P_KP || g3 > CTRL_I_KP)
+		return;
 	setControlMode(controller, ch);
-
 	//Only change the setpoint if we are in current control mode:
 	if(ctrl[ch].active_ctrl == CTRL_CURRENT)
 	{
