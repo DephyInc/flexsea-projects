@@ -54,7 +54,7 @@
 
 #else
 
-	#error "PROJECT_ACTPACK requires a subproject (use A by default)!"
+	#error "a subproject is required (use A by default)!"
 
 #endif
 

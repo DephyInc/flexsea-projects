@@ -20,4 +20,20 @@
 
 #define MULTI_DOF_N 		0
 
+#if(ACTIVE_SUBPROJECT == RIGHT)
+
+	#define EXO_SIDE	RIGHT
+	#define BILATERAL_MASTER
+
+#elif(ACTIVE_SUBPROJECT == LEFT)
+
+	#define EXO_SIDE	LEFT
+	#define BILATERAL_SLAVE
+
+#else
+
+	#error "a subproject is required (use A by default)!"
+
+#endif
+
 #endif // RIGID10_H_

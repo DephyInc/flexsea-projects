@@ -296,8 +296,7 @@ void reset_user_code(void);
 //Dephy's Actuator Package (ActPack)
 #if(ACTIVE_PROJECT == PROJECT_ACTPACK)
 
-
-
+	#include "ActPack-defs.h"
 
 #endif	//PROJECT_ACTPACK
 
