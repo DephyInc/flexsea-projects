@@ -249,10 +249,58 @@ void tx_cmd_actpack_w(uint8_t *shBuf, uint8_t *cmd, uint8_t *cmdType, \
 
 void rx_cmd_actpack_rw(uint8_t *buf, uint8_t *info)
 {
-	MultiPacketInfo mInfo;
-	fillMultiInfoFromBuf(&mInfo, buf, info);
-	mInfo.portOut = info[1];
-	rx_multi_cmd_actpack_rw( buf + P_DATA1, &mInfo, tmpPayload, &cmdLen );
+	//MultiPacketInfo mInfo;
+	//fillMultiInfoFromBuf(&mInfo, buf, info);
+	//mInfo.portOut = info[1];
+	//rx_multi_cmd_actpack_rw( buf + P_DATA1, &mInfo, tmpPayload, &cmdLen );
+	//figure offset value
+
+	//Temporary variables
+	uint8_t offset = 0;
+	uint8_t tmpController = 0, tmpSetGains = 0, tmpSystem = 0;
+	int32_t tmpSetpoint = 0;
+	int16_t tmpGain[4] = {0,0,0,0};
+
+	//Decode data received:
+	uint16_t index = P_DATA1;
+	offset = buf[index++];
+	tmpController = buf[index++];
+	tmpSetpoint = (int32_t)REBUILD_UINT32(buf, &index);
+	tmpSetGains = buf[index++];
+	tmpGain[0] = (int16_t)REBUILD_UINT16(buf, &index);
+	tmpGain[1] = (int16_t)REBUILD_UINT16(buf, &index);
+	tmpGain[2] = (int16_t)REBUILD_UINT16(buf, &index);
+	tmpGain[3] = (int16_t)REBUILD_UINT16(buf, &index);
+	tmpSystem = buf[index++];
+
+	if(offset < 100)
+	{
+		#if(defined BOARD_TYPE_FLEXSEA_EXECUTE || defined BOARD_TYPE_FLEXSEA_MANAGE)
+
+			if(offset == 0 || offset == 1)
+			{
+				//Act on the decoded data:
+				rx_cmd_actpack_Action1(tmpController, tmpSetpoint, tmpSetGains, tmpGain[0],
+										tmpGain[1], tmpGain[2], tmpGain[3], tmpSystem, offset);
+			}
+
+		#else
+
+			(void)tmpController;
+			(void)tmpSetGains;
+			(void)tmpSetpoint;
+			(void)tmpGain;
+			(void)tmpSystem;
+
+		#endif //(defined BOARD_TYPE_FLEXSEA_EXECUTE || defined BOARD_TYPE_FLEXSEA_MANAGE)
+	}
+	else
+	{
+		offset -= 100;
+	}
+
+
+	tx_cmd_actpack_w(tmpPayload , &cmdCode, &cmdType, &cmdLen, offset);
 	packAndSend(P_AND_S_DEFAULT, buf[P_XID], info, SEND_TO_MASTER);
 }
 
