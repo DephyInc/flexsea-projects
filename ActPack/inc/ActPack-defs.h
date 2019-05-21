@@ -35,14 +35,23 @@
 #elif (HW_VER < 20) 	//RIGID 1.0
 
 	#include "rigid10.h"
+	//Runtime finite state machine (FSM):
+	//#define RUNTIME_FSM1		ENABLED	//Enable only if you DO NOT use Plan
+	#define RUNTIME_FSM2		ENABLED	//Enable at all time, Mn <> Ex comm.
 
 #elif (HW_VER < 30) 	//RIGID 2.0
 
 	#include "rigid20.h"
+	//Runtime finite state machine (FSM):
+	//#define RUNTIME_FSM1		ENABLED	//Enable only if you DO NOT use Plan
+	#define RUNTIME_FSM2		ENABLED	//Enable at all time, Mn <> Ex comm.
 
 #else	// RIGID 3.0
 
 	#include "rigid30.h"
+	//Runtime finite state machine (FSM):
+	//#define RUNTIME_FSM1		ENABLED	//Enable only if you DO NOT use Plan
+	#define RUNTIME_FSM2		ENABLED	//Enable at all time, Mn <> Ex comm.
 
 #endif	//RIGID 2.0
 
