@@ -387,7 +387,7 @@ void reset_user_code(void);
 //Habsolute v0.x
 #if(ACTIVE_PROJECT == PROJECT_HABSOLUTE)
 
-	#include "habs01.h"
+	#include "Habsolute-defs.h"
 
 #endif	//PROJECT_DEV
 

@@ -1,6 +1,8 @@
 #ifndef ACTPACK_DEFS_H_
 #define ACTPACK_DEFS_H_
 
+#define INCLUDE_UPROJ_ACTPACK
+
 #if (HW_VER < 2)	// RIGID 0.1 and 0.2
 
 	//Enable/Disable sub-modules:
