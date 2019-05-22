@@ -258,7 +258,7 @@ void user_fsm_2(void)
 void reset_user_code(void)
 {
 	#ifdef DEPHY
-	#if(ACTIVE_DEPHY_PROJECT == PRJ_DEPHY_DPEB42)
+	#if(ACTIVE_DEPHY_PROJECT == PRJ_DEPHY_EXO)
 	reset_dephy();
 	#endif
 	#endif
