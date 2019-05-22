@@ -71,9 +71,7 @@
 
 #ifdef DEPHY
 #include "dephy-mn.h"
-#ifdef INCLUDE_UPROJ_DPEB42
 #include "user-mn-DpEb42.h"
-#endif
 #endif
 
 //****************************************************************************

@@ -389,7 +389,14 @@ void reset_user_code(void);
 
 	#include "Habsolute-defs.h"
 
-#endif	//PROJECT_DEV
+#endif	//PROJECT_HABSOLUTE
+
+//Habsolute v0.x
+#if(ACTIVE_PROJECT == PROJECT_BMS)
+
+	#include "BMS-defs.h"
+
+#endif	//PROJECT_BMS
 
 #if(ACTIVE_PROJECT == PROJECT_DEPHY)
 
