@@ -339,9 +339,8 @@ void reset_user_code(void);
 			//#define USE_RS485
 			#define USE_I2C_1			//3V3, IMU & Digital pot
 			//#define USE_I2C_2			//3V3, Expansion
-			//#define USE_I2C_3			//Onboard, Regulate & Execute
+			#define USE_I2C_3			//Onboard, Regulate & Execute
 			#define USE_IMU				//Requires USE_I2C_1
-			//#define USE_UART3			//Bluetooth
 			#define USE_EEPROM			//Emulated EEPROM, onboard FLASH
 			#define USE_WATCHDOG		//Independent watchdog (IWDG)
 			//#define USE_6CH_AMP		//Requires USE_I2C_2. 6-ch Strain Amp.
@@ -358,11 +357,13 @@ void reset_user_code(void);
 
 				#define EXO_SIDE	RIGHT
 				#define BILATERAL_MASTER
+				#define USE_UART4			//Bluetooth #2
 
 			#elif(ACTIVE_SUBPROJECT == LEFT)
 
 				#define EXO_SIDE	LEFT
 				#define BILATERAL_SLAVE
+				#define USE_UART3			//Bluetooth #1
 
 			#else
 
