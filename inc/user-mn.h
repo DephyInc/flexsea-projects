@@ -350,7 +350,7 @@ void reset_user_code(void);
 
 			//Runtime finite state machine (FSM):
 			//#define RUNTIME_FSM1		ENABLED	//Enable only if you DO NOT use Plan
-			//#define RUNTIME_FSM2		ENABLED	//Enable at all time, Mn <> Ex comm.
+			#define RUNTIME_FSM2		ENABLED	//Enable at all time, Mn <> Ex comm.
 
 			#define MULTI_DOF_N 		0
 
