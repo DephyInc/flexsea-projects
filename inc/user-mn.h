@@ -432,7 +432,7 @@ void reset_user_code(void);
 
 			#endif
 
-		#else				//RIGID 2.0
+		#else				//RIGID 3.0
 
 			//Enable/Disable sub-modules:
 			#define USE_USB
