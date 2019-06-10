@@ -67,6 +67,7 @@ void reset_user_code(void);
 #define PROJECT_POCKET_2XDC		7	//FlexSEA-Pocket, 2x Brushed DC
 #define PROJECT_MIT_DLEG		8	//Biomechatronics' Rigid + Relative encoder
 #define PROJECT_HABSOLUTE		9	//Habsolute 0.x Sensor
+#define PROJECT_BMS				10	//Battery Management System
 
 //List of sub-projects:
 #define SUBPROJECT_NONE			0
