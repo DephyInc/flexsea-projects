@@ -108,7 +108,11 @@ void init_user(void)
 {
 	//Common to all projects:
 	init_user_common();
+
+	#if ((defined BOARD_TYPE_FLEXSEA_MANAGE && defined BOARD_SUBTYPE_RIGID) || \
+	(defined BOARD_TYPE_FLEXSEA_PLAN))
 	initSessionStats();
+	#endif
 
 	//RIC/NU Knee:
 	#if(ACTIVE_PROJECT == PROJECT_RICNU_KNEE)
