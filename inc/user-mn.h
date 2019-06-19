@@ -67,6 +67,7 @@ void reset_user_code(void);
 #define PROJECT_POCKET_2XDC		7	//FlexSEA-Pocket, 2x Brushed DC
 #define PROJECT_MIT_DLEG		8	//Biomechatronics' Rigid + Relative encoder
 #define PROJECT_HABSOLUTE		9	//Habsolute 0.x Sensor
+#define PROJECT_BMS				10	//Battery Management System
 
 //List of sub-projects:
 #define SUBPROJECT_NONE			0
@@ -604,6 +605,26 @@ void reset_user_code(void);
 	#define MULTI_DOF_N			0
 
 #endif	//PROJECT_DEV
+
+//CBMS v0.2
+#if(ACTIVE_PROJECT == PROJECT_BMS)
+
+	//Enable/Disable sub-modules:
+	//#define USE_USB
+	#define USE_COMM			//Requires USE_RS485 and/or USE_USB
+	//#define USE_I2C_1			//
+	//#define USE_I2C_2			//
+	//#define USE_I2C_3			//
+	//#define USE_EEPROM		//Emulated EEPROM, onboard FLASH
+	//#define USE_WATCHDOG		//Independent watchdog (IWDG)
+
+	//Runtime finite state machine (FSM):
+	#define RUNTIME_FSM1		DISABLED	//Enable only if you DO NOT use Plan
+	#define RUNTIME_FSM2		ENABLED		//Enable at all time, Mn <> Ex comm.
+
+	#define MULTI_DOF_N			0
+
+#endif	//PROJECT_BMS
 
 #if(ACTIVE_PROJECT == PROJECT_DEPHY)
 
