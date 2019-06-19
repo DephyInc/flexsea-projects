@@ -36,7 +36,6 @@
 
 #include "user-mn.h"
 #include "flexsea_user_structs.h"
-#include "flexsea_cmd_session_stats.h"
 
 //Barebone Rigid:
 #if(ACTIVE_PROJECT == PROJECT_BB_RIGID)
@@ -108,7 +107,6 @@ void init_user(void)
 {
 	//Common to all projects:
 	init_user_common();
-	initSessionStats();
 
 	//RIC/NU Knee:
 	#if(ACTIVE_PROJECT == PROJECT_RICNU_KNEE)
